@@ -20,5 +20,6 @@ console.log(`Starting FP-OS Backend on port ${port}...`);
 
 serve({
   fetch: app.fetch,
-  port
+  port,
+  hostname: '0.0.0.0'
 });
