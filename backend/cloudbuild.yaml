@@ -1,0 +1,36 @@
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
+      - '.'
+
+  # Step 2: Push the image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
+
+  # Step 3: Deploy directly to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'services'
+      - 'update'
+      - 'fp'
+      - '--image=gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
+      - '--region=europe-west1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--set-env-vars=AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT,PORT=8080'
+
+images:
+  - 'gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
+
+# Substitutions must be set in the Cloud Build Trigger settings
+substitutions:
+  _AI_PROVIDER_KEY: ''
