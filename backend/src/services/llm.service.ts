@@ -1,7 +1,15 @@
 import { GoogleGenAI } from '@google/genai';
-import { env } from '../config/env';
 
-const ai = new GoogleGenAI({ apiKey: env.AI_PROVIDER_KEY });
+// Lazy client — created only when first needed, NOT at import time.
+// This prevents crashes during Cloud Run startup health checks.
+let _ai: GoogleGenAI | null = null;
+function getAI(): GoogleGenAI {
+  if (!_ai) {
+    const apiKey = process.env.AI_PROVIDER_KEY || '';
+    _ai = new GoogleGenAI({ apiKey });
+  }
+  return _ai;
+}
 
 export class LLMService {
   /**
@@ -15,7 +23,7 @@ export class LLMService {
     retries = 3
   ): Promise<any> {
     try {
-      const response = await ai.models.generateContent({
+      const response = await getAI().models.generateContent({
         model: 'gemini-2.5-flash',
         contents: systemPrompt,
         config: {
