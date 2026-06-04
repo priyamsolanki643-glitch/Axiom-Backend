@@ -9,6 +9,10 @@ export const interactionRoutes = new Hono();
 const messageSchema = z.object({
   user_id: z.string().uuid().optional(),
   message: z.string(),
+  conversationHistory: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    parts: z.array(z.object({ text: z.string() }))
+  })).optional().default([]),
   // For simplicity, passing full runtime state from the frontend in this iteration.
   // In a real production app, this would be fetched from Redis/Postgres using user_id.
   state_context: z.any().optional(),
@@ -16,7 +20,7 @@ const messageSchema = z.object({
 });
 
 interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) => {
-  const { user_id, message, state_context, action } = c.req.valid('json');
+  const { user_id, message, conversationHistory, state_context, action } = c.req.valid('json');
 
   try {
     let result: any;
@@ -80,7 +84,7 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
     // Call LLM with the generated system prompt from the engine
     let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
     if (systemPrompt) {
-        llmResponse = await LLMService.generateValidatedResponse(user_id || 'test-user', systemPrompt, []);
+        llmResponse = await LLMService.generateValidatedResponse(user_id || 'test-user', systemPrompt, conversationHistory, []);
     }
 
     return c.json({

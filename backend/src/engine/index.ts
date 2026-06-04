@@ -34,6 +34,10 @@ import {
 } from './layer2_capability';
 
 import {
+  runIntelligenceMatrix,
+} from './layer0_intelligence';
+
+import {
   runSurvivabilityAudit,
   buildSurvivalModeResponse,
   buildYellowBandConfig,
@@ -273,6 +277,9 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
   // ── LAYER 3: Survivability Audit ───────────────────────────────────────────
   const survivabilityAudit = runSurvivabilityAudit(contextMatrix);
 
+  // ── LAYER 0: Market Intelligence Matrix ────────────────────────────────────
+  const { intelligenceBrief, intelligenceReport } = runIntelligenceMatrix(contextMatrix, capabilityVector);
+
   // ── SURVIVAL MODE GATE ─────────────────────────────────────────────────────
   let survivalModeResponse = null;
   if (!survivabilityAudit.strategyGenerationUnlocked) {
@@ -283,8 +290,8 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
       contextMatrix,
       capabilityVector,
       survivabilityAudit,
-      intelligenceBrief: null,
-      intelligenceReport: null,
+      intelligenceBrief,
+      intelligenceReport,
       opportunityProfile: {
         rankedOpportunities: [],
         hardBanList: null,
@@ -314,7 +321,7 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
   }
 
   // ── LAYER 4: Stochastic Simulation ────────────────────────────────────────
-  const simulationResults = runTrajectorySimulation(contextMatrix, capabilityVector, survivabilityAudit);
+  const simulationResults = runTrajectorySimulation(contextMatrix, capabilityVector, survivabilityAudit, intelligenceReport);
 
   // ── LAYER 5: Opportunity Mapping ───────────────────────────────────────────
   const opportunityProfile = runOpportunityMapping(contextMatrix, capabilityVector, survivabilityAudit);
@@ -365,8 +372,8 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
     contextMatrix,
     capabilityVector,
     survivabilityAudit,
-    intelligenceBrief: null,
-    intelligenceReport: null,
+    intelligenceBrief,
+    intelligenceReport,
     opportunityProfile,
     frictionProfile,
     ambitionAssessment,

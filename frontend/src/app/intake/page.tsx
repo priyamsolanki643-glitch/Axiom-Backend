@@ -17,12 +17,12 @@ export default function IntakeTerminal() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState<{ q: string; a: string }[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<{ role: "user" | "model", parts: { text: string }[] }[]>([]);
+  const [currentQuestionText, setCurrentQuestionText] = useState(INTAKE_QUESTIONS[0].text);
   const [inputValue, setInputValue] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const currentQuestion = INTAKE_QUESTIONS[currentIndex];
 
   useEffect(() => {
     if (!isProcessing && inputRef.current) {
@@ -30,27 +30,57 @@ export default function IntakeTerminal() {
     }
   }, [isProcessing, currentIndex]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isProcessing || isLocked) return;
 
     const answer = inputValue;
     setInputValue("");
-    setHistory((prev) => [...prev, { q: currentQuestion.text, a: answer }]);
+    setHistory((prev) => [...prev, { q: currentQuestionText, a: answer }]);
+    
+    const newUserMsg = { role: "user" as const, parts: [{ text: answer }] };
+    const updatedHistory = [...conversationHistory, newUserMsg];
+    setConversationHistory(updatedHistory);
     
     setIsProcessing(true);
     
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      const res = await fetch("http://localhost:3001/message", { // Using fully qualified URL for backend port (adjust if next.js proxy is used)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: answer,
+          conversationHistory: updatedHistory,
+          action: "onboarding"
+        })
+      });
+      const data = await res.json();
+      const aiResponseText = data?.data?.ai_response?.response_text || INTAKE_QUESTIONS[currentIndex + 1]?.text || "Processing complete.";
+
+      setConversationHistory(prev => [...prev, { role: "model" as const, parts: [{ text: aiResponseText }] }]);
+
       if (currentIndex < INTAKE_QUESTIONS.length - 1) {
         setCurrentIndex((prev) => prev + 1);
+        setCurrentQuestionText(aiResponseText);
       } else {
         setIsLocked(true);
         setTimeout(() => {
           router.push("/gate");
         }, 2500);
       }
-    }, 1500); // 1.5s processing pause
+    } catch (err) {
+      console.error(err);
+      // Fallback logic for UI if backend is offline
+      if (currentIndex < INTAKE_QUESTIONS.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setCurrentQuestionText(INTAKE_QUESTIONS[currentIndex + 1].text);
+      } else {
+        setIsLocked(true);
+        setTimeout(() => router.push("/gate"), 2500);
+      }
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -75,14 +105,14 @@ export default function IntakeTerminal() {
             ))}
           </AnimatePresence>
 
-          {!isLocked && currentQuestion && (
+          {!isLocked && currentQuestionText && (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="mt-4"
             >
               <p className="font-sans text-2xl font-medium mb-6">
-                {currentQuestion.text}
+                {currentQuestionText}
               </p>
               
               {!isProcessing ? (

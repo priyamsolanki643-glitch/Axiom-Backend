@@ -21,6 +21,8 @@ import {
   RunwayBand,
   ENGINE_AXIOMS,
   GeographyTier,
+  MarketIntelligenceReport,
+  LocalMarketGap,
 } from './types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -322,6 +324,7 @@ export function calculateAdjustedProbability(
   path: PathTemplate,
   matrix: ContextMatrix,
   capability: CapabilityVector,
+  intelligenceReport?: MarketIntelligenceReport | null,
 ): { low: number; high: number } {
   let adjustedProb = path.baseSuccessProbability;
 
@@ -366,6 +369,23 @@ export function calculateAdjustedProbability(
   }
   adjustedProb -= (shockImpact / path.shocksApplicable.length) * 0.30; // Weighted shock contribution
 
+  // INTELLIGENCE OVERLAY (Real Market Data Integration)
+  if (intelligenceReport) {
+    // If the path aligns with a local market gap, boost probability based on lack of competition
+    const matchingGap = intelligenceReport.localMarketGaps.find((g: LocalMarketGap) => 
+      path.category === 'local_geo_arbitrage' || g.requiredSkills.some((s: string) => path.name.toLowerCase().includes(s.toLowerCase()))
+    );
+    if (matchingGap && (matchingGap.competitorCount === 'none' || matchingGap.competitorCount === 'very_few')) {
+      adjustedProb += 0.15;
+    } else if (matchingGap && matchingGap.competitorCount === 'saturated') {
+      adjustedProb -= 0.15;
+    }
+
+    // Overall market health adjustment
+    const marketScoreDelta = intelligenceReport.overallMarketScore - 0.5; // -0.5 to +0.5
+    adjustedProb += marketScoreDelta * 0.10;
+  }
+
   // Hard cap: never exceed ENGINE_AXIOMS max, never go below floor
   const finalProb = Math.max(
     ENGINE_AXIOMS.MIN_PROBABILITY_FLOOR / 100,
@@ -399,12 +419,13 @@ export function runTrajectorySimulation(
   matrix: ContextMatrix,
   capability: CapabilityVector,
   survivability: SurvivabilityAudit,
+  intelligenceReport?: MarketIntelligenceReport | null,
 ): SimulationResult[] {
   const { eligible } = filterEligiblePaths(matrix, capability, survivability);
   const results: SimulationResult[] = [];
 
   for (const path of eligible) {
-    const probRange = calculateAdjustedProbability(path, matrix, capability);
+    const probRange = calculateAdjustedProbability(path, matrix, capability, intelligenceReport);
 
     // Calculate adjusted target amount (what's realistic given timeline and capability)
     const timelineMonths = matrix.goalVector.timelineMonths;
@@ -425,7 +446,7 @@ export function runTrajectorySimulation(
       (1 - shockVulnerability) * 0.15 +                 // 15% weight on stability
       (1 - path.capitalDependencyIndex) * 0.10;         // 10% weight on zero-capital advantage
 
-    const whyFits = generatePathFitRationale(path, matrix, capability, probRange);
+    const whyFits = generatePathFitRationale(path, matrix, capability, probRange, intelligenceReport);
 
     results.push({
       pathTemplate: path,
@@ -447,19 +468,32 @@ function generatePathFitRationale(
   matrix: ContextMatrix,
   capability: CapabilityVector,
   probRange: { low: number; high: number },
+  intelligenceReport?: MarketIntelligenceReport | null,
 ): string {
   const geo = matrix.socioeconomic.geographyTier;
-  const cap = matrix.socioeconomic.liquidCapital;
   const prob = Math.round(((probRange.low + probRange.high) / 2) * 100);
 
+  // Intelligence overlay injection for real market data
+  let marketDataSnippet = '';
+  if (intelligenceReport) {
+    const topSkill = intelligenceReport.skillDemandSignals[0];
+    if (topSkill) {
+      marketDataSnippet = ` Based on live market data, demand for ${topSkill.skill} is currently ${topSkill.demandLevel.replace('_', ' ')} and ${topSkill.trendDirection} in your area.`;
+    }
+    const matchingGap = intelligenceReport.localMarketGaps[0];
+    if (matchingGap && path.category === 'local_geo_arbitrage') {
+      marketDataSnippet += ` There are an estimated ${matchingGap.estimatedAffectedBusinesses} businesses needing this within your reach, with ${matchingGap.competitorCount.replace('_', ' ')} competitors.`;
+    }
+  }
+
   if (path.id === 'local_sme_digitization') {
-    return `In your ${geo} area, most SMEs are still running on manual processes. You don't need deep coding skills — you need the ability to identify one inefficiency and solve it with a no-code tool. Capital requirement: ₹0. Timeline to first payment: ~14 days. Probability: ${prob}%.`;
+    return `In your ${geo} area, most SMEs are still running on manual processes. You don't need deep coding skills — you need the ability to identify one inefficiency and solve it with a no-code tool. Capital requirement: ₹0. Timeline to first payment: ~14 days. Probability: ${prob}%.${marketDataSnippet}`;
   }
   if (path.id === 'local_service_arbitrage') {
-    return `This is the fastest path to cash given your runway situation. Zero capital, zero learning curve. You execute your most verified skill directly to someone who needs it today. Probability: ${prob}%.`;
+    return `This is the fastest path to cash given your runway situation. Zero capital, zero learning curve. You execute your most verified skill directly to someone who needs it today. Probability: ${prob}%.${marketDataSnippet}`;
   }
   if (path.id === 'no_code_saas_local_problem') {
-    return `Your technical capability (${(capability.trueCapabilityScore * 100).toFixed(0)}%) is above the threshold for building a functional no-code product. The local market gap in your area makes this viable. First revenue in ~30 days. Scalability is high — this compounds. Probability: ${prob}%.`;
+    return `Your technical capability (${(capability.trueCapabilityScore * 100).toFixed(0)}%) is above the threshold for building a functional no-code product. The local market gap in your area makes this viable. First revenue in ~30 days. Scalability is high — this compounds. Probability: ${prob}%.${marketDataSnippet}`;
   }
-  return `This path matches your constraint profile at a ${prob}% probability of success within your stated timeline.`;
+  return `This path matches your constraint profile at a ${prob}% probability of success within your stated timeline.${marketDataSnippet}`;
 }
