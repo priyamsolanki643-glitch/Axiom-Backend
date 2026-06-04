@@ -62,7 +62,15 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
       
       // Fallback extraction logic depending on LLM output shape
       let reply = "System response received.";
-      if (data?.data?.ai_response?.response_text) {
+      if (data?.error) {
+        // If backend returned an error, show it!
+        try {
+          const parsedError = JSON.parse(data.error);
+          reply = "Backend Error: " + (parsedError.error?.message || data.error);
+        } catch {
+          reply = "Backend Error: " + data.error;
+        }
+      } else if (data?.data?.ai_response?.response_text) {
         reply = data.data.ai_response.response_text;
       } else if (data?.data?.engine_result?.data?.systemPrompt) {
         reply = "Prompt generated: " + data.data.engine_result.data.systemPrompt.substring(0, 100) + "...";
