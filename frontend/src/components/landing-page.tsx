@@ -7,71 +7,98 @@ interface LandingPageProps {
   onLock: () => void;
 }
 
+const STATUS_ITEMS = [
+  { label: "System nominal" },
+  { label: "AES-256 encrypted" },
+  { label: "Zero logs" },
+];
+
 export function LandingPage({ onLock }: LandingPageProps) {
   const [shutter, setShutter] = useState(false);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 60);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setVisible(true), 60);
+    return () => clearTimeout(t);
   }, []);
 
   const handleStart = () => {
     if (!shutter) {
       setShutter(true);
-      setTimeout(onLock, 620);
+      setTimeout(onLock, 560);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black flex flex-col text-text-primary font-sans">
-      {shutter && (
-        <div className="fixed inset-0 z-50 bg-white animate-shutter" />
-      )}
-      
-      <header className="flex items-center justify-between px-6 md:px-10 py-5">
-        <div className="flex items-center gap-2.5">
-          <div className="size-6 rounded-full bg-text-primary" />
-          <span className="font-display text-sm font-medium tracking-tight">FP</span>
+    <div className="lp-root">
+      {shutter && <div className="fixed inset-0 z-50 bg-white animate-shutter" />}
+
+      {/* ── Header ── */}
+      <header className="lp-header">
+        <div className="lp-logo">
+          <div className="lp-logo-dot" />
+          <span className="lp-logo-text">FP</span>
         </div>
-        <button className="text-sm text-text-secondary hover:text-text-primary transition">
-          Sign in
-        </button>
+        <button className="lp-signin">Sign in</button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      {/* ── Hero ── */}
+      <main className="lp-main">
         <div
-          className={`transition-all duration-1000 ease-[var(--transition-spring)] ${
-            visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
+          className="lp-hero"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(20px)",
+          }}
         >
-          <h1 className="font-display text-[clamp(3rem,10vw,7rem)] font-medium leading-[0.95] tracking-tight max-w-4xl">
+          {/* Eyebrow */}
+          <div className="lp-eyebrow">
+            <span className="lp-eyebrow-dot" />
+            Operating System for Human Ambition
+          </div>
+
+          {/* Headline */}
+          <h1 className="lp-headline">
             Stop planning.
             <br />
             <span className="shimmer-text">Start executing.</span>
           </h1>
-          <p className="mt-8 text-base md:text-lg text-text-secondary max-w-xl mx-auto leading-relaxed">
-            A strategist and executioner that turns your ambition into raw, daily action. No fluff. No excuses.
+
+          {/* Subtext */}
+          <p className="lp-subtext">
+            A strategist and executioner that converts your ambition into
+            raw, immutable daily action. No fluff. No excuses. No mercy.
           </p>
-          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={handleStart}
-              className="group relative inline-flex items-center gap-3 pl-7 pr-3 py-3 rounded-full bg-text-primary text-black font-medium text-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-            >
+
+          {/* CTAs */}
+          <div className="lp-cta-row">
+            <button onClick={handleStart} className="lp-cta-primary">
               Get started
-              <span className="size-8 grid place-items-center rounded-full bg-black/15 group-hover:translate-x-0.5 transition-transform">
-                <ArrowRight className="size-4" />
+              <span className="lp-cta-icon">
+                <ArrowRight size={15} />
               </span>
             </button>
-            <button className="px-6 py-3 rounded-full text-sm text-text-secondary hover:text-text-primary transition cursor-pointer">
-              Watch demo
-            </button>
+            <button className="lp-cta-ghost">Read the manifesto →</button>
+          </div>
+
+          {/* Status strip */}
+          <div className="lp-status-strip" style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease 0.5s" }}>
+            {STATUS_ITEMS.map(({ label }, i) => (
+              <div key={label} className="lp-status-item">
+                {i === 0 && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#4ade80", flexShrink: 0, display: "inline-block" }} />}
+                {label}
+              </div>
+            ))}
           </div>
         </div>
       </main>
 
-      <footer className="px-6 md:px-10 py-6 text-center text-xs text-text-tertiary">
-        FP · 2026
+      {/* ── Footer ── */}
+      <footer className="lp-footer">
+        <span>FP · 2026</span>
+        <span style={{ color: "var(--text-tertiary)", letterSpacing: "0.14em" }}>
+          v1.0.0-operator
+        </span>
       </footer>
     </div>
   );

@@ -1,128 +1,245 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Compass, Archive, PanelLeftClose, PanelLeft, Settings, Plus } from "lucide-react";
+import {
+  Compass, Archive, PanelLeftClose, PanelLeft,
+  Settings, Plus, Search, TrendingUp, Zap, Clock,
+} from "lucide-react";
 
 interface SidebarProps {
   onOpenVault: () => void;
 }
 
+/* Thread types with color-coded dots */
 const RECENT_THREADS = [
-  "Compress 90-day SaaS sprint",
-  "First-principles: portfolio site",
-  "Audit week 21 execution",
-  "Locality arbitrage scan · IN",
-  "Recovery sprint protocol",
-  "Onboarding recon — locked",
+  { label: "Compress 90-day SaaS sprint",    type: "execution" },
+  { label: "First-principles: portfolio site", type: "strategy"  },
+  { label: "Audit week 21 execution",          type: "audit"     },
+  { label: "Locality arbitrage scan · IN",     type: "research"  },
+  { label: "Recovery sprint protocol",         type: "execution" },
+  { label: "Onboarding recon — locked",        type: "locked"    },
 ];
+
+const THREAD_DOT: Record<string, string> = {
+  execution: "#4ade80",
+  strategy:  "#818cf8",
+  audit:     "#fb923c",
+  research:  "#38bdf8",
+  locked:    "#374151",
+};
 
 export function Sidebar({ onOpenVault }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
     <aside
-      className={`hidden lg:flex flex-col shrink-0 transition-[width] duration-500 ease-[var(--transition-spring)] border-r border-border bg-black ${
-        isOpen ? "w-[280px]" : "w-[64px]"
+      className={`hidden lg:flex flex-col shrink-0 transition-[width] duration-450 ease-[var(--transition-smooth)] border-r border-[var(--border-soft)] relative overflow-hidden ${
+        isOpen ? "w-[260px]" : "w-[60px]"
       }`}
+      style={{
+        background: "rgba(8,8,8,0.96)",
+        /* glass-style — sidebar is over pure black so blur is subtle */
+        backdropFilter: "blur(20px)",
+      }}
     >
-      {/* Sidebar Header */}
-      <div className="flex items-center justify-between h-14 px-3 border-b border-border">
+      {/* ── Gradient edge on right ── */}
+      <div
+        className="pointer-events-none absolute right-0 top-0 bottom-0 w-px"
+        style={{
+          background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, transparent)",
+        }}
+      />
+
+      {/* ── Header ── */}
+      <div
+        className="flex items-center justify-between h-14 px-3 shrink-0"
+        style={{ borderBottom: "1px solid var(--border-soft)" }}
+      >
         {isOpen && (
-          <div className="flex items-center gap-2.5 pl-2">
-            <div className="size-6 rounded-full bg-text-primary" />
-            <span className="font-display text-sm font-medium">FP</span>
+          <div className="flex items-center gap-2.5 pl-1 animate-slide-in-left">
+            {/* FP logo mark with online dot */}
+            <div className="relative">
+              <div
+                className="size-[22px] rounded-full"
+                style={{ background: "#e8e4de" }}
+              />
+              {/* Green online dot */}
+              <span
+                className="absolute -bottom-0.5 -right-0.5 size-2 rounded-full"
+                style={{ background: "#4ade80", border: "1.5px solid #080808" }}
+              />
+            </div>
+            <span className="font-display text-[13px] font-medium tracking-tight text-[var(--text-primary)]">
+              FP
+            </span>
+            <span
+              className="font-mono text-[8px] tracking-[0.22em] uppercase ml-0.5"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              OS
+            </span>
           </div>
         )}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="size-9 grid place-items-center rounded-lg hover:bg-white/5 text-text-secondary hover:text-text-primary transition cursor-pointer"
+          className="size-9 grid place-items-center rounded-lg cursor-pointer transition-all duration-200"
+          style={{ color: "var(--text-tertiary)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
+          }}
           aria-label="Toggle sidebar"
         >
           {isOpen ? <PanelLeftClose className="size-4" /> : <PanelLeft className="size-4" />}
         </button>
       </div>
 
-      {/* New Thread Button */}
-      <div className="p-3">
+      {/* ── New Thread ── */}
+      <div className="px-3 py-3 shrink-0">
         <button
-          className={`w-full flex items-center gap-3 px-3 h-10 rounded-xl border border-border bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/15 transition text-sm cursor-pointer ${
-            isOpen ? "" : "justify-center"
+          className={`group w-full flex items-center gap-2.5 h-9 rounded-xl transition-all duration-200 cursor-pointer text-sm ${
+            isOpen ? "px-3" : "justify-center"
           }`}
+          style={{
+            border: "1px solid var(--border-soft)",
+            background: "transparent",
+            color: "var(--text-secondary)",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border-mid)";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+            (e.currentTarget as HTMLElement).style.borderColor = "var(--border-soft)";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+          }}
         >
-          <Plus className="size-4 shrink-0" />
-          {isOpen && <span className="font-medium">New thread</span>}
+          <Plus className="size-3.5 shrink-0 transition-transform duration-300 group-hover:rotate-90" />
+          {isOpen && <span className="font-medium text-[13px]">New thread</span>}
         </button>
       </div>
 
-      {/* Navigation & Recent Threads */}
+      {/* ── Nav + Threads ── */}
       {isOpen ? (
-        <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-3">
-          <nav className="space-y-0.5 mb-6">
-            <SidebarNavButton icon={Search} label="Search" />
-            <SidebarNavButton icon={Compass} label="Trajectory" active={true} />
-            <SidebarNavButton
-              icon={Archive}
-              label="Vault"
-              hint="2×tap"
-              onClick={onOpenVault}
-            />
+        <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-3 space-y-5 min-h-0">
+          {/* Primary Nav */}
+          <nav className="space-y-0.5">
+            <NavButton icon={Search}    label="Search"     hint="⌘K" />
+            <NavButton icon={Compass}   label="Trajectory" active />
+            <NavButton icon={Archive}   label="Vault"      hint="2×" onClick={onOpenVault} />
+            <NavButton icon={TrendingUp} label="Progress" />
+            <NavButton icon={Zap}       label="Simulate"  />
           </nav>
-          
-          <div className="mb-6">
-            <div className="px-3 mb-2 text-[11px] text-text-tertiary font-mono tracking-wider">Recent</div>
+
+          {/* Recent Threads */}
+          <div>
+            <div
+              className="px-3 mb-1.5 flex items-center gap-2"
+              style={{ color: "var(--text-tertiary)" }}
+            >
+              <Clock className="size-3" />
+              <span className="font-mono text-[9px] tracking-[0.22em] uppercase">Recent</span>
+            </div>
             <div className="space-y-0.5">
-              {RECENT_THREADS.map((thread, index) => (
+              {RECENT_THREADS.map((thread, i) => (
                 <button
-                  key={thread}
-                  className="w-full text-left px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary hover:bg-white/[0.04] transition truncate cursor-pointer"
-                  style={{ opacity: 1 - index * 0.08 }}
+                  key={thread.label}
+                  className="w-full text-left flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] truncate cursor-pointer transition-all duration-150"
+                  style={{
+                    color: "var(--text-secondary)",
+                    opacity: Math.max(0.28, 1 - i * 0.11),
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+                    (e.currentTarget as HTMLElement).style.opacity = "1";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+                    (e.currentTarget as HTMLElement).style.opacity = String(Math.max(0.28, 1 - i * 0.11));
+                  }}
                 >
-                  {thread}
+                  {/* Color-coded type dot */}
+                  <span
+                    className="size-1.5 rounded-full shrink-0"
+                    style={{ background: THREAD_DOT[thread.type] ?? "#374151" }}
+                  />
+                  <span className="truncate flex-1">{thread.label}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center gap-2 pt-2">
-          <SidebarIconButton icon={Search} />
-          <SidebarIconButton icon={Compass} active={true} />
-          <SidebarIconButton icon={Archive} onClick={onOpenVault} />
+        /* Collapsed — icon-only column */
+        <div className="flex-1 flex flex-col items-center gap-1 pt-1 min-h-0">
+          <IconButton icon={Search}    />
+          <IconButton icon={Compass}   active />
+          <IconButton icon={Archive}   onClick={onOpenVault} />
+          <IconButton icon={TrendingUp} />
+          <IconButton icon={Zap}       />
         </div>
       )}
 
-      {/* Sidebar Footer / User Profile */}
-      <div className="border-t border-border p-3">
+      {/* ── User / Footer ── */}
+      <div
+        className="shrink-0 p-3"
+        style={{ borderTop: "1px solid var(--border-soft)" }}
+      >
         <button
-          onClick={onOpenVault}
-          className={`w-full flex items-center gap-3 px-3 h-10 rounded-lg hover:bg-white/[0.04] transition text-sm text-text-secondary hover:text-text-primary cursor-pointer ${
-            isOpen ? "" : "justify-center"
+          className={`w-full flex items-center gap-2.5 h-9 rounded-xl cursor-pointer transition-all duration-200 ${
+            isOpen ? "px-2.5" : "justify-center"
           }`}
+          style={{ color: "var(--text-secondary)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+            (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+          }}
         >
-          <div className="size-7 rounded-full bg-white/10 grid place-items-center text-xs font-medium">
+          {/* Avatar — gradient ring */}
+          <div
+            className="size-[26px] rounded-full grid place-items-center text-[11px] font-semibold shrink-0"
+            style={{
+              background: "linear-gradient(135deg, rgba(129,140,248,0.4), rgba(99,102,241,0.3))",
+              border: "1px solid rgba(129,140,248,0.25)",
+              color: "#c7d2fe",
+            }}
+          >
             U
           </div>
           {isOpen && (
-            <div className="flex-1 text-left">
-              <div className="text-xs font-medium text-text-primary">Operator</div>
-              <div className="text-[11px] text-text-tertiary">Free plan</div>
-            </div>
+            <>
+              <div className="flex-1 text-left min-w-0">
+                <div className="text-[12px] font-medium" style={{ color: "var(--text-primary)" }}>Operator</div>
+                <div className="font-mono text-[9px] tracking-widest" style={{ color: "var(--text-tertiary)" }}>
+                  Free plan
+                </div>
+              </div>
+              <Settings className="size-3.5 shrink-0 transition-transform duration-500 hover:rotate-45" />
+            </>
           )}
-          {isOpen && <Settings className="size-4 shrink-0" />}
         </button>
       </div>
     </aside>
   );
 }
 
-function SidebarNavButton({
-  icon: Icon,
-  label,
-  active,
-  hint,
-  onClick,
+/* ── Expanded nav item ── */
+function NavButton({
+  icon: Icon, label, active, hint, onClick,
 }: {
-  icon: any;
+  icon: React.ElementType;
   label: string;
   active?: boolean;
   hint?: string;
@@ -131,42 +248,71 @@ function SidebarNavButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 h-9 rounded-lg text-sm transition cursor-pointer ${
-        active
-          ? "bg-white/[0.06] text-text-primary"
-          : "text-text-secondary hover:text-text-primary hover:bg-white/[0.04]"
+      className={`w-full flex items-center gap-2.5 h-9 px-3 rounded-lg text-[13px] transition-all duration-150 cursor-pointer relative ${
+        active ? "nav-item-active" : ""
       }`}
+      style={
+        active
+          ? {
+              background: "rgba(255,255,255,0.06)",
+              color: "var(--text-primary)",
+              fontWeight: 500,
+            }
+          : { color: "var(--text-secondary)" }
+      }
+      onMouseEnter={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+          (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLElement).style.background = "transparent";
+          (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+        }
+      }}
     >
-      <Icon className="size-4 shrink-0" />
+      <Icon className="size-[15px] shrink-0" />
       <span className="flex-1 text-left">{label}</span>
       {hint && (
-        <span className="font-mono text-[9px] tracking-widest text-text-tertiary">
-          {hint}
-        </span>
+        <span className="kbd">{hint}</span>
       )}
     </button>
   );
 }
 
-function SidebarIconButton({
-  icon: Icon,
-  active,
-  onClick,
+/* ── Collapsed icon button ── */
+function IconButton({
+  icon: Icon, active, onClick,
 }: {
-  icon: any;
+  icon: React.ElementType;
   active?: boolean;
   onClick?: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`size-10 grid place-items-center rounded-lg transition cursor-pointer ${
+      className="size-10 grid place-items-center rounded-xl transition-all duration-150 cursor-pointer"
+      style={
         active
-          ? "bg-white/[0.06] text-text-primary"
-          : "text-text-secondary hover:text-text-primary hover:bg-white/[0.04]"
-      }`}
+          ? { background: "rgba(255,255,255,0.07)", color: "var(--text-primary)" }
+          : { color: "var(--text-tertiary)" }
+      }
+      onMouseEnter={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+          (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          (e.currentTarget as HTMLElement).style.background = "transparent";
+          (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
+        }
+      }}
     >
-      <Icon className="size-4" />
+      <Icon className="size-[15px]" />
     </button>
   );
 }
