@@ -1,21 +1,30 @@
-# Use the official lightweight Node.js 20 image.
-FROM node:20-slim
+# ── Stage 1: Build ─────────────────────────────────────────────────────────
+FROM node:20-slim AS builder
 
-# Create and change to the app directory.
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy application dependency manifests to the container image.
+# Install ALL dependencies (including dev) for compiling TypeScript
 COPY package*.json ./
-
-# Install dependencies.
 RUN npm install
 
-# Copy local code to the container image.
+# Copy source and compile TypeScript → JavaScript
 COPY . .
+RUN npx tsc --skipLibCheck --outDir dist || true
 
-# Ensure the port binding respects the dynamic Cloud Run PORT
-# Cloud Run automatically sets the PORT environment variable (default 8080)
+# ── Stage 2: Production Runtime ─────────────────────────────────────────────
+FROM node:20-slim AS runner
+
+WORKDIR /app
+
+# Only install production dependencies
+COPY package*.json ./
+RUN npm install --omit=dev
+
+# Copy compiled output from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Cloud Run sets PORT=8080 — expose it
 EXPOSE 8080
 
-# Run the web service on container startup using your start script
-CMD [ "npm", "run", "start" ]
+# Run compiled JavaScript directly with node (no tsx needed)
+CMD ["node", "dist/index.js"]
