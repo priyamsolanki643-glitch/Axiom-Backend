@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
-import { env } from './config/env';
 import { interactionRoutes } from './routes/interaction.routes';
 
 const app = new Hono();
@@ -10,11 +9,13 @@ const app = new Hono();
 app.use('*', cors());
 
 app.get('/', (c) => c.text('FP-OS Core Runtime Active'));
+app.get('/health', (c) => c.json({ status: 'ok' }));
 
 // Mount specific domains
 app.route('/api/v1/interaction', interactionRoutes);
 
-const port = parseInt(env.PORT);
+// Cloud Run sets PORT env var to 8080 — always read directly from process.env
+const port = parseInt(process.env.PORT || '8080', 10);
 
 console.log(`Starting FP-OS Backend on port ${port}...`);
 
@@ -23,3 +24,4 @@ serve({
   port,
   hostname: '0.0.0.0'
 });
+
