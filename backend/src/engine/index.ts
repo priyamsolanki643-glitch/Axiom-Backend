@@ -1,70 +1,33 @@
 /**
  * FP-OS :: MASTER ENGINE ORCHESTRATOR
  *
- * This is the single entry point for all FP reasoning.
- * It sequences all 12 layers in the correct order and assembles
- * the final UserRuntime object that powers every UI screen.
- *
- * Call sequence:
- * Layer 1 → Layer 2 → Layer 3 → [gate check] → Layer 4 → Layer 5
- * → Layer 6 → Layer 7 → Layer 8 → Layer 9 → [present to user]
- * → Layer 10 (lock) → Layer 11 (execute) → Layer 12 (accountability)
- *
- * External consumers (API routes, server actions) should import from
- * this file only — do not import individual layers directly.
+ * This is the entry point for all FP reasoning.
+ * It sequences and exposes the upgraded specialized domain engines:
+ * 1. Diagnostic Engine (Mode 1)
+ * 2. Tactical Architect (Mode 2)
+ * 3. Execution Operator (Mode 3)
  */
 
-// ── Layer imports ──────────────────────────────────────────────────────────
 import {
-  assembleContextMatrix,
-  buildSocioeconomicCluster,
-  parseSkillClaims,
-  assessCommunicationScore,
-  parseGoalVector,
-  detectEgoLeveragePoint,
-  scoreProcrastination,
-  validateIntakeCompleteness,
-  ONBOARDING_QUESTION_FLOW,
-  ProcrastinationSignals,
-  OnboardingQuestion,
-} from './layer1_intake';
+  runCircumstantialDiagnosis,
+  DiagnosticInput,
+  DiagnosticOutput,
+} from './diagnostic';
 
 import {
-  runCapabilityVectoring,
-} from './layer2_capability';
+  runTacticalArchitect,
+  ArchitectInput,
+  ArchitectOutput,
+} from './architect';
 
 import {
-  runIntelligenceMatrix,
-} from './layer0_intelligence';
-
-import {
-  runSurvivabilityAudit,
-  buildSurvivalModeResponse,
-  buildYellowBandConfig,
-} from './layer3_survivability';
-
-import {
-  runTrajectorySimulation,
-  filterEligiblePaths,
-} from './layer4_simulation';
-
-import {
-  runOpportunityMapping,
-} from './layer5_opportunities';
-
-import {
-  runFrictionProfiling,
-} from './layer6_friction';
-
-import {
-  calculateFinalProbability,
-  comparePathProbabilities,
-  ProbabilityInputVector,
-} from './layer7_probability';
+  processOperatorTaskUpdate,
+  processOperatorCritique,
+  TaskUpdateInput,
+} from './operator';
 
 import {
   assembleFinalPathPresentation,
-  evaluatePathGates,
 } from './layer8_paths';
 
 import {
@@ -77,7 +40,6 @@ import {
   lockStrategy,
   validateUnlockRequest,
   updateConsistencyScore,
-  assessStructuralPivot,
 } from './layer10_statelock';
 
 import {
@@ -87,8 +49,6 @@ import {
 
 import {
   runFailureDiagnostic,
-  detectDopamineLoop,
-  generateRealityCheck,
 } from './layer12_accountability';
 
 import {
@@ -100,7 +60,6 @@ import {
   runLegalAudit,
 } from './layer13_legalaudit';
 
-// ── Type imports ────────────────────────────────────────────────────────────
 import {
   UserRuntime,
   ContextMatrix,
@@ -115,54 +74,15 @@ import {
   WorkEnvironment,
   EgoLeveragePoint,
   WorkStylePreference,
+  TaskSprint,
 } from './types';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PUBLIC API TYPES
-// These are the input/output shapes that external code uses.
+// BACKWARD COMPATIBLE API ENVELOPE TYPES
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface OnboardingInput {
-  userId: string;
-  // Cluster A
-  geographyTier: GeographyTier;
-  country: string;
-  region: string;
-  liquidCapital: number;
-  monthlyBurnRate: number;
-  hasDebt: boolean;
-  debtMonthlyObligation: number;
-  familyDependencyScore: number;     // 0.0 = full earner for dependents, 1.0 = no dependents
-  // Cluster B
-  rawSkillStrings: string[];
-  hasVerifiableOutputMap: Record<string, boolean>;
-  positiveCommSignals: string[];
-  negativeCommSignals: string[];
-  // Cluster C
-  dailyUninterruptedHours: number;
-  deviceTier: DeviceTier;
-  internetStability: InternetStability;
-  workEnvironment: WorkEnvironment;
-  canWorkAtNight: boolean;
-  hasDedicatedWorkspace: boolean;
-  // Cluster D
-  procrastinationSignals: ProcrastinationSignals;
-  cognitiveEnduranceMinutes: number;
-  emotionalResilience: number;
-  baselineDiscipline: number;
-  preferredWorkStyle: WorkStylePreference;
-  riskTolerance: number;
-  // Cluster E
-  declaredGoal: string;
-  targetAmount: number;
-  currency: 'INR' | 'USD' | 'other';
-  timelineMonths: number;
-  sacrificesToleratedList: string[];
-  nonNegotiables: string[];
-  pathPreference: 'high_risk_upside' | 'safe_compounding' | 'undecided';
-  // Meta
-  onboardingText: string;            // Full raw conversation text
-  detectedFrictionSignalIds: string[]; // IDs from FRICTION_SIGNALS
+export interface OnboardingInput extends DiagnosticInput {
+  detectedFrictionSignalIds: string[];
 }
 
 export interface SimulationOutput {
@@ -170,17 +90,8 @@ export interface SimulationOutput {
   pathPresentation: ReturnType<typeof assembleFinalPathPresentation>;
   ambitionAssessment: ReturnType<typeof runAmbitionFilter>;
   socioEconomicGuardrail: ReturnType<typeof applySocioEconomicGuardrail>;
-  survivalModeResponse: ReturnType<typeof buildSurvivalModeResponse> | null;
+  survivalModeResponse: any | null;
   systemPrompt: string;
-}
-
-export interface TaskUpdateInput {
-  userId: string;
-  userRuntime: UserRuntime;
-  taskId: string;
-  outcome: 'completed' | 'failed' | 'partial';
-  failureExplanation?: string;   // Required if outcome is 'failed'
-  reportedEarnings?: number;
 }
 
 export interface UnlockRequestInput {
@@ -200,175 +111,53 @@ export interface CritiqueInput {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGINE FUNCTION 1: PROCESS ONBOARDING
-// Runs Layers 1–9 and returns the full simulation output.
+// ENGINE ENTRY 1: PROCESS ONBOARDING (Backwards Compatible Wrapper)
+// Runs Mode 1 (Diagnostic) and Mode 2 (Tactical Architect) in sequence.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function processOnboarding(input: OnboardingInput): Promise<SimulationOutput> {
-  // ── LAYER 1: Build Context Matrix ──────────────────────────────────────────
-  const skills = parseSkillClaims(input.rawSkillStrings, input.hasVerifiableOutputMap);
-  const communicationScore = assessCommunicationScore(input.positiveCommSignals, input.negativeCommSignals);
-  const procrastinationScore = scoreProcrastination(input.procrastinationSignals);
-  const egoLeveragePoint = detectEgoLeveragePoint(input.declaredGoal, input.onboardingText);
+  // 1. Run Diagnostic Engine
+  const diagnostic = runCircumstantialDiagnosis(input);
 
-  const socioeconomic = buildSocioeconomicCluster({
-    geographyTier: input.geographyTier,
-    country: input.country,
-    region: input.region,
-    liquidCapital: input.liquidCapital,
-    monthlyBurnRate: input.monthlyBurnRate,
-    hasDebt: input.hasDebt,
-    debtMonthlyObligation: input.debtMonthlyObligation,
-    familyDependencyScore: input.familyDependencyScore,
+  // 2. Run Tactical Architect
+  const architect = await runTacticalArchitect({
+    contextMatrix: diagnostic.contextMatrix,
+    capabilityVector: diagnostic.capabilityVector,
+    survivabilityAudit: diagnostic.survivabilityAudit,
+    frictionProfile: diagnostic.frictionProfile,
   });
 
-  const humanCapital = {
-    skills,
-    communicationScore,
-    technicalVelocity: skills.filter(s => s.category === 'technical').reduce((sum, s) => sum + s.verifiedLevel, 0) / Math.max(1, skills.filter(s => s.category === 'technical').length),
-    learningRate: input.baselineDiscipline * 0.6 + (1 - procrastinationScore) * 0.4,
-    networkQuality: 0.3,  // Default — refined by AI analysis of onboarding text
-    hasVerifiableWork: Object.values(input.hasVerifiableOutputMap).some(Boolean),
-    languageRegister: 'english' as const,
-  };
-
-  const infrastructure = {
-    dailyUninterruptedHours: input.dailyUninterruptedHours,
-    deviceTier: input.deviceTier,
-    internetStability: input.internetStability,
-    workEnvironment: input.workEnvironment,
-    canWorkAtNight: input.canWorkAtNight,
-    hasDedicatedWorkspace: input.hasDedicatedWorkspace,
-  };
-
-  const psychometric = {
-    procrastinationScore,
-    cognitiveEnduranceMinutes: input.cognitiveEnduranceMinutes,
-    emotionalResilience: input.emotionalResilience,
-    baselineDiscipline: input.baselineDiscipline,
-    egoLeveragePoint,
-    preferredWorkStyle: input.preferredWorkStyle,
-    riskTolerance: input.riskTolerance,
-    ambitionIndex: 0, // Calculated below
-    age: 25,
-  };
-
-  // Temporary V_c estimate for goal vector parsing (will be refined after Layer 2)
-  const tempCapabilityEstimate = skills.reduce((sum, s) => sum + s.verifiedLevel, 0) / Math.max(1, skills.length);
-
-  const goalVector = parseGoalVector({
-    declaredGoal: input.declaredGoal,
-    targetAmount: input.targetAmount,
-    currency: input.currency,
-    timelineMonths: input.timelineMonths,
-    sacrificesToleratedList: input.sacrificesToleratedList,
-    nonNegotiables: input.nonNegotiables,
-    pathPreference: input.pathPreference,
-    trueCapabilityScore: tempCapabilityEstimate,
-  });
-
-  const contextMatrix = assembleContextMatrix({
-    userId: input.userId,
-    socioeconomic,
-    humanCapital,
-    infrastructure,
-    psychometric: { ...psychometric, ambitionIndex: (goalVector as any).ambitionVelocity || 0 },
-    goalVector,
-    onboardingText: input.onboardingText,
-  });
-
-  // ── LAYER 2: Capability Vectoring ──────────────────────────────────────────
-  const capabilityVector = runCapabilityVectoring(contextMatrix);
-
-  // ── LAYER 3: Survivability Audit ───────────────────────────────────────────
-  const survivabilityAudit = runSurvivabilityAudit(contextMatrix);
-
-  // ── LAYER 0: Market Intelligence Matrix ────────────────────────────────────
-  const { intelligenceBrief, intelligenceReport } = await runIntelligenceMatrix(contextMatrix, capabilityVector);
-
-  // ── SURVIVAL MODE GATE ─────────────────────────────────────────────────────
-  let survivalModeResponse = null;
-  if (!survivabilityAudit.strategyGenerationUnlocked) {
-    survivalModeResponse = buildSurvivalModeResponse(contextMatrix);
-    // Relaxed: We no longer return early to block strategy selection.
-    // The user is allowed to proceed to choose their strategy, but their daily execution
-    // tasks will start with "Sprint 0: First-Rupee Velocity" to address immediate financial stress.
-  }
-
-  // ── LAYER 4: Stochastic Simulation ────────────────────────────────────────
-  const simulationResults = runTrajectorySimulation(contextMatrix, capabilityVector, survivabilityAudit, intelligenceReport);
-
-  // ── LAYER 5: Opportunity Mapping ───────────────────────────────────────────
-  const opportunityProfile = await runOpportunityMapping(contextMatrix, capabilityVector, survivabilityAudit);
-
-  // ── LAYER 6: Friction Profiling ────────────────────────────────────────────
-  const frictionProfile = runFrictionProfiling(contextMatrix, input.detectedFrictionSignalIds);
-
-  // ── LAYER 7: Probability Calculation ──────────────────────────────────────
-  const betaResult = simulationResults.find(r => r.pathTemplate.type === 'safe_compounding') ?? simulationResults[0];
-  const alphaResult = simulationResults.find(r => r.pathTemplate.type === 'high_risk_upside') ?? null;
-
-  const probabilityInputs: ProbabilityInputVector = {
-    trueCapabilityScore: capabilityVector.trueCapabilityScore,
-    runwayDays: survivabilityAudit.runwayDays,
-    frictionCoefficient: frictionProfile.frictionCoefficient,
-    pathMarketSaturationRisk: betaResult?.shockVulnerabilityScore ?? 0.3,
-    simulatedShockProbability: 0.25,
-    learningRate: contextMatrix.humanCapital.learningRate,
-    networkQuality: contextMatrix.humanCapital.networkQuality,
-    baselineDiscipline: contextMatrix.psychometric.baselineDiscipline,
-    riskTolerance: contextMatrix.psychometric.riskTolerance,
-    timelineMonths: contextMatrix.goalVector.timelineMonths,
-    hasVerifiableOutputs: contextMatrix.humanCapital.hasVerifiableWork,
-  };
-
-  const probabilityComparison = comparePathProbabilities(alphaResult, betaResult, probabilityInputs);
-
-  // ── LAYER 8: Path Presentation ─────────────────────────────────────────────
-  const pathPresentation = assembleFinalPathPresentation(
-    contextMatrix,
-    capabilityVector,
-    survivabilityAudit,
-    frictionProfile,
-    opportunityProfile,
-    simulationResults,
-    probabilityComparison,
-  );
-
-  // ── LAYER 9: Ambition Filter ───────────────────────────────────────────────
-  const ambitionAssessment = runAmbitionFilter(contextMatrix, capabilityVector);
-  const socioEconomicGuardrail = applySocioEconomicGuardrail(contextMatrix, capabilityVector, input.targetAmount);
-
-  // ── ASSEMBLE USER RUNTIME ──────────────────────────────────────────────────
+  // 3. Assemble UserRuntime
   const initialState = createInitialStrategyState();
   initialState.status = 'awaiting_selection';
 
-  const pathsForAudit = [
-    ...(pathPresentation.pathAlpha ? [pathPresentation.pathAlpha] : []),
-    pathPresentation.pathBeta,
+  const paths = [
+    ...(architect.pathPresentation.pathAlpha ? [architect.pathPresentation.pathAlpha] : []),
+    architect.pathPresentation.pathBeta,
   ];
-  const allOutputText = pathsForAudit.map(p => `${p.label} ${p.description} ${p.milestones.map(m => m.target).join(' ')}`).join(' ');
+
+  const allOutputText = paths.map(p => `${p.label} ${p.description} ${p.milestones.map(m => m.target).join(' ')}`).join(' ');
 
   const legalAuditReport = runLegalAudit(
-    contextMatrix,
-    pathsForAudit,
-    ambitionAssessment,
+    diagnostic.contextMatrix,
+    paths,
+    architect.ambitionAssessment,
     0,
     100,
     allOutputText
   );
 
   const userRuntime: UserRuntime = {
-    contextMatrix,
-    capabilityVector,
-    survivabilityAudit,
-    intelligenceBrief,
-    intelligenceReport,
-    opportunityProfile,
-    frictionProfile,
-    ambitionAssessment,
+    contextMatrix: diagnostic.contextMatrix,
+    capabilityVector: diagnostic.capabilityVector,
+    survivabilityAudit: diagnostic.survivabilityAudit,
+    intelligenceBrief: architect.intelligenceBrief,
+    intelligenceReport: architect.intelligenceReport,
+    opportunityProfile: architect.opportunityProfile,
+    frictionProfile: diagnostic.frictionProfile,
+    ambitionAssessment: architect.ambitionAssessment,
     skillGapAnalysis: null,
-    availablePaths: pathsForAudit,
+    availablePaths: paths,
     strategyState: initialState,
     currentTaskSprint: null,
     consistencyHistory: [],
@@ -377,23 +166,22 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
 
   return {
     userRuntime,
-    pathPresentation,
-    ambitionAssessment,
-    socioEconomicGuardrail,
-    survivalModeResponse,
+    pathPresentation: architect.pathPresentation,
+    ambitionAssessment: architect.ambitionAssessment,
+    socioEconomicGuardrail: architect.socioEconomicGuardrail,
+    survivalModeResponse: diagnostic.survivabilityAudit.runwayBand === 'red' ? diagnostic.survivabilityAudit : null,
     systemPrompt: buildFullSystemPrompt('simulation', userRuntime),
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGINE FUNCTION 2: LOCK TRAJECTORY
-// Layer 10: Locks the selected path and transitions to execution mode.
+// ENGINE ENTRY 2: LOCK TRAJECTORY
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function transitionToExecution(
   runtime: UserRuntime,
   lockedPathId: string,
-): Promise<{ updatedRuntime: UserRuntime; systemPrompt: string; day1TaskSprint: ReturnType<typeof generateDailyTaskSprint> extends Promise<infer T> ? T : never }> {
+): Promise<{ updatedRuntime: UserRuntime; systemPrompt: string; day1TaskSprint: TaskSprint }> {
   const selectedPath = runtime.availablePaths.find(p => p.pathId === lockedPathId);
   if (!selectedPath) {
     throw new Error(`Path '${lockedPathId}' is not available in this runtime.`);
@@ -435,8 +223,7 @@ export async function transitionToExecution(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGINE FUNCTION 3: PROCESS TASK UPDATE
-// Layer 11 + 12: Handles task completion or failure.
+// ENGINE ENTRY 3: PROCESS TASK UPDATE (Execution Operator wrapper)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function processTaskUpdate(
@@ -448,195 +235,44 @@ export async function processTaskUpdate(
   updatedRuntime: UserRuntime;
   consistencyEvent: ConsistencyEvent;
   failureDiagnostic: ReturnType<typeof runFailureDiagnostic> | null;
-  nextDayTaskSprint: ReturnType<typeof generateDailyTaskSprint> extends Promise<infer T> ? T | null : never;
+  nextDayTaskSprint: TaskSprint | null;
   milestoneGateResult: ReturnType<typeof checkMilestoneGate> | null;
   systemPrompt: string;
 }> {
-  const { userRuntime, outcome, failureExplanation, reportedEarnings } = input;
-  const currentState = userRuntime.strategyState;
-
-  // Update consistency score
-  const scoreEvent = outcome === 'completed' ? 'task_completed'
-    : outcome === 'partial' ? 'task_partial'
-    : 'task_failed';
-
-  const { newScore, delta, message } = updateConsistencyScore(currentState.consistencyScore, scoreEvent);
-
-  const consistencyEvent: ConsistencyEvent = {
-    date: new Date().toISOString(),
-    delta,
-    reason: message,
-    newScore,
-    streak: currentState.currentStreak || 0,
-  };
-
-  // Run failure diagnostic if task was failed
-  let failureDiagnostic = null;
-  if (outcome === 'failed' && failureExplanation) {
-    failureDiagnostic = runFailureDiagnostic(
-      failureExplanation,
-      userRuntime.contextMatrix,
-      userRuntime.frictionProfile,
-      currentState,
-      0,
-      1,
-    );
-  }
-
-  // Advance day counter
-  const nextDayNumber = currentState.currentDayNumber + 1;
-  const updatedState: StrategyState = {
-    ...currentState,
-    consistencyScore: newScore,
-    currentDayNumber: nextDayNumber,
-  };
-
-  // Check milestone gate
-  let milestoneGateResult = null;
-  if (currentState.lockedPath && reportedEarnings !== undefined) {
-    milestoneGateResult = checkMilestoneGate(
-      currentState.currentDayNumber,
-      currentState.lockedPath,
-      reportedEarnings,
-    );
-  }
-
-  // Generate next day's task sprint (unless strategy is being reset)
-  let nextDayTaskSprint = null;
-  if (nextDayNumber <= currentState.totalTargetDays) {
-    nextDayTaskSprint = await generateDailyTaskSprint(
-      nextDayNumber,
-      matrix,
-      capabilityVector,
-      frictionProfile,
-      updatedState,
-    );
-  }
-
-  const history = [...userRuntime.consistencyHistory, consistencyEvent];
-  let consecutiveFailures = 0;
-  for (let i = history.length - 1; i >= 0; i--) {
-    if (history[i].delta < 0) {
-      consecutiveFailures++;
-    } else {
-      break;
-    }
-  }
-
-  const taskOutputText = nextDayTaskSprint
-    ? nextDayTaskSprint.tasks.map((t: any) => `${t.title}: ${t.description}`).join(' ')
-    : '';
-
-  const legalAuditReport = runLegalAudit(
-    matrix,
-    userRuntime.availablePaths,
-    userRuntime.ambitionAssessment,
-    consecutiveFailures,
-    updatedState.consistencyScore,
-    taskOutputText
-  );
-
-  const updatedRuntime: UserRuntime = {
-    ...userRuntime,
-    strategyState: updatedState,
-    currentTaskSprint: nextDayTaskSprint,
-    consistencyHistory: history,
-    legalAuditReport,
-  };
-
+  const result = await processOperatorTaskUpdate(input, matrix, capabilityVector, frictionProfile);
   return {
-    updatedRuntime,
-    consistencyEvent,
-    failureDiagnostic,
-    nextDayTaskSprint,
-    milestoneGateResult,
-    systemPrompt: buildFullSystemPrompt('execution', updatedRuntime),
+    updatedRuntime: result.updatedRuntime,
+    consistencyEvent: result.consistencyEvent,
+    failureDiagnostic: result.failureDiagnostic,
+    nextDayTaskSprint: result.nextDayTaskSprint,
+    milestoneGateResult: result.milestoneGateResult,
+    systemPrompt: result.systemPrompt,
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGINE FUNCTION 4: PROCESS CRITIQUE MESSAGE
-// Layer 12: Full accountability conversation processing.
+// ENGINE ENTRY 4: PROCESS CRITIQUE MESSAGE (Critique wrapper)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function processCritiqueMessage(input: CritiqueInput): {
   responseType: string;
-  engineResponse: string | null;  // null = let the AI generate freely with the system prompt
+  engineResponse: string | null;
   systemPrompt: string;
   consistencyDelta: number;
   dopamineLoopDetected: boolean;
 } {
-  const { userRuntime, userMessage, tasksCompletedToDate, tasksAttemptedToDate, consecutiveFailureCount } = input;
-
-  // Step 1: Check for dopamine loop
-  const dopamineCheck = detectDopamineLoop(userMessage);
-
-  if (dopamineCheck.isDopamineLoop && dopamineCheck.confidence > 0.5) {
-    return {
-      responseType: 'dopamine_loop_interrupt',
-      engineResponse: dopamineCheck.response,
-      systemPrompt: buildFullSystemPrompt('critique', userRuntime),
-      consistencyDelta: 0,
-      dopamineLoopDetected: true,
-    };
-  }
-
-  // Step 2: Check for unlock attempt disguised as a message
-  const unlockValidation = validateUnlockRequest(
-    { reason: userMessage, requestedAt: new Date().toISOString() },
-    userRuntime.strategyState,
-  );
-
-  if (!unlockValidation.approved && userRuntime.strategyState.isLocked) {
-    // Check if the message looks like an unlock attempt
-    const looksLikeUnlockAttempt = userMessage.toLowerCase().includes('want to change')
-      || userMessage.toLowerCase().includes('different path')
-      || userMessage.toLowerCase().includes('not working')
-      || userMessage.toLowerCase().includes('try something else');
-
-    if (looksLikeUnlockAttempt) {
-      return {
-        responseType: 'state_lock_enforcement',
-        engineResponse: unlockValidation.systemResponse,
-        systemPrompt: buildFullSystemPrompt('critique', userRuntime),
-        consistencyDelta: 0,
-        dopamineLoopDetected: false,
-      };
-    }
-  }
-
-  // Step 3: Check for reality check trigger (sustained failure pattern)
-  if (consecutiveFailureCount >= 2) {
-    const realityCheck = generateRealityCheck(
-      consecutiveFailureCount,
-      userRuntime.strategyState.consistencyScore,
-      userRuntime.contextMatrix.psychometric.egoLeveragePoint,
-    );
-
-    if (consecutiveFailureCount >= 3) {
-      return {
-        responseType: 'reality_check',
-        engineResponse: realityCheck,
-        systemPrompt: buildFullSystemPrompt('critique', userRuntime),
-        consistencyDelta: 0,
-        dopamineLoopDetected: false,
-      };
-    }
-  }
-
-  // Step 4: Pass to AI with full system prompt (AI generates the specific response)
-  return {
-    responseType: 'ai_generated',
-    engineResponse: null,  // AI generates with system prompt context
-    systemPrompt: buildFullSystemPrompt('critique', userRuntime),
-    consistencyDelta: 0,
-    dopamineLoopDetected: false,
-  };
+  return processOperatorCritique({
+    userId: input.userId,
+    userRuntime: input.userRuntime,
+    userMessage: input.userMessage,
+    tasksCompletedToDate: input.tasksCompletedToDate,
+    tasksAttemptedToDate: input.tasksAttemptedToDate,
+    consecutiveFailureCount: input.consecutiveFailureCount,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGINE FUNCTION 5: PROCESS UNLOCK REQUEST
-// Layer 10: Validates and processes a strategy change request.
+// ENGINE ENTRY 5: PROCESS UNLOCK REQUEST
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function processUnlockRequest(input: UnlockRequestInput): {
@@ -652,7 +288,6 @@ export function processUnlockRequest(input: UnlockRequestInput): {
   let updatedState = input.userRuntime.strategyState;
 
   if (validationResult.approved) {
-    // Apply the state transition
     updatedState = {
       ...updatedState,
       status: validationResult.nextState,
@@ -681,9 +316,10 @@ export function processUnlockRequest(input: UnlockRequestInput): {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RE-EXPORTS: Everything external code needs
-// ─────────────────────────────────────────────────────────────────────────────
+// ── EXPORTS FOR ENDPOINTS ───────────────────────────────────────────────────
+export { runCircumstantialDiagnosis } from './diagnostic';
+export { runTacticalArchitect } from './architect';
+export { processOperatorTaskUpdate, processOperatorCritique } from './operator';
 
 export {
   // Layer 1
@@ -728,6 +364,7 @@ export type {
   StrategyState,
   TrajectoryPath,
   ConsistencyEvent,
+  TaskSprint,
 } from './types';
 
 export { ENGINE_AXIOMS } from './types';

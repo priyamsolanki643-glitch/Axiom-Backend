@@ -1,7 +1,15 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
-import { processOnboarding, processCritiqueMessage, processTaskUpdate } from '../engine/index';
+import {
+  processOnboarding,
+  processCritiqueMessage,
+  processTaskUpdate,
+  runCircumstantialDiagnosis,
+  runTacticalArchitect,
+  processOperatorTaskUpdate,
+  processOperatorCritique
+} from '../engine/index';
 import { updateConsistencyScore } from '../engine/layer10_statelock';
 import { LLMService } from '../services/llm.service';
 import { DbService } from '../services/db.service';
@@ -441,4 +449,66 @@ interactionRoutes.get('/rival-index', async (c) => {
       category: activeMission.missionName
     }
   });
+});
+
+// Mode 1: Material Circumstances & Calibration Diagnosis
+interactionRoutes.post('/diagnostic', async (c) => {
+  try {
+    const input = await c.req.json();
+    const result = runCircumstantialDiagnosis(input);
+    return c.json({ status: 'success', data: result });
+  } catch (error: any) {
+    console.error('Diagnostic API Error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Mode 2: Tactical Architect Simulation & Opportunities Builder
+interactionRoutes.post('/architect', async (c) => {
+  try {
+    const input = await c.req.json();
+    const result = await runTacticalArchitect(input);
+    return c.json({ status: 'success', data: result });
+  } catch (error: any) {
+    console.error('Tactical Architect API Error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Mode 3: Execution Operator Task Logging (Adaptive + Self-Correcting Recalibration Loop)
+interactionRoutes.post('/operator/task', async (c) => {
+  try {
+    const { input: taskInput, matrix, capabilityVector, frictionProfile } = await c.req.json();
+    const result = await processOperatorTaskUpdate(taskInput, matrix, capabilityVector, frictionProfile);
+    
+    // Save state back to DB if mission is active
+    const activeMission = await DbService.getActiveMission(taskInput.userId);
+    if (activeMission) {
+      const updatedMission = {
+        ...activeMission,
+        consistencyScore: result.updatedRuntime.strategyState.consistencyScore,
+        streakDays: result.updatedRuntime.strategyState.currentStreak,
+        dayNumber: result.updatedRuntime.strategyState.currentDayNumber
+      };
+      await DbService.saveMission(updatedMission);
+      await DbService.addConsistencyLog(taskInput.userId, updatedMission.consistencyScore);
+    }
+    
+    return c.json({ status: 'success', data: result });
+  } catch (error: any) {
+    console.error('Execution Operator Task Update API Error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Mode 3: Execution Operator Critique Terminal (Dopamine & State Lock Audit checks)
+interactionRoutes.post('/operator/critique', async (c) => {
+  try {
+    const input = await c.req.json();
+    const result = processOperatorCritique(input);
+    return c.json({ status: 'success', data: result });
+  } catch (error: any) {
+    console.error('Execution Operator Critique API Error:', error);
+    return c.json({ error: error.message }, 500);
+  }
 });

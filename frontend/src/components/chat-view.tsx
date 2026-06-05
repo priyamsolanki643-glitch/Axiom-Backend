@@ -332,10 +332,10 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
               
               {/* Subtitle */}
               <p 
-                className="reveal-chat-item text-[17px] text-[#666666] text-center font-sans mb-14"
+                className="reveal-chat-item text-[17.5px] text-center font-sans mb-14"
                 style={{ animationDelay: "150ms" }}
               >
-                What are we executing today?
+                <span className="shimmer-text font-medium">Start executing.</span>
               </p>
 
               {/* Suggestions grid */}
