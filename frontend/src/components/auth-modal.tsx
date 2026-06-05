@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "../utils/supabase/client";
 import { X, ArrowRight, Mail, Smartphone, Fingerprint, KeyRound, Loader2 } from "lucide-react";
 
 interface AuthModalProps {
@@ -36,23 +37,37 @@ export function AuthModal({ onClose, onSuccess }: AuthModalProps) {
     setIsLoading(true);
     setError(null);
     
-    // Simulate API call to send OTP
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: identifier,
+      });
+      if (error) throw error;
+
       setIsLoading(false);
       setStep("otp");
-      // Focus first OTP input
       setTimeout(() => otpRefs.current[0]?.focus(), 50);
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || "Failed to send OTP.");
+      setIsLoading(false);
+    }
   };
 
-  const handleOAuthLogin = () => {
+  const handleOAuthLogin = async (provider: 'google' | 'github') => {
     setIsLoading(true);
     setError(null);
-    // Simulate OAuth redirect and token generation
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+      if (error) throw error;
+      // It will redirect the page, so no need to stop loading or call onSuccess here.
+    } catch (err: any) {
+      setError(err.message || "Failed to authenticate.");
       setIsLoading(false);
-      onSuccess();
-    }, 1500);
+    }
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -64,12 +79,10 @@ export function AuthModal({ onClose, onSuccess }: AuthModalProps) {
     setOtp(newOtp);
     setError(null);
 
-    // Auto focus next
     if (value && index < 5) {
       otpRefs.current[index + 1]?.focus();
     }
     
-    // Auto submit if 6th digit entered
     if (value && index === 5) {
       verifyOtp(newOtp.join(""));
     }
@@ -85,17 +98,22 @@ export function AuthModal({ onClose, onSuccess }: AuthModalProps) {
     setIsLoading(true);
     setError(null);
     
-    // Simulate backend verification
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: identifier,
+        token: code,
+        type: 'email',
+      });
+      if (error) throw error;
+      
       setIsLoading(false);
-      if (code === "123456") {
-        onSuccess();
-      } else {
-        setError("Invalid execution code. Attempts logged.");
-        setOtp(["", "", "", "", "", ""]);
-        otpRefs.current[0]?.focus();
-      }
-    }, 1200);
+      onSuccess();
+    } catch (err: any) {
+      setError(err.message || "Invalid execution code.");
+      setOtp(["", "", "", "", "", ""]);
+      otpRefs.current[0]?.focus();
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -181,7 +199,7 @@ export function AuthModal({ onClose, onSuccess }: AuthModalProps) {
 
               <div className="flex flex-col gap-3">
                 <button 
-                  onClick={handleOAuthLogin}
+                  onClick={() => handleOAuthLogin('github')}
                   disabled={isLoading}
                   className="flex items-center justify-center gap-3 w-full bg-transparent border border-[#27272a] hover:border-white/40 hover:bg-white/5 text-white font-medium py-3 rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -193,7 +211,7 @@ export function AuthModal({ onClose, onSuccess }: AuthModalProps) {
                   Continue with GitHub
                 </button>
                 <button 
-                  onClick={handleOAuthLogin}
+                  onClick={() => handleOAuthLogin('google')}
                   disabled={isLoading}
                   className="flex items-center justify-center gap-3 w-full bg-transparent border border-[#27272a] hover:border-white/40 hover:bg-white/5 text-white font-medium py-3 rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >

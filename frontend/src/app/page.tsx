@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/utils/supabase/client";
 import { LandingPage } from "@/components/landing-page";
 import { Sidebar } from "@/components/sidebar";
 import { ChatView } from "@/components/chat-view";
@@ -27,7 +28,30 @@ export default function EntryPoint() {
         console.error("Failed checking active mission status:", err);
       }
     };
+    
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setIsLocked(true);
+      }
+      
+      const { data: authListener } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          if (session) {
+            setIsLocked(true);
+          } else {
+            setIsLocked(false);
+          }
+        }
+      );
+      
+      return () => {
+        authListener.subscription.unsubscribe();
+      };
+    };
+
     checkActiveMission();
+    checkSession();
   }, []);
 
   useEffect(() => {
@@ -60,7 +84,10 @@ export default function EntryPoint() {
         isOpen={isSidebarOpen} 
         setIsOpen={setIsSidebarOpen} 
         onOpenVault={() => setIsVaultOpen(true)} 
-        onSignOut={() => setIsLocked(false)}
+        onSignOut={async () => {
+          await supabase.auth.signOut();
+          setIsLocked(false);
+        }}
       />
       
       <ChatView
