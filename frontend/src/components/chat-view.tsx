@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Menu, PenLine, Ellipsis, ArrowUp, Mic, Paperclip,
-  Calendar, TrendingUp, Zap,
-} from "lucide-react";
+import { ArrowUp, Paperclip, Check } from "lucide-react";
 
 interface ChatViewProps {
   onOpenSidebar: () => void;
@@ -17,35 +14,43 @@ interface Message {
   text: string;
 }
 
-const CHAT_SUGGESTIONS = [
-  { emoji: "🗺️", label: "Map a 90-day execution sprint" },
-  { emoji: "🔍", label: "Audit my last week of work" },
-  { emoji: "⚡", label: "First-principles my biggest goal" },
-  { emoji: "📍", label: "Find arbitrage in my locality" },
+const SUGGESTION_CARDS = [
+  { label: "PLAN", title: "Map my next 7 days" },
+  { label: "AUDIT", title: "Run the brutal mirror on me" },
+  { label: "MARKET", title: "Where is my opportunity window?" },
+  { label: "WRITE", title: "Draft a cold email that actually lands" },
 ];
-
-const STAT_CARDS = [
-  { icon: Calendar,    label: "Sprint Day",   value: "14",  sub: "of 90",         color: "#818cf8" },
-  { icon: TrendingUp,  label: "Consistency",  value: "73%", sub: "↑ vs last week", color: "#4ade80" },
-  { icon: Zap,         label: "Streak",       value: "5d",  sub: "locked in",      color: "#fb923c" },
-];
-
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 5)  return "Good night.";
-  if (h < 12) return "Good morning.";
-  if (h < 17) return "Good afternoon.";
-  if (h < 21) return "Good evening.";
-  return "Good night.";
-}
 
 export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
   const [messages, setMessages]     = useState<Message[]>([]);
   const [input, setInput]           = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const [inputFocused, setInputFocused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
+
+  // Global double tap listener for Vault
+  useEffect(() => {
+    let lastTap = 0;
+    const handleDoubleTap = (e: MouseEvent | TouchEvent) => {
+      // Don't trigger if typing in an input
+      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'TEXTAREA') return;
+      
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTap;
+      if (tapLength < 500 && tapLength > 0) {
+        onOpenVault();
+        e.preventDefault();
+      }
+      lastTap = currentTime;
+    };
+
+    window.addEventListener("touchend", handleDoubleTap);
+    window.addEventListener("click", handleDoubleTap);
+    return () => {
+      window.removeEventListener("touchend", handleDoubleTap);
+      window.removeEventListener("click", handleDoubleTap);
+    };
+  }, [onOpenVault]);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
@@ -84,15 +89,13 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         catch { reply = "Backend Error: " + data.error; }
       } else if (data?.data?.ai_response?.response_text) {
         reply = data.data.ai_response.response_text;
-      } else if (data?.data?.engine_result?.data?.systemPrompt) {
-        reply = "Prompt generated: " + data.data.engine_result.data.systemPrompt.substring(0, 100) + "…";
       }
 
       setMessages((prev) => [...prev, { id: String(Date.now()), role: "fp", text: reply }]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: String(Date.now()), role: "fp", text: "Connection to FP-OS core failed. Ensure backend is running on port 8000." },
+        { id: String(Date.now()), role: "fp", text: "Connection failed. Backend might be offline." },
       ]);
     } finally {
       setIsThinking(false);
@@ -104,340 +107,156 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
   return (
     <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden" style={{ background: "#000" }}>
-      {/* Very subtle top gradient */}
-      <div
-        className="pointer-events-none absolute top-0 left-0 right-0 h-24 z-0"
-        style={{ background: "linear-gradient(to bottom, rgba(129,140,248,0.025), transparent)" }}
-      />
 
-      {/* ── Header ── */}
-      <header
-        className="relative z-10 flex items-center justify-between gap-2 px-3 md:px-5 h-14 shrink-0"
-        style={{ borderBottom: "1px solid var(--border-soft)", background: "rgba(0,0,0,0.6)", backdropFilter: "blur(20px)" }}
-      >
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={onOpenSidebar}
-            className="lg:hidden size-9 grid place-items-center rounded-full cursor-pointer"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            <Menu className="size-[18px]" />
-          </button>
-
-          {/* Model selector */}
-          <button
-            className="flex items-center gap-1.5 px-2.5 h-8 rounded-full cursor-pointer transition-all duration-150 group"
-            style={{ color: "var(--text-secondary)" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-            }}
-          >
-            <span className="font-display text-[16px] font-medium" style={{ color: "var(--text-primary)" }}>FP</span>
-            <span className="font-display text-[16px]">Flash</span>
-            <svg className="size-3.5 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
+      {/* ── Top Header ── */}
+      <header className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-20">
+        <div className="flex-1" />
+        
+        {/* Center Pill HUD */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#27272a] bg-[#09090b]">
+          <div className="size-1.5 rounded-full bg-white" />
+          <span className="text-[11px] font-medium text-white">JEE 2025 — week plan</span>
+          <span className="text-[10px] text-[#52525b] mx-1">|</span>
+          <span className="text-[10px] font-mono tracking-widest text-[#52525b]">LIVE</span>
         </div>
 
-        <div className="flex items-center gap-0.5">
-          <HeaderIconBtn onClick={onOpenVault} label="New chat">
-            <PenLine className="size-[17px]" />
-          </HeaderIconBtn>
-          <HeaderIconBtn label="Options">
-            <Ellipsis className="size-[18px]" />
-          </HeaderIconBtn>
+        {/* Right Vault Button */}
+        <div className="flex-1 flex justify-end">
+          <button 
+            onClick={onOpenVault}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#27272a] bg-[#09090b] hover:bg-[#18181b] transition-colors"
+          >
+            <div className="size-[14px] border border-[#52525b] rounded-[3px] grid place-items-center">
+              <span className="text-[8px] text-[#a1a1aa]">⌘</span>
+            </div>
+            <span className="text-[12px] font-medium text-white">Vault</span>
+            <span className="text-[10px] text-[#52525b] font-mono ml-1">v</span>
+          </button>
         </div>
       </header>
 
-      {/* ── Messages ── */}
-      <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto no-scrollbar px-4 md:px-8">
-        <div className="max-w-2xl mx-auto py-6">
+      {/* ── Messages / Empty State Area ── */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar relative z-10 pt-16">
+        <div className="max-w-[760px] mx-auto px-4 md:px-8 h-full flex flex-col">
 
-          {/* Empty state */}
-          {isInitial && (
-            <div className="pt-14 md:pt-20 space-y-8 animate-fade-up">
-              {/* Greeting */}
-              <div>
-                <h2
-                  className="font-display font-medium tracking-tight leading-[1.06]"
-                  style={{ fontSize: "clamp(2.5rem,7vw,4rem)" }}
-                >
-                  <span className="shimmer-text">{getGreeting()}</span>
-                </h2>
-                <p className="mt-2.5 text-[16px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  What are we executing today?
-                </p>
+          {isInitial ? (
+            // Empty State
+            <div className="flex-1 flex flex-col items-center justify-center -mt-16">
+              
+              <div className="text-[#52525b] font-mono text-[10px] tracking-[0.2em] mb-8">
+                — TODAY —
               </div>
+              
+              <h1 className="text-[4rem] text-white tracking-tight mb-4 text-center leading-none">
+                What are we <span className="font-serif italic text-white pr-2">shipping?</span>
+              </h1>
+              
+              <p className="text-[#a1a1aa] text-[15px] mb-12">
+                Ask anything. Or <span className="underline decoration-[#52525b] underline-offset-4 cursor-pointer hover:text-white" onClick={onOpenVault}>double-tap anywhere</span> to open the Vault.
+              </p>
 
-              {/* Stat mini-cards */}
-              <div className="grid grid-cols-3 gap-2.5">
-                {STAT_CARDS.map(({ icon: Icon, label, value, sub, color }, i) => (
-                  <div key={label} className={`stat-card animate-fade-up stagger-${i + 1}`}>
-                    <Icon className="size-4 mb-2.5" style={{ color }} />
-                    <div className="font-mono text-[20px] font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
-                      {value}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-[640px]">
+                {SUGGESTION_CARDS.map((card, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSend(card.title)}
+                    className="flex flex-col text-left p-5 rounded-2xl border border-[#18181b] bg-[#09090b] hover:border-[#27272a] transition-all group"
+                  >
+                    <div className="text-[#52525b] font-mono text-[9px] tracking-widest uppercase mb-3 flex justify-between w-full">
+                      {card.label}
                     </div>
-                    <div className="font-mono text-[9px] tracking-[0.18em] uppercase mt-1" style={{ color: "var(--text-tertiary)" }}>
-                      {label}
+                    <div className="text-[14px] text-white flex justify-between items-center w-full">
+                      {card.title}
+                      <ArrowUp className="size-3 text-[#52525b] rotate-45 group-hover:text-white transition-colors" />
                     </div>
-                    <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>{sub}</div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
-          )}
-
-          {/* Messages */}
-          <div className={`space-y-5 ${isInitial ? "mt-8" : "pt-2"}`}>
-            {messages.map((msg) =>
-              msg.role === "user"
-                ? <UserBubble key={msg.id} text={msg.text} />
-                : <FPMessage  key={msg.id} text={msg.text} />
-            )}
-
-            {/* Thinking */}
-            {isThinking && <ThinkingIndicator />}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Input ── */}
-      <div className="relative z-10 shrink-0 px-4 md:px-8 pb-5 pt-3">
-        <div className="max-w-2xl mx-auto space-y-2.5">
-
-          {/* Suggestion chips */}
-          {isInitial && (
-            <div className="flex flex-wrap gap-2">
-              {CHAT_SUGGESTIONS.map(({ emoji, label }, i) => (
-                <button
-                  key={label}
-                  onClick={() => handleSend(label)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-[13px] cursor-pointer transition-all duration-200 animate-fade-up stagger-${i + 1}`}
-                  style={{
-                    border: "1px solid var(--border-soft)",
-                    background: "rgba(255,255,255,0.02)",
-                    color: "var(--text-secondary)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.055)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border-mid)";
-                    (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--border-soft)";
-                    (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-                  }}
-                >
-                  <span>{emoji}</span>
-                  {label}
-                </button>
+          ) : (
+            // Messages list
+            <div className="py-8 space-y-8 flex-1">
+              {messages.map((msg) => (
+                <div key={msg.id} className={msg.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                  <div className={`max-w-[85%] text-[15px] leading-relaxed ${
+                    msg.role === "user" 
+                      ? "bg-[#18181b] text-white px-5 py-3 rounded-2xl rounded-tr-sm" 
+                      : "text-[#e4e4e7] whitespace-pre-wrap px-2"
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
               ))}
+              {isThinking && (
+                <div className="flex justify-start px-2">
+                  <div className="text-[#a1a1aa] text-[15px] animate-pulse">Thinking...</div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Input box */}
+        </div>
+      </div>
+
+      {/* ── Input Box Area ── */}
+      <div className="shrink-0 px-4 md:px-8 pb-8 pt-2 relative z-20">
+        <div className="max-w-[760px] mx-auto">
+          
           <form
             onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-            className="relative rounded-[26px] input-focus-ring transition-all duration-200"
-            style={{
-              background: "rgba(255,255,255,0.04)",
-              border: inputFocused ? "1px solid hsla(243,80%,65%,0.3)" : "1px solid var(--border-soft)",
-              boxShadow: inputFocused ? "0 0 0 3px hsla(243,80%,65%,0.07), 0 0 20px hsla(243,80%,65%,0.05)" : "none",
-            }}
+            className="flex items-center gap-3 p-2 rounded-full border border-[#18181b] bg-[#09090b] focus-within:border-[#27272a] transition-colors"
           >
+            <button type="button" className="p-2 ml-1 text-[#52525b] hover:text-white rounded-full transition-colors">
+              <Paperclip className="size-[18px]" />
+            </button>
+
             <textarea
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onFocus={() => setInputFocused(true)}
-              onBlur={() => setInputFocused(false)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleSend();
                 }
               }}
-              placeholder="Ask FP"
+              placeholder="Ask anything. Shift + Enter for newline."
               rows={1}
-              className="w-full bg-transparent outline-none resize-none px-5 pt-[14px] pb-1 text-[15px] leading-relaxed no-scrollbar"
-              style={{
-                color: "var(--text-primary)",
-                maxHeight: "200px",
-                overflowY: "auto",
-              }}
+              className="flex-1 bg-transparent outline-none resize-none text-[15px] text-white placeholder:text-[#52525b] py-3 no-scrollbar"
+              style={{ maxHeight: 200 }}
             />
 
-            <div className="flex items-center justify-between px-2 pb-2">
-              {/* Left actions */}
-              <button
-                type="button"
-                className="size-9 grid place-items-center rounded-full cursor-pointer transition-colors duration-150"
-                style={{ color: "var(--text-tertiary)" }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
-                  (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
-                  (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
-                }}
-                aria-label="Attach"
-              >
-                <Paperclip className="size-[17px]" />
-              </button>
-
-              {/* Right: mic or send */}
+            <div className="flex items-center gap-3 mr-1">
               {input.trim() ? (
                 <button
                   type="submit"
                   disabled={isThinking}
-                  className="size-9 grid place-items-center rounded-full cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
-                  style={{
-                    background: "var(--text-primary)",
-                    color: "#000",
-                    boxShadow: inputFocused ? "0 0 16px rgba(242,239,232,0.2)" : "none",
-                  }}
-                  aria-label="Send"
+                  className="size-9 bg-white text-black rounded-full grid place-items-center hover:scale-105 transition-transform"
                 >
                   <ArrowUp className="size-4" />
                 </button>
               ) : (
-                <button
-                  type="button"
-                  className="size-9 grid place-items-center rounded-full cursor-pointer transition-colors duration-150"
-                  style={{ color: "var(--text-tertiary)" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
-                    (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                    (e.currentTarget as HTMLElement).style.color = "var(--text-tertiary)";
-                  }}
-                  aria-label="Voice"
-                >
-                  <Mic className="size-[17px]" />
-                </button>
+                <>
+                  <div className="hidden sm:flex items-center gap-1.5 text-[#52525b]">
+                    <span className="text-[11px] font-medium">double-tap to open</span>
+                    <span className="font-serif italic text-[12px] font-bold">Vault</span>
+                  </div>
+                  <div className="size-9 bg-[#18181b] text-[#52525b] rounded-full grid place-items-center">
+                    <ArrowUp className="size-4" />
+                  </div>
+                </>
               )}
             </div>
           </form>
 
-          {/* Status bar — VS Code terminal aesthetic */}
-          <div className="flex items-center justify-between px-1">
-            <span className="font-mono text-[10px]" style={{ color: "var(--text-tertiary)", letterSpacing: "0.12em" }}>
-              FP-OS · Flash · 128k ctx
-            </span>
-            <span className="font-mono text-[10px]" style={{ color: "var(--text-tertiary)", letterSpacing: "0.12em" }}>
-              Double-tap to open Vault
+          <div className="mt-4 text-center">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#3f3f46]">
+              FP can be wrong. Verify before you ship.
             </span>
           </div>
+
         </div>
       </div>
     </div>
-  );
-}
-
-/* ── User bubble (right, glass pill, slides in from right) ── */
-function UserBubble({ text }: { text: string }) {
-  return (
-    <div className="flex justify-end animate-msg-right">
-      <div
-        className="max-w-[82%] rounded-[20px] rounded-tr-[5px] px-4 py-3 text-[15px] leading-[1.65]"
-        style={{
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.09)",
-          color: "var(--text-primary)",
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        {text}
-      </div>
-    </div>
-  );
-}
-
-/* ── FP message (left, no bubble, with icon, slides in from left) ── */
-function FPMessage({ text }: { text: string }) {
-  return (
-    <div className="flex gap-3 animate-msg-left pt-1">
-      {/* FP avatar mark */}
-      <div className="shrink-0 mt-0.5">
-        <div
-          className="size-[22px] rounded-full grid place-items-center font-display text-[9px] font-semibold"
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            color: "var(--text-secondary)",
-          }}
-        >
-          FP
-        </div>
-      </div>
-      {/* Text */}
-      <p
-        className="text-[15px] leading-[1.72] flex-1 whitespace-pre-wrap"
-        style={{ color: "var(--text-primary)" }}
-      >
-        {text}
-      </p>
-    </div>
-  );
-}
-
-/* ── Thinking indicator ── */
-function ThinkingIndicator() {
-  return (
-    <div className="flex gap-3 animate-msg-left pt-1">
-      <div
-        className="size-[22px] rounded-full shrink-0 grid place-items-center font-display text-[9px] font-semibold mt-0.5"
-        style={{
-          background: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          color: "var(--text-secondary)",
-        }}
-      >
-        FP
-      </div>
-      <div className="flex items-center gap-1.5 pt-1" style={{ color: "var(--text-secondary)" }}>
-        <span className="thinking-dot" />
-        <span className="thinking-dot" />
-        <span className="thinking-dot" />
-      </div>
-    </div>
-  );
-}
-
-/* ── Header icon button ── */
-function HeaderIconBtn({
-  children, onClick, label,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="size-9 grid place-items-center rounded-full cursor-pointer transition-colors duration-150"
-      style={{ color: "var(--text-secondary)" }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
-        (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "transparent";
-        (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-      }}
-      aria-label={label}
-    >
-      {children}
-    </button>
   );
 }

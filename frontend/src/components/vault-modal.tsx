@@ -2,44 +2,29 @@
 
 import { useState, useEffect } from "react";
 import {
-  Lock, X, Target, Activity, BarChart3, Users, TrendingUp,
-  ArrowRight, CheckCircle, AlertTriangle, Clock, Zap,
-  MapPin, BarChart2
+  Lock, X, ArrowUpRight, TrendingUp, CheckCircle, XCircle
 } from "lucide-react";
 
-/* ──────────────────────────────────────────────────────
-   TYPES
-────────────────────────────────────────────────────── */
 type TabId = "missions" | "mirror" | "debt" | "rival" | "market";
 
 interface VaultModalProps {
   onClose: () => void;
 }
 
-const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
-  { id: "missions", label: "Mission Folders", icon: Target },
-  { id: "mirror",   label: "Reality Mirror",  icon: Activity  },
-  { id: "debt",     label: "Execution Debt",  icon: BarChart3 },
-  { id: "rival",    label: "Rival Index",     icon: Users     },
-  { id: "market",   label: "Market Analyser", icon: TrendingUp },
+const TABS: { id: TabId; label: string; num: string }[] = [
+  { id: "missions", label: "Mission Folders", num: "1" },
+  { id: "mirror",   label: "Reality Mirror",  num: "2" },
+  { id: "debt",     label: "Execution Debt",  num: "3" },
+  { id: "rival",    label: "Rival Index",     num: "4" },
+  { id: "market",   label: "Market Analyser", num: "5" },
 ];
 
-/* ──────────────────────────────────────────────────────
-   MAIN COMPONENT
-────────────────────────────────────────────────────── */
 export function VaultModal({ onClose }: VaultModalProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("missions");
+  const [activeTab, setActiveTab] = useState<TabId>("rival");
   const [mounted, setMounted] = useState(false);
-  
-  const [loading, setLoading] = useState(true);
-  const [mission, setMission] = useState<any>(null);
-  const [mirror, setMirror] = useState<any>(null);
-  const [rival, setRival] = useState<any>(null);
-  const [market, setMarket] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 30);
+    const t = setTimeout(() => setMounted(true), 10);
     return () => clearTimeout(t);
   }, []);
 
@@ -49,734 +34,475 @@ export function VaultModal({ onClose }: VaultModalProps) {
     return () => window.removeEventListener("keydown", fn);
   }, [onClose]);
 
-  useEffect(() => {
-    const fetchVaultData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        
-        // Fetch all endpoints concurrently
-        const [resMission, resMirror, resRival, resMarket] = await Promise.all([
-          fetch(`${baseUrl}/api/v1/interaction/active-mission`),
-          fetch(`${baseUrl}/api/v1/interaction/reality-mirror`),
-          fetch(`${baseUrl}/api/v1/interaction/rival-index`),
-          fetch(`${baseUrl}/api/v1/interaction/market-report`)
-        ]);
-
-        const [dataMission, dataMirror, dataRival, dataMarket] = await Promise.all([
-          resMission.json(),
-          resMirror.json(),
-          resRival.json(),
-          resMarket.json()
-        ]);
-
-        if (dataMission?.data) setMission(dataMission.data);
-        if (dataMirror?.data) setMirror(dataMirror.data);
-        if (dataRival?.data) setRival(dataRival.data);
-        if (dataMarket?.data) setMarket(dataMarket.data);
-      } catch (err: any) {
-        console.error("Failed fetching vault data from backend:", err);
-        setError("Core connection failed.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchVaultData();
-  }, []);
-
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 md:p-6">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bg-black/85 backdrop-blur-2xl cursor-pointer"
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
       />
 
-      {/* Modal card */}
+      {/* Modal Container */}
       <div
-        className={`relative w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-[24px] glass-strong flex flex-col text-text-primary transition-all duration-500 ${
-          mounted ? "animate-vault-in" : "opacity-0"
+        className={`relative w-full max-w-[1100px] h-[85vh] flex flex-col bg-[#09090b] border border-[#18181b] rounded-3xl overflow-hidden transition-all duration-300 ${
+          mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-[0.98]"
         }`}
-        style={{ boxShadow: "var(--shadow-vault)" }}
+        style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.75)" }}
       >
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between px-5 md:px-7 h-14 border-b border-border shrink-0">
-          <div className="flex items-center gap-2.5">
-            <Lock className="size-3.5 text-text-secondary" />
-            <span className="font-display text-sm font-medium">Vault</span>
-            <span className="font-mono text-[9px] tracking-[0.28em] text-text-tertiary ml-1.5 hidden sm:inline">
-              PRIVATE · ENCRYPTED
+        {/* Header Top Bar */}
+        <div className="flex items-center justify-between px-6 h-14 border-b border-[#18181b] shrink-0 bg-[#09090b]">
+          <div className="flex items-center gap-3">
+            <div className="size-[22px] border border-[#27272a] rounded-md grid place-items-center bg-[#18181b]">
+              <span className="text-[10px] text-[#a1a1aa] font-medium">⌘</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-[15px] text-white tracking-tight">Vault</span>
+              <span className="text-[9px] font-mono border border-[#27272a] text-[#a1a1aa] px-1.5 py-0.5 rounded tracking-widest bg-[#18181b]">OPERATOR</span>
+            </div>
+            <span className="text-[#3f3f46] text-sm ml-1">—</span>
+            <span className="text-sm text-[#a1a1aa] ml-1">
+              {activeTab === "missions" && "Locked paths."}
+              {activeTab === "mirror" && "Behavioural truth."}
+              {activeTab === "debt" && "Cost of inconsistency."}
+              {activeTab === "rival" && "Anonymous. Unforgiving."}
+              {activeTab === "market" && "Your window. Live."}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="size-9 grid place-items-center rounded-full hover:bg-white/5 text-text-secondary hover:text-text-primary transition cursor-pointer"
-            aria-label="Close vault"
+            className="size-8 grid place-items-center rounded-full hover:bg-[#18181b] text-[#a1a1aa] transition cursor-pointer border border-transparent hover:border-[#27272a]"
           >
             <X className="size-4" />
           </button>
         </div>
 
-        {/* ── Tab Bar ── */}
-        <div className="flex items-center gap-1 px-4 md:px-6 py-2.5 border-b border-border overflow-x-auto no-scrollbar shrink-0">
-          {TABS.map(({ id, label, icon: Icon }) => {
-            const active = activeTab === id;
+        {/* Tabs Bar */}
+        <div className="flex items-center gap-6 px-6 h-[46px] border-b border-[#18181b] shrink-0 bg-[#09090b] overflow-x-auto no-scrollbar">
+          {TABS.map((tab) => {
+            const active = activeTab === tab.id;
             return (
               <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 px-3.5 h-8 rounded-full text-sm whitespace-nowrap transition cursor-pointer font-medium ${
-                  active
-                    ? "bg-text-primary text-black"
-                    : "text-text-secondary hover:text-text-primary hover:bg-white/[0.05]"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 h-full border-b-[2px] transition-colors ${
+                  active ? "border-white text-white" : "border-transparent text-[#52525b] hover:text-[#a1a1aa]"
                 }`}
               >
-                <Icon className="size-3.5" />
-                <span className="hidden sm:inline">{label}</span>
-                <span className="sm:hidden">{label.split(" ")[0]}</span>
+                <div className={`size-3.5 border rounded-[3px] grid place-items-center ${
+                  active ? "border-white/20" : "border-transparent"
+                }`}>
+                  <div className="size-1.5 rounded-[1px] bg-current" />
+                </div>
+                <span className="text-[13px] font-medium">{tab.label}</span>
+                <span className={`text-[10px] font-mono px-1 rounded ${
+                  active ? "bg-white/10 text-white" : "bg-[#18181b] text-[#52525b]"
+                }`}>
+                  {tab.num}
+                </span>
               </button>
             );
           })}
         </div>
 
-        {/* ── Content ── */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-4 md:px-7 py-6 space-y-0">
-          {error && (
-            <div className="p-4 border border-red-500/15 bg-red-500/5 text-red-400 rounded-xl mb-4 text-sm font-mono flex items-center gap-2">
-              <AlertTriangle className="size-4" />
-              {error} Please ensure the backend is running.
-            </div>
-          )}
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto bg-[#09090b] relative">
+          {/* Faint grid background */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
+               style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
           
-          {activeTab === "missions"  && <TabMissions mission={mission} loading={loading} onClose={onClose} />}
-          {activeTab === "mirror"   && <TabMirror mirror={mirror} loading={loading} />}
-          {activeTab === "debt"     && <TabDebt mission={mission} loading={loading} />}
-          {activeTab === "rival"    && <TabRival rival={rival} loading={loading} />}
-          {activeTab === "market"   && <TabMarket market={market} loading={loading} />}
-        </div>
+          <div className="relative z-10 px-8 py-10 max-w-[900px] mx-auto min-h-full">
+            {/* Tab Header inside content */}
+            <div className="flex justify-between items-end mb-10">
+              <div>
+                <div className="text-[10px] text-[#52525b] font-mono tracking-widest mb-2">
+                  0{TABS.find(t => t.id === activeTab)?.num} / 5
+                </div>
+                <h2 className="text-3xl font-semibold text-white tracking-tight">
+                  {TABS.find(t => t.id === activeTab)?.label}
+                </h2>
+              </div>
+              <div className="text-sm text-[#a1a1aa]">
+                {activeTab === "missions" && "Locked paths."}
+                {activeTab === "mirror" && "Behavioural truth."}
+                {activeTab === "debt" && "Cost of inconsistency."}
+                {activeTab === "rival" && "Anonymous. Unforgiving."}
+                {activeTab === "market" && "Your window. Live."}
+              </div>
+            </div>
 
-        {/* ── Footer ── */}
-        <div className="px-5 md:px-7 h-10 border-t border-border flex items-center justify-between font-mono text-[9px] tracking-[0.28em] text-text-tertiary shrink-0">
-          <span>INTEGRITY · 100%</span>
-          <span className="hidden sm:inline">ESC TO CLOSE · AES-256</span>
+            {activeTab === "missions" && <TabMissions />}
+            {activeTab === "mirror" && <TabMirror />}
+            {activeTab === "debt" && <TabDebt />}
+            {activeTab === "rival" && <TabRival />}
+            {activeTab === "market" && <TabMarket />}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/* ──────────────────────────────────────────────────────
-   SKELETONS & EMPTY STATES
-────────────────────────────────────────────────────── */
-function SkeletonLoader() {
-  return (
-    <div className="space-y-4 animate-pulse py-4">
-      <div className="h-6 w-1/3 bg-white/10 rounded" />
-      <div className="h-4 w-2/3 bg-white/5 rounded" />
-      <div className="h-32 w-full bg-white/5 rounded-2xl" />
-      <div className="h-24 w-full bg-white/5 rounded-2xl" />
-    </div>
-  );
-}
-
-function EmptyState({ tab, msg }: { tab: string; msg: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-      <AlertTriangle className="size-10 text-text-secondary opacity-40 animate-pulse" />
-      <h3 className="font-display text-sm font-medium text-text-secondary">Empty {tab}</h3>
-      <p className="text-xs text-text-tertiary max-w-sm leading-relaxed">
-        {msg}
-      </p>
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────
-   TAB 1 — MISSION FOLDERS
-────────────────────────────────────────────────────── */
-function TabMissions({ mission, loading, onClose }: { mission: any; loading: boolean; onClose: () => void }) {
-  if (loading) return <SkeletonLoader />;
-  if (!mission) return <EmptyState tab="Missions" msg="No active mission trajectory locked. Complete onboarding and lock a path to initiate." />;
-
-  const pct = Math.round((mission.dayNumber / mission.totalDays) * 100);
-  const consistencyColor =
-    mission.consistencyScore >= 75 ? "#4ade80" : mission.consistencyScore >= 55 ? "#facc15" : "#f87171";
+function TabMissions() {
+  const missions = [
+    {
+      badge: "ACADEMIC", tag: "/jee-2025",
+      title: "JEE 2025 · Top 1000",
+      quote: `"Tu average nahi hai. Yeh summer vacation teri zindagi badal sakti hai — sirf tu decide kar."`,
+      path: "Phase 1: Physics fundamentals + 40 mock sets. Phase 2: Inorganic compression. Phase 3: Maths daily rotation. No skips.",
+      day: 23, total: 180, score: 71
+    },
+    {
+      badge: "BUILD", tag: "/saas-launch",
+      title: "WhatsApp CRM · ₹1L MRR",
+      quote: `"Tere paas ek 6-week window hai. Market ready hai. Tu nahi. Wahi fix karna hai."`,
+      path: "Week 1-2: 20 cold demos. Week 3: paid pilot. Week 4-6: retention loops. Sales > polish.",
+      day: 9, total: 42, score: 54
+    },
+    {
+      badge: "DISCIPLINE", tag: "/body-recomp",
+      title: "Body Recomp · 12% BF",
+      quote: `"Discipline jo yahan banegi, woh har domain mein leak hogi. Body is the first ledger."`,
+      path: "5 lifts/week · protein floor 1.6g/kg · 2 cardio blocks. Weigh-in Sunday. No negotiation.",
+      day: 47, total: 120, score: 88
+    }
+  ];
 
   return (
-    <div className="animate-fade-up space-y-4">
-      <SectionHeader
-        title="Mission Folders"
-        desc="Your active missions. Every one locked by FP — no edits, only execution."
-      />
-      <div className="rounded-2xl border border-border bg-white/[0.02] overflow-hidden">
-        {/* Progress bar top */}
-        <div className="h-[2px] bg-white/[0.06]">
-          <div
-            className="h-full bg-white/70 transition-all duration-700"
-            style={{ width: `${pct}%` }}
-          />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {missions.map((m, i) => (
+        <div key={i} className="rounded-2xl border border-[#18181b] bg-[#09090b] p-5 flex flex-col h-full hover:border-[#27272a] transition-colors">
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-[9px] font-mono text-[#a1a1aa] tracking-widest border border-[#27272a] rounded px-2 py-1 bg-[#18181b]">
+              {m.badge}
+            </span>
+            <span className="text-[10px] font-mono text-[#52525b]">{m.tag}</span>
+          </div>
+          
+          <h3 className="text-lg font-semibold text-white mb-3">{m.title}</h3>
+          <p className="text-[13px] text-[#a1a1aa] leading-relaxed mb-6 italic">
+            {m.quote}
+          </p>
+
+          <div className="mb-8">
+            <div className="text-[10px] font-mono text-[#52525b] mb-2 flex items-center gap-1.5">
+              <Lock className="size-3" /> LOCKED PATH
+            </div>
+            <p className="text-[13px] text-[#71717a] leading-relaxed">
+              {m.path}
+            </p>
+          </div>
+
+          <div className="mt-auto pt-6 border-t border-[#18181b]">
+            <div className="flex justify-between text-[10px] font-mono text-[#a1a1aa] mb-2">
+              <span>DAY {m.day} OF {m.total}</span>
+              <span className="text-white">{m.score}/100</span>
+            </div>
+            <div className="h-1 bg-[#18181b] rounded-full mb-6 overflow-hidden">
+              <div className="h-full bg-white" style={{ width: `${(m.day/m.total)*100}%` }} />
+            </div>
+            
+            <button className="w-full bg-white text-black font-medium text-[14px] py-3 rounded-xl flex items-center justify-between px-5 hover:bg-gray-100 transition-colors">
+              Continue Mission
+              <ArrowUpRight className="size-4" />
+            </button>
+          </div>
         </div>
+      ))}
+    </div>
+  );
+}
 
-        <div className="p-5 md:p-6 space-y-5">
-          {/* Title row */}
-          <div className="flex items-start justify-between gap-4">
+function TabMirror() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Graph Area */}
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 flex flex-col justify-between row-span-2">
+        <div>
+          <div className="flex justify-between items-start mb-6">
             <div>
-              <div className="flex items-center gap-2.5 mb-1">
-                <span className="size-2 rounded-full bg-text-primary shrink-0" />
-                <h3 className="font-display text-base font-medium">{mission.missionName}</h3>
-              </div>
-              <div className="font-mono text-[10px] tracking-[0.2em] text-text-tertiary pl-4.5 flex items-center gap-3">
-                <span>DAY {mission.dayNumber} OF {mission.totalDays}</span>
-                <span>·</span>
-                <span style={{ color: consistencyColor }}>{mission.consistencyScore}% CONSISTENT</span>
-                {mission.streakDays > 0 && (
-                  <>
-                    <span>·</span>
-                    <span className="text-text-tertiary">{mission.streakDays}D STREAK</span>
-                  </>
-                )}
+              <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-2">CONSISTENCY · 30 DAYS</div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-medium text-white tracking-tight">49</span>
+                <span className="text-sm font-mono text-[#52525b]">-13 pts</span>
               </div>
             </div>
-            <div className="text-right shrink-0">
-              <div className="font-mono text-2xl font-medium text-text-primary">{pct}%</div>
-              <div className="font-mono text-[9px] text-text-tertiary tracking-widest">COMPLETE</div>
+            <div className="border border-red-500/20 bg-red-500/10 text-red-500 px-3 py-1.5 rounded-md font-mono text-[9px] tracking-widest uppercase">
+              Bhai kya ho raha hai — yeh wala tu nahi hai
             </div>
           </div>
 
-          {/* Mindset brief */}
-          <div className="rounded-xl border border-border bg-black/40 p-4">
-            <div className="font-mono text-[9px] tracking-[0.25em] text-text-tertiary mb-2">
-              MINDSET BRIEF · FP
+          <div className="h-[200px] w-full mt-8 relative">
+            <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible preserve-aspect-ratio-none">
+              <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4ade80" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#4ade80" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d="M0,25 Q20,15 40,20 T80,25 T100,30 L100,40 L0,40 Z" fill="url(#g)" />
+              <path d="M0,25 Q20,15 40,20 T80,25 T100,30" fill="none" stroke="#4ade80" strokeWidth="0.5" />
+            </svg>
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 pb-2 border-t border-[#18181b] text-[10px] font-mono text-[#52525b]">
+              <span>D5</span><span>D9</span><span>D13</span><span>D17</span><span>D21</span><span>D25</span><span>D29</span>
             </div>
-            <p className="text-sm text-text-secondary leading-relaxed italic">
-              &ldquo;{mission.mindsetBrief}&rdquo;
-            </p>
-          </div>
-
-          {/* Strategy summary */}
-          <div>
-            <div className="font-mono text-[9px] tracking-[0.25em] text-text-tertiary mb-2">
-              STRATEGY · LOCKED PATH ({mission.lockedPath?.toUpperCase()})
-            </div>
-            <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-line">
-              {mission.strategyContent}
-            </p>
-          </div>
-
-          {/* Continue button */}
-          <button
-            onClick={() => {
-              if (mission.chatThreadId) {
-                localStorage.setItem("active_chat_thread_id", mission.chatThreadId);
-              }
-              onClose();
-            }}
-            className="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-text-primary text-black font-medium text-sm cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto"
-          >
-            Continue Mission
-            <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────
-   TAB 2 — REALITY MIRROR
-────────────────────────────────────────────────────── */
-function TabMirror({ mirror, loading }: { mirror: any; loading: boolean }) {
-  if (loading) return <SkeletonLoader />;
-  if (!mirror) return <EmptyState tab="Reality Mirror" msg="Reality Mirror data will populate once your active trajectory is locked." />;
-
-  const current = mirror.history[mirror.history.length - 1] || 100;
-  const start   = mirror.history[0] || 100;
-
-  return (
-    <div className="animate-fade-up space-y-5">
-      <SectionHeader
-        title="Reality Mirror"
-        desc="Your consistency timeline. No filters."
-      />
-
-      {/* Line graph card */}
-      <div className="rounded-2xl border border-border bg-white/[0.02] p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div className="font-mono text-[9px] tracking-[0.25em] text-text-tertiary">
-            CONSISTENCY SCORE · HISTORY
-          </div>
-          <div
-            className={`flex items-center gap-1.5 font-mono text-[10px] tracking-widest px-2.5 py-1 rounded-full border ${
-              mirror.trend === "up"
-                ? "border-green-500/25 text-green-400 bg-green-500/5"
-                : "border-amber-500/25 text-amber-400 bg-amber-500/5"
-            }`}
-          >
-            <div className={`size-1.5 rounded-full ${mirror.trend === "up" ? "bg-green-400" : "bg-amber-400"} animate-pulse`} />
-            {mirror.trend === "up" ? "Operator mode activated" : "Bhai kya ho raha hai"}
           </div>
         </div>
 
-        <ConsistencyChart data={mirror.history} trend={mirror.trend} />
-
-        {/* Key markers */}
-        <div className="flex items-center justify-between mt-3 font-mono text-[9px] text-text-tertiary tracking-widest">
-          <span>DAY 1 · {start}%</span>
-          <span>TODAY · {current}%</span>
+        <div className="mt-8">
+          <div className="bg-[#18181b] rounded-xl p-4 text-[13px] text-[#a1a1aa] mb-4">
+            Yeh numbers teri puri story nahi hain. Day 0 pe tu yahan tha — aaj yahan hai. Direction fix kar.
+          </div>
+          <div className="text-[10px] font-mono text-[#52525b]">
+            This insight is based on your self-reported data and chat history within FP only.
+          </div>
         </div>
       </div>
 
-      {/* Behavioral Insight */}
-      <div className="rounded-2xl border border-border bg-white/[0.02] p-5 space-y-4">
-        <div className="font-mono text-[9px] tracking-[0.25em] text-text-tertiary">
-          BEHAVIORAL INSIGHT · FP ANALYSIS
-        </div>
-        <p className="text-sm text-text-secondary leading-[1.8] whitespace-pre-line">
-          {mirror.insight}
+      {/* Insight */}
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-fit">
+        <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-4">BEHAVIOURAL INSIGHT</div>
+        <p className="text-[14px] text-white leading-relaxed">
+          Tu highly specialized hai — teri problem-solving speed <span className="font-semibold">top 15%</span> hai. Lekin execution windows mein tu disappear ho jaata hai. Yeh teri sabse badi bottleneck hai.
         </p>
-
-        {mirror.trend === "down" && (
-          <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4">
-            <p className="text-sm text-amber-200/80 leading-relaxed">
-              &ldquo;Yeh numbers teri puri story nahi hain. Day 0 pe tu yahan tha — aaj yahan hai. 
-              Direction fix kar. Score follow karega.&rdquo;
-            </p>
-          </div>
-        )}
-
-        {/* Pros / Cons */}
-        <div className="grid sm:grid-cols-2 gap-3 pt-1">
-          <ProsConsBlock type="pros" items={mirror.strengths} />
-          <ProsConsBlock type="cons" items={mirror.bottlenecks} />
-        </div>
       </div>
 
-      <SectionHeader title="" desc="Insight is based on database log timeline entries and active chat patterns." />
+      {/* Pros & Cons */}
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 grid grid-cols-2 gap-8 h-fit">
+        <div>
+          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-4">EDGES</div>
+          <ul className="space-y-4">
+            <li className="flex gap-3 text-[13px] text-white"><CheckCircle className="size-4 text-[#4ade80] shrink-0" /> Top 15% raw IQ in domain</li>
+            <li className="flex gap-3 text-[13px] text-white"><CheckCircle className="size-4 text-[#4ade80] shrink-0" /> Pattern recognition above peers</li>
+            <li className="flex gap-3 text-[13px] text-white"><CheckCircle className="size-4 text-[#4ade80] shrink-0" /> Builds fast under deadline</li>
+          </ul>
+        </div>
+        <div>
+          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-4">LEAKS</div>
+          <ul className="space-y-4">
+            <li className="flex gap-3 text-[13px] text-[#a1a1aa]"><XCircle className="size-4 text-red-500 shrink-0" /> Vanishes in 5-7 day execution gaps</li>
+            <li className="flex gap-3 text-[13px] text-[#a1a1aa]"><XCircle className="size-4 text-red-500 shrink-0" /> Optimizes inputs, avoids shipping</li>
+            <li className="flex gap-3 text-[13px] text-[#a1a1aa]"><XCircle className="size-4 text-red-500 shrink-0" /> No public commitments → low debt cost</li>
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
 
-function ConsistencyChart({ data, trend }: { data: number[]; trend: "up" | "down" }) {
-  if (!data || data.length === 0) return null;
-  const W = 500, H = 100;
-  const pad = { t: 8, r: 8, b: 8, l: 8 };
-  const innerW = W - pad.l - pad.r;
-  const innerH = H - pad.t - pad.b;
-
-  const min = Math.min(...data) - 5;
-  const max = Math.max(...data) + 5;
-
-  const pts = data.map((v, i) => ({
-    x: pad.l + (i / Math.max(1, data.length - 1)) * innerW,
-    y: pad.t + (1 - (v - min) / Math.max(1, max - min)) * innerH,
-  }));
-
-  let d = `M ${pts[0].x} ${pts[0].y}`;
-  for (let i = 1; i < pts.length; i++) {
-    const cp1x = pts[i - 1].x + (pts[i].x - pts[i - 1].x) / 3;
-    const cp2x = pts[i].x - (pts[i].x - pts[i - 1].x) / 3;
-    d += ` C ${cp1x} ${pts[i - 1].y}, ${cp2x} ${pts[i].y}, ${pts[i].x} ${pts[i].y}`;
-  }
-
-  const fillD = `${d} L ${pts[pts.length - 1].x} ${H} L ${pts[0].x} ${H} Z`;
-  const lineColor = trend === "up" ? "#4ade80" : "#facc15";
-  const gradId = `cg-${trend}`;
-
+function TabDebt() {
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 100 }}>
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={lineColor} stopOpacity={0.18} />
-          <stop offset="100%" stopColor={lineColor} stopOpacity={0}    />
-        </linearGradient>
-      </defs>
-      <path d={fillD} fill={`url(#${gradId})`} />
-      <path d={d} fill="none" stroke={lineColor} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r={3} fill={lineColor} />
-    </svg>
+    <div className="space-y-4">
+      {/* 3 Rings */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Consistency */}
+        <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-8 flex flex-col items-center justify-center">
+          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-6 border border-[#27272a] px-3 py-1 rounded bg-[#18181b]">CONSISTENCY SCORE</div>
+          <div className="relative size-32">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#18181b" strokeWidth="8" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#fbbf24" strokeWidth="8" strokeDasharray="283" strokeDashoffset="93" strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-semibold text-white">67</span>
+              <span className="text-[10px] font-mono text-[#52525b]">/100</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Debt Days */}
+        <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-8 flex flex-col items-center justify-center">
+          <div className="text-[10px] font-mono text-[#ef4444] tracking-widest mb-6 border border-[#ef4444]/20 px-3 py-1 rounded bg-[#ef4444]/5">DEBT DAYS</div>
+          <div className="relative size-32">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#18181b" strokeWidth="8" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#ef4444" strokeWidth="8" strokeDasharray="283" strokeDashoffset="240" strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-semibold text-white">4</span>
+              <span className="text-[10px] font-mono text-[#52525b]">DAYS</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Days to Goal */}
+        <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-8 flex flex-col items-center justify-center">
+          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-6 border border-[#27272a] px-3 py-1 rounded bg-[#18181b]">DAYS TO GOAL</div>
+          <div className="relative size-32">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#18181b" strokeWidth="8" />
+              <circle cx="50" cy="50" r="45" fill="none" stroke="#06b6d4" strokeWidth="8" strokeDasharray="283" strokeDashoffset="141" strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-4xl font-semibold text-white">89</span>
+              <span className="text-[10px] font-mono text-[#52525b]">DAYS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Debt Impact Block */}
+      <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
+        <div className="text-[10px] font-mono text-red-500 tracking-widest mb-4 border border-red-500/20 px-2 py-1 rounded w-fit">DEBT IMPACT</div>
+        <p className="text-[14px] text-white leading-relaxed">
+          In <span className="text-red-500 font-medium">4 dinon</span> mein teri competition ne 4 tasks complete kiye. Market window 6 weeks thi — ab 5.3 weeks hai. Tu wahan khada hai jahan tha — duniya aage nikal gayi.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 text-[10px] font-mono text-[#52525b]">
+        CONSISTENCY WIN · 12 DAY STREAK
+      </div>
+    </div>
   );
 }
 
-function ProsConsBlock({ type, items }: { type: "pros" | "cons"; items: string[] }) {
-  const isPros = type === "pros";
-  const Icon = isPros ? CheckCircle : AlertTriangle;
-  const color = isPros ? "text-green-400" : "text-amber-400";
-  const bg    = isPros ? "bg-green-500/5 border-green-500/15" : "bg-amber-500/5 border-amber-500/15";
-
+function TabRival() {
   return (
-    <div className={`rounded-xl border p-4 space-y-2.5 ${bg}`}>
-      <div className={`flex items-center gap-2 font-mono text-[9px] tracking-[0.2em] ${color}`}>
-        <Icon className="size-3" />
-        {isPros ? "STRENGTHS" : "BOTTLENECKS"}
+    <div className="rounded-3xl border border-[#18181b] bg-[#09090b] p-10 flex flex-col md:flex-row gap-12 relative overflow-hidden h-[400px]">
+      {/* Background stars/dots */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 right-1/4 size-1 bg-white rounded-full opacity-20 blur-[1px]" />
+        <div className="absolute top-1/2 right-1/3 size-1.5 bg-[#facc15] rounded-full opacity-30 blur-[2px]" />
+        <div className="absolute bottom-1/3 right-1/5 size-1 bg-white rounded-full opacity-10" />
       </div>
-      <ul className="space-y-1.5">
-        {items.map((item, i) => (
-          <li key={i} className="text-[12px] text-text-secondary leading-relaxed flex gap-2">
-            <span className={`mt-[3px] size-1.5 rounded-full shrink-0 ${isPros ? "bg-green-400" : "bg-amber-400"}`} />
-            {item}
+
+      {/* Left side text */}
+      <div className="flex-1 flex flex-col justify-center">
+        <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-8 border border-[#27272a] rounded px-3 py-1 bg-[#18181b] w-fit">
+          ANONYMOUS COHORT
+        </div>
+        
+        <h3 className="text-3xl text-white font-medium leading-snug mb-8 max-w-[400px]">
+          Tere jaisa <span className="text-[#a1a1aa]">847</span> log same goal pe hain. <br/>
+          <span className="text-[#a1a1aa]">23</span> already milestone cross kar gaye. <br/>
+          <span className="text-[#52525b]">Tu kahan hai?</span>
+        </h3>
+
+        <div className="text-[9px] font-mono text-[#3f3f46] tracking-[0.2em] uppercase mt-auto">
+          NO NAMES - NO PERSONAL DATA - AGGREGATED WEEKLY
+        </div>
+      </div>
+
+      {/* Right side stats */}
+      <div className="w-[300px] grid grid-cols-2 gap-4 shrink-0 h-fit self-center z-10">
+        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+          <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Same goal</div>
+          <div className="text-3xl text-white font-medium">847</div>
+        </div>
+        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+          <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Crossed</div>
+          <div className="text-3xl text-white font-medium">23</div>
+        </div>
+        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+          <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Active 7d</div>
+          <div className="text-3xl text-white font-medium">612</div>
+        </div>
+        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+          <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Your rank</div>
+          <div className="text-3xl text-white font-medium">#347</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TabMarket() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Live Market */}
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-[340px] flex flex-col relative overflow-hidden">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-2 border border-[#27272a] bg-[#18181b] rounded px-2 py-1">
+            <div className="size-1.5 rounded-full bg-white animate-pulse" />
+            <span className="text-[9px] font-mono text-white tracking-widest uppercase">LIVE</span>
+          </div>
+          <TrendingUp className="size-4 text-[#52525b]" />
+        </div>
+
+        <h3 className="text-xl text-white font-medium mb-1">Your Market · Live</h3>
+        <p className="text-[13px] text-[#52525b] mb-6">Teri city mein aaj:</p>
+
+        <ul className="space-y-3 flex-1 overflow-y-auto no-scrollbar">
+          <li className="flex items-center gap-3 border border-[#18181b] bg-[#000] p-3 rounded-xl">
+            <div className="size-5 border border-[#27272a] rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">↗</div>
+            <p className="text-[12px] text-[#a1a1aa] leading-tight flex-1">4 businesses ne automation tools adopt kiye</p>
+            <span className="text-[9px] font-mono text-[#52525b] uppercase tracking-widest shrink-0">TODAY</span>
           </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────
-   TAB 3 — EXECUTION DEBT TRACKER
-────────────────────────────────────────────────────── */
-function TabDebt({ mission, loading }: { mission: any; loading: boolean }) {
-  if (loading) return <SkeletonLoader />;
-  if (!mission) return <EmptyState tab="Execution Debt" msg="Execution Debt will compile metrics once strategy trajectory is locked." />;
-
-  const [animated, setAnimated] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 150);
-    return () => clearTimeout(t);
-  }, []);
-
-  const consistency = mission.consistencyScore;
-  const debtDays = mission.debtDays || 0;
-  const daysToGoal = mission.daysToGoal || 0;
-  const streak = mission.streakDays || 0;
-  const hasDebt = debtDays > 0;
-
-  return (
-    <div className="animate-fade-up space-y-5">
-      <SectionHeader
-        title="Execution Debt Tracker"
-        desc="Jo kaam nahi kiya — woh yahaan dikh raha hai. Honesty pehle."
-      />
-
-      {/* ── 3 Circles ── */}
-      <div className="grid grid-cols-3 gap-3 md:gap-5">
-        <CircleRing
-          label="Consistency"
-          value={consistency}
-          max={100}
-          unit="/100"
-          color="#fcfbf8"
-          animated={animated}
-        />
-        <CircleRing
-          label="Debt Days"
-          value={debtDays}
-          max={30}
-          unit=" Days"
-          color="#f87171"
-          animated={animated}
-          invert
-        />
-        <CircleRing
-          label="Days to Goal"
-          value={daysToGoal}
-          max={mission.totalDays}
-          unit=" Days"
-          color="#facc15"
-          animated={animated}
-        />
+          <li className="flex items-center gap-3 border border-[#18181b] bg-[#000] p-3 rounded-xl">
+            <div className="size-5 border border-[#27272a] rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">~</div>
+            <p className="text-[12px] text-[#a1a1aa] leading-tight flex-1">WhatsApp CRM demand</p>
+            <span className="text-[10px] font-mono text-green-400 shrink-0">+31% THIS WEEK</span>
+          </li>
+          <li className="flex items-center gap-3 border border-[#18181b] bg-[#000] p-3 rounded-xl">
+            <div className="size-5 border border-[#27272a] rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">↘</div>
+            <p className="text-[12px] text-[#a1a1aa] leading-tight flex-1">Active competitors in your niche</p>
+            <span className="text-[10px] font-mono text-[#52525b] shrink-0 text-white font-semibold">12 NOW</span>
+          </li>
+        </ul>
       </div>
 
-      {/* ── Debt Impact Block ── */}
-      {hasDebt && (
-        <div className="rounded-2xl border border-red-500/15 bg-red-500/[0.04] p-5 space-y-2">
-          <div className="flex items-center gap-2 font-mono text-[9px] tracking-[0.25em] text-red-400/70">
-            <AlertTriangle className="size-3" />
-            DEBT IMPACT
-          </div>
-          <p className="text-sm text-text-secondary leading-[1.8]">
-            In {debtDays} dinon mein teri competition ne tasks execute kiye.
-            Market capacity constant rate pe drop hoti hai. Tu wahan khada hai jahan tha —{" "}
-            <span className="text-red-300/80">duniya aage nikal gayi.</span>
-          </p>
+      {/* Window Alert */}
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-[340px] flex flex-col justify-center">
+        <div className="text-[9px] font-mono text-[#a1a1aa] tracking-widest mb-6 border border-[#27272a] bg-[#18181b] rounded px-3 py-1 w-fit">
+          ⌛ WINDOW ALERT
         </div>
-      )}
-
-      {/* ── Consistency Win Block ── */}
-      {streak >= 3 && (
-        <div className="rounded-2xl border border-green-500/15 bg-green-500/[0.04] p-5 space-y-2">
-          <div className="flex items-center gap-2 font-mono text-[9px] tracking-[0.25em] text-green-400/70">
-            <CheckCircle className="size-3" />
-            CONSISTENCY WIN · {streak} DAY STREAK
-          </div>
-          <p className="text-sm text-text-secondary leading-[1.8]">
-            Tu ne <span className="text-text-primary font-medium">{streak} din lagaataar execute kiya.</span>{" "}
-            This streak adds an operational buffer, locking in your capability baseline.
-          </p>
+        
+        <div className="flex items-baseline gap-2 mb-4">
+          <span className="text-6xl text-white font-medium tracking-tight">3.5</span>
+          <span className="text-[11px] font-mono text-[#52525b] tracking-widest uppercase">WEEKS LEFT</span>
         </div>
-      )}
 
-      {/* ── Dynamic bottom line ── */}
-      <div className="rounded-xl border border-border bg-white/[0.02] px-5 py-3.5 flex items-center justify-between">
-        <p className="text-sm text-text-secondary">
-          {hasDebt
-            ? "Duniya nahi ruki bhai — tu ruka tha. Aaj se mat ruk."
-            : "Operator. No debt. Teri consistency compounding ho rahi hai."}
+        <div className="h-1 bg-[#18181b] w-full rounded-full mb-8">
+          <div className="h-full bg-red-500 w-[60%] rounded-full" />
+        </div>
+
+        <p className="text-[13px] text-[#a1a1aa] leading-relaxed">
+          Teri opportunity window: 3.5 weeks baaki. Iske baad market saturate ho jayega. Jo aaj execute karega — woh market ka pehla mover hoga.
         </p>
-        <div
-          className={`size-2 rounded-full shrink-0 ml-3 ${
-            hasDebt ? "bg-red-400 animate-pulse" : "bg-green-400 animate-pulse"
-          }`}
-        />
       </div>
 
-      <LegalText text="Debt numbers calculated dynamically based on database logs." />
-    </div>
-  );
-}
-
-function CircleRing({
-  label, value, max, unit, color, animated, invert,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  unit: string;
-  color: string;
-  animated: boolean;
-  invert?: boolean;
-}) {
-  const R = 38;
-  const C = 2 * Math.PI * R;
-  const fraction = value / Math.max(1, max);
-  const offset = animated ? C * (1 - fraction) : C;
-
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-white/[0.02] p-4 md:p-5">
-      <div className="font-mono text-[9px] tracking-[0.2em] text-text-tertiary text-center">
-        {label.toUpperCase()}
-      </div>
-      <svg width="92" height="92" viewBox="0 0 92 92">
-        <circle cx="46" cy="46" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
-        <circle
-          cx="46" cy="46" r={R}
-          fill="none"
-          stroke={color}
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeDasharray={C}
-          strokeDashoffset={offset}
-          transform="rotate(-90 46 46)"
-          style={{ transition: "stroke-dashoffset 1.1s cubic-bezier(0.34,1.56,0.64,1)" }}
-        />
-        <text x="46" y="42" textAnchor="middle" dominantBaseline="middle" fill={color} fontSize="16" fontWeight="600" fontFamily="monospace">
-          {value}
-        </text>
-        <text x="46" y="58" textAnchor="middle" dominantBaseline="middle" fill="rgba(255,255,255,0.35)" fontSize="9" fontFamily="monospace">
-          {unit.trim()}
-        </text>
-      </svg>
-      <div className="font-mono text-[9px] text-text-tertiary tracking-widest text-center">
-        {invert
-          ? `${Math.round(fraction * 100)}% of max`
-          : `${Math.round(fraction * 100)}% of target`}
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────
-   TAB 4 — RIVAL INDEX
-────────────────────────────────────────────────────── */
-function TabRival({ rival, loading }: { rival: any; loading: boolean }) {
-  if (loading) return <SkeletonLoader />;
-  if (!rival) return <EmptyState tab="Rival Index" msg="Rival Index aggregate data will populate once your active strategy path is locked." />;
-
-  const crossRate = Math.round((rival.milestonePassedUsers / Math.max(1, rival.totalUsers)) * 100);
-
-  return (
-    <div className="animate-fade-up space-y-5">
-      <SectionHeader
-        title="Rival Index"
-        desc="Anonymous. Aggregated. Real market signal — no names, no personal data."
-      />
-
-      <div className="rounded-2xl border border-border bg-white/[0.02] p-6 md:p-8 space-y-6">
-        {/* Big number */}
-        <div className="space-y-1">
-          <div className="font-mono text-[9px] tracking-[0.25em] text-text-tertiary">
-            SAME TRAJECTORY CATEGORY · ANONYMOUS POOL
-          </div>
-          <div className="font-display text-5xl md:text-6xl font-medium text-text-primary leading-none">
-            {rival.totalUsers}
-          </div>
-          <div className="text-sm text-text-secondary">
-            users executing on goals similar to yours.
-          </div>
+      {/* Category Movers */}
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-[340px] flex flex-col">
+        <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-6 uppercase border border-[#18181b] rounded px-2 py-1 w-fit">
+          CATEGORY MOVERS
         </div>
 
-        {/* Status blocks */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-border bg-black/40 p-4 text-center space-y-1.5">
-            <div className="font-mono text-2xl font-semibold text-green-400">{rival.milestonePassedUsers}</div>
-            <div className="font-mono text-[9px] text-text-tertiary tracking-[0.15em] leading-tight">
-              DAY 30 CROSSED
-            </div>
-          </div>
-          <div className="rounded-xl border border-border bg-black/40 p-4 text-center space-y-1.5">
-            <div className="font-mono text-2xl font-semibold text-amber-400">{crossRate}%</div>
-            <div className="font-mono text-[9px] text-text-tertiary tracking-[0.15em] leading-tight">
-              MILESTONE CROSS RATE
-            </div>
-          </div>
-        </div>
+        <h3 className="text-lg text-white font-medium mb-8">Teri category mein is hafte</h3>
 
-        {/* Where are you */}
-        <div className="rounded-xl border border-white/10 bg-white/[0.025] p-4 flex items-center justify-between gap-4">
-          <p className="text-sm text-text-secondary leading-relaxed">
-            Tere jaise <span className="text-text-primary font-medium">{rival.totalUsers}</span> operators same vector pe hain.{" "}
-            <span className="text-text-primary font-medium">{rival.milestonePassedUsers} already Day 30 benchmark touch kar chuke hain.</span>{" "}
-            Tu kahan stand karta hai?
-          </p>
-          <div className="shrink-0 font-mono text-3xl text-text-tertiary">??</div>
-        </div>
-      </div>
-
-      <LegalText text="Rival index metrics are completely anonymised aggregates pulling from real active trajectories." />
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────
-   TAB 5 — MARKET ANALYSER
-────────────────────────────────────────────────────── */
-function TabMarket({ market, loading }: { market: any; loading: boolean }) {
-  if (loading) return <SkeletonLoader />;
-  if (!market) return <EmptyState tab="Market Analyser" msg="Market Intelligence report will build once onboarding is fully completed." />;
-
-  const gaps = market.localMarketGaps || [];
-  const timing = market.timingSignals || [];
-  const score = Math.round((market.overallMarketScore || 0.75) * 100);
-  const opportunities = market.socialMediaOpportunities || [];
-
-  return (
-    <div className="animate-fade-up space-y-5">
-      <SectionHeader
-        title="Market Analyser"
-        desc="Real-time feasibility report. Automatically generated and cached for 24 hours."
-      />
-
-      {/* Local Gaps */}
-      <MarketSection icon={MapPin} title="LOCAL OPPORTUNITY GAPS" accent="white">
-        {gaps.length > 0 ? (
-          <ul className="space-y-3.5">
-            {gaps.slice(0, 3).map((gap: any, idx: number) => (
-              <li key={idx} className="flex flex-col py-2 border-b border-border last:border-0">
-                <span className="text-sm font-medium text-text-primary mb-1">{gap.gapTitle}</span>
-                <p className="text-xs text-text-secondary mb-2">{gap.problemDescription}</p>
-                <div className="flex items-center justify-between text-[10px] font-mono text-text-tertiary">
-                  <span>AVG BUDGET: ₹{gap.averageSpendPerBusiness?.toLocaleString('en-IN')}</span>
-                  <span className="text-amber-400">WIN WINDOW: {gap.windowDurationMonths} MONTHS</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-xs text-text-secondary">No local service opportunity gaps cataloged.</p>
-        )}
-      </MarketSection>
-
-      {/* Timing signal */}
-      <MarketSection icon={Clock} title="TIMING SIGNAL ANALYSIS" accent="amber">
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="font-mono text-3xl font-semibold text-amber-300">{score}%</div>
-            <div>
-              <div className="text-sm text-text-primary font-medium">Market Feasibility Score</div>
-              <div className="font-mono text-[9px] text-text-tertiary tracking-widest">FEASIBILITY PROFILE</div>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center border border-[#18181b] p-4 rounded-xl bg-[#000]">
+            <span className="text-[12px] text-[#52525b]">Top performer</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl text-white font-medium">3</span>
+              <span className="text-[9px] font-mono text-[#52525b] tracking-widest uppercase">CLIENTS CLOSED</span>
             </div>
           </div>
           
-          {timing.length > 0 ? (
-            <div className="space-y-2">
-              <span className="text-sm text-text-primary font-medium block">
-                {timing[0].signal} ({timing[0].urgency?.toUpperCase().replace('_', ' ')})
-              </span>
-              <p className="text-xs text-text-secondary leading-relaxed">
-                {timing[0].narrative}
-              </p>
+          <div className="flex justify-between items-center border border-[#18181b] p-4 rounded-xl bg-[#000]">
+            <span className="text-[12px] text-[#52525b]">Average executor</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl text-white font-medium">0.4</span>
+              <span className="text-[9px] font-mono text-[#52525b] tracking-widest uppercase">CLIENTS</span>
             </div>
-          ) : (
-            <p className="text-xs text-text-secondary">No timing alerts registered for this category.</p>
-          )}
+          </div>
+
+          <div className="flex justify-between items-center border border-[#18181b] p-4 rounded-xl bg-[#000]">
+            <span className="text-[12px] text-[#52525b]">Tu</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl text-red-500 font-medium">??</span>
+            </div>
+          </div>
         </div>
-      </MarketSection>
+      </div>
 
-      {/* Traffic channels */}
-      <MarketSection icon={BarChart2} title="TRAFFIC CHANNELS & BENCHMARKS" accent="white">
-        {opportunities.length > 0 ? (
-          <ul className="space-y-2.5">
-            {opportunities.slice(0, 3).map((opp: any, idx: number) => (
-              <li key={idx} className="flex justify-between items-center py-2 border-b border-border last:border-0 text-sm">
-                <div>
-                  <span className="font-medium text-text-primary capitalize">{opp.platform}</span>
-                  <span className="text-[10px] text-text-tertiary block font-mono uppercase">{opp.contentFormat}</span>
-                </div>
-                <div className="text-right">
-                  <span className="font-mono text-green-400 text-xs">{opp.postingFrequency}</span>
-                  <span className="text-[10px] text-text-tertiary block font-mono uppercase">FIRST PAYOUT: {opp.timeToFirstRevenue}M</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-xs text-text-secondary">No custom traffic channels identified yet.</p>
-        )}
-      </MarketSection>
-
-      {/* Insight card */}
-      <div className="rounded-xl border border-red-500/15 bg-red-500/[0.04] px-5 py-4 flex items-center gap-3">
-        <Zap className="size-4 text-red-400 shrink-0" />
-        <p className="text-xs text-text-secondary leading-relaxed">
-          {market.topInsight || "Opportunities decay over time. Fast mover beats the planner."}
+      {/* Ego Attack Banner */}
+      <div className="md:col-span-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 flex gap-4 items-center mt-2">
+        <div className="text-[10px] font-mono text-red-500 tracking-widest border border-red-500/20 px-2 py-1 rounded bg-[#000] shrink-0">
+          EGO ATTACK
+        </div>
+        <p className="text-[13px] text-white">
+          Market tera wait nahi kar raha. Har din jo tu ghost rehta hai — koi aur teri jagah le raha hai.
         </p>
       </div>
-
-      <LegalText text={market.legalDisclaimer || "Market intelligence reports are generated via active grounding search. direction-only data."} />
     </div>
-  );
-}
-
-function MarketSection({
-  icon: Icon, title, accent, children,
-}: {
-  icon: React.ElementType;
-  title: string;
-  accent: "white" | "amber" | "green";
-  children: React.ReactNode;
-}) {
-  const iconColor =
-    accent === "amber" ? "text-amber-400" :
-    accent === "green" ? "text-green-400" :
-    "text-text-secondary";
-
-  return (
-    <div className="rounded-2xl border border-border bg-white/[0.02] p-5 space-y-4">
-      <div className={`flex items-center gap-2 font-mono text-[9px] tracking-[0.25em] ${iconColor}`}>
-        <Icon className="size-3.5" />
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────
-   SHARED COMPONENTS
-────────────────────────────────────────────────────── */
-function SectionHeader({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="space-y-1 pb-1">
-      <h2 className="font-display text-base font-medium text-text-primary">{title}</h2>
-      <p className="text-sm text-text-tertiary leading-relaxed">{desc}</p>
-    </div>
-  );
-}
-
-function LegalText({ text }: { text: string }) {
-  return (
-    <p className="font-mono text-[9px] text-text-tertiary/50 leading-relaxed tracking-wide">
-      {text}
-    </p>
   );
 }
