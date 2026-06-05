@@ -20,8 +20,9 @@ const TABS: { id: TabId; label: string; num: string }[] = [
 ];
 
 export function VaultModal({ onClose }: VaultModalProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("rival");
+  const [activeTab, setActiveTab] = useState<TabId>("missions");
   const [mounted, setMounted] = useState(false);
+  const [tabTransition, setTabTransition] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 10);
@@ -34,33 +35,61 @@ export function VaultModal({ onClose }: VaultModalProps) {
     return () => window.removeEventListener("keydown", fn);
   }, [onClose]);
 
+  const switchTab = (id: TabId) => {
+    setTabTransition(true);
+    setTimeout(() => {
+      setActiveTab(id);
+      setTabTransition(false);
+    }, 120);
+  };
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 md:p-6">
+      {/* Backdrop with enhanced blur */}
       <div
         onClick={onClose}
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
+        className="absolute inset-0 cursor-pointer"
+        style={{
+          background: "rgba(0,0,0,0.82)",
+          backdropFilter: "blur(20px) saturate(120%)",
+          WebkitBackdropFilter: "blur(20px) saturate(120%)",
+        }}
       />
 
-      {/* Modal Container */}
+      {/* Modal Container — gradient border + deep shadow */}
       <div
-        className={`relative w-full max-w-[1100px] h-[85vh] flex flex-col bg-[#09090b] border border-[#18181b] rounded-3xl overflow-hidden transition-all duration-300 ${
-          mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-[0.98]"
+        className={`relative w-full max-w-[1100px] h-[88vh] flex flex-col rounded-2xl md:rounded-3xl overflow-hidden transition-all duration-[400ms] ${
+          mounted
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 translate-y-6 scale-[0.97]"
         }`}
-        style={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.75)" }}
+        style={{
+          background: "#09090b",
+          border: "1px solid rgba(255,255,255,0.06)",
+          boxShadow: "0 0 0 1px rgba(0,0,0,0.8), 0 25px 80px -12px rgba(0,0,0,0.85), 0 0 60px rgba(0,0,0,0.4)",
+          transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
       >
         {/* Header Top Bar */}
-        <div className="flex items-center justify-between px-6 h-14 border-b border-[#18181b] shrink-0 bg-[#09090b]">
+        <div className="flex items-center justify-between px-5 md:px-6 h-14 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(9,9,11,0.95)" }}>
           <div className="flex items-center gap-3">
-            <div className="size-[22px] border border-[#27272a] rounded-md grid place-items-center bg-[#18181b]">
-              <span className="text-[10px] text-[#a1a1aa] font-medium">⌘</span>
+            <div
+              className="size-[22px] rounded-[6px] grid place-items-center"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <Lock className="size-3 text-[#71717a]" />
             </div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-[15px] text-white tracking-tight">Vault</span>
-              <span className="text-[9px] font-mono border border-[#27272a] text-[#a1a1aa] px-1.5 py-0.5 rounded tracking-widest bg-[#18181b]">OPERATOR</span>
+              <span
+                className="text-[9px] font-mono px-1.5 py-0.5 rounded tracking-[0.15em]"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "#71717a" }}
+              >
+                OPERATOR
+              </span>
             </div>
-            <span className="text-[#3f3f46] text-sm ml-1">—</span>
-            <span className="text-sm text-[#a1a1aa] ml-1">
+            <span className="text-[#27272a] text-sm ml-1 hidden sm:inline">—</span>
+            <span className="text-[13px] text-[#52525b] ml-1 hidden sm:inline transition-opacity duration-200">
               {activeTab === "missions" && "Locked paths."}
               {activeTab === "mirror" && "Behavioural truth."}
               {activeTab === "debt" && "Cost of inconsistency."}
@@ -70,58 +99,78 @@ export function VaultModal({ onClose }: VaultModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="size-8 grid place-items-center rounded-full hover:bg-[#18181b] text-[#a1a1aa] transition cursor-pointer border border-transparent hover:border-[#27272a]"
+            className="size-8 grid place-items-center rounded-lg text-[#52525b] hover:text-[#a1a1aa] transition-all cursor-pointer"
+            style={{ background: "transparent" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
           >
             <X className="size-4" />
           </button>
         </div>
 
         {/* Tabs Bar */}
-        <div className="flex items-center gap-6 px-6 h-[46px] border-b border-[#18181b] shrink-0 bg-[#09090b] overflow-x-auto no-scrollbar">
+        {/* Tab Bar with animated underline */}
+        <div className="flex items-center gap-1 px-4 md:px-6 h-[46px] shrink-0 overflow-x-auto no-scrollbar" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
           {TABS.map((tab) => {
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 h-full border-b-[2px] transition-colors ${
-                  active ? "border-white text-white" : "border-transparent text-[#52525b] hover:text-[#a1a1aa]"
+                onClick={() => switchTab(tab.id)}
+                className={`relative flex items-center gap-2 px-3 h-full transition-colors duration-150 cursor-pointer ${
+                  active ? "text-white" : "text-[#52525b] hover:text-[#a1a1aa]"
                 }`}
               >
-                <div className={`size-3.5 border rounded-[3px] grid place-items-center ${
-                  active ? "border-white/20" : "border-transparent"
-                }`}>
-                  <div className="size-1.5 rounded-[1px] bg-current" />
-                </div>
-                <span className="text-[13px] font-medium">{tab.label}</span>
-                <span className={`text-[10px] font-mono px-1 rounded ${
-                  active ? "bg-white/10 text-white" : "bg-[#18181b] text-[#52525b]"
-                }`}>
+                <span className="text-[13px] font-medium whitespace-nowrap">{tab.label}</span>
+                <span
+                  className="text-[10px] font-mono px-1.5 py-0.5 rounded transition-all duration-150"
+                  style={{
+                    background: active ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.02)",
+                    color: active ? "#d4d4d8" : "#3f3f46",
+                  }}
+                >
                   {tab.num}
                 </span>
+                {/* Animated underline */}
+                {active && (
+                  <div
+                    className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-white"
+                    style={{ animation: "tab-underline 200ms cubic-bezier(0.16,1,0.3,1) forwards" }}
+                  />
+                )}
               </button>
             );
           })}
+          <style>{`@keyframes tab-underline { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }`}</style>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto bg-[#09090b] relative">
-          {/* Faint grid background */}
-          <div className="absolute inset-0 pointer-events-none opacity-[0.03]" 
-               style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div className="flex-1 overflow-y-auto relative" style={{ background: "#09090b" }}>
+          {/* Faint dot grid — Vercel-inspired */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              opacity: 0.025,
+              backgroundImage: "radial-gradient(circle, #fff 0.5px, transparent 0.5px)",
+              backgroundSize: "24px 24px",
+            }}
+          />
           
-          <div className="relative z-10 px-8 py-10 max-w-[900px] mx-auto min-h-full">
+          <div
+            className="relative z-10 px-5 md:px-8 py-8 md:py-10 max-w-[900px] mx-auto min-h-full transition-opacity duration-150"
+            style={{ opacity: tabTransition ? 0 : 1 }}
+          >
             {/* Tab Header inside content */}
-            <div className="flex justify-between items-end mb-10">
+            <div className="flex justify-between items-end mb-8 md:mb-10">
               <div>
-                <div className="text-[10px] text-[#52525b] font-mono tracking-widest mb-2">
+                <div className="text-[10px] text-[#3f3f46] font-mono tracking-[0.2em] mb-2">
                   0{TABS.find(t => t.id === activeTab)?.num} / 5
                 </div>
-                <h2 className="text-3xl font-semibold text-white tracking-tight">
+                <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
                   {TABS.find(t => t.id === activeTab)?.label}
                 </h2>
               </div>
-              <div className="text-sm text-[#a1a1aa]">
+              <div className="text-[13px] text-[#52525b] hidden md:block">
                 {activeTab === "missions" && "Locked paths."}
                 {activeTab === "mirror" && "Behavioural truth."}
                 {activeTab === "debt" && "Cost of inconsistency."}

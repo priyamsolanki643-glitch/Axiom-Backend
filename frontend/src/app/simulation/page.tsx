@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Cpu, Terminal, CheckCircle2, Loader2 } from "lucide-react";
 
 const SIMULATION_STEPS = [
   "Mapping local opportunity signals for Kanpur, India...",
@@ -28,11 +29,8 @@ export default function SimulationSequence() {
       }, stepDuration);
       return () => clearTimeout(timer);
     } else {
-      // All steps shown, wait a moment then show completion
       const completeTimer = setTimeout(() => {
         setIsComplete(true);
-        
-        // Wait another 2 seconds before redirecting
         setTimeout(() => {
           router.push("/selection");
         }, 2000);
@@ -41,44 +39,125 @@ export default function SimulationSequence() {
     }
   }, [activeStep, router]);
 
+  // Calculate percentage for progress loader
+  const progressPercent = Math.min((activeStep / SIMULATION_STEPS.length) * 100, 100);
+
   return (
-    <main className="flex h-screen w-full items-center justify-center bg-background p-12">
-      <div className="w-full max-w-4xl">
-        <div className="flex flex-col space-y-4 font-mono text-lg text-foreground/80">
+    <main className="flex h-screen w-full items-center justify-center bg-black p-4 md:p-8 relative overflow-hidden font-mono text-white">
+      {/* Background orbs */}
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-cyan-950/10 blur-[130px] mix-blend-screen" />
+
+      {/* Grid Pattern */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.015]"
+        style={{
+          backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      />
+
+      <div className="w-full max-w-3xl relative z-10">
+        
+        {/* Diagnostic HUD Container */}
+        <div className="border border-white/5 bg-[#09090b]/80 backdrop-blur-2xl rounded-2xl p-6 md:p-8 shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
           
-          {SIMULATION_STEPS.map((step, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: activeStep > idx ? 1 : 0 }}
-              className="flex items-center"
-            >
-              <span>{step}</span>
-              {/* Show cursor only on the currently active step */}
-              {activeStep === idx + 1 && !isComplete && (
+          {/* Header */}
+          <div className="flex items-center justify-between pb-6 mb-6 border-b border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-lg border border-white/10 bg-white/[0.02] flex items-center justify-center shrink-0">
+                <Cpu className="size-4 text-cyan-400 animate-pulse" />
+              </div>
+              <div>
+                <h2 className="text-[12px] font-semibold tracking-wider text-white uppercase">
+                  SIMULATION ENGINE // ACTIVE CORE
+                </h2>
+                <div className="text-[9px] text-[#71717a] mt-0.5 uppercase tracking-widest flex items-center gap-1.5">
+                  CORE_LOAD: 98.4% <span className="text-cyan-400/30">|</span> THREADS: 128 ACTIVE
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 border border-white/5 bg-white/[0.02] px-3 py-1 rounded-md">
+              {!isComplete ? (
+                <>
+                  <Loader2 className="size-3 text-cyan-400 animate-spin" />
+                  <span className="text-[9px] text-cyan-400 tracking-wider">COMPUTING</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="size-3 text-green-400" />
+                  <span className="text-[9px] text-green-400 tracking-wider">COMPLETE</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Loader bar */}
+          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mb-8">
+            <div 
+              className="h-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.4)] transition-all duration-500 ease-out" 
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+
+          {/* Step Sequence */}
+          <div className="space-y-3.5 min-h-[220px] flex flex-col justify-start">
+            {SIMULATION_STEPS.map((step, idx) => {
+              const isActive = activeStep === idx + 1;
+              const isRevealed = activeStep > idx;
+
+              // Generate static timestamps for console diagnostic look
+              const stepTime = (idx * (8 / SIMULATION_STEPS.length)).toFixed(2);
+
+              return (
+                <div key={idx} className="flex items-start gap-4">
+                  <span className={`text-[11px] font-mono select-none shrink-0 ${isRevealed ? "text-[#71717a]" : "text-[#27272a]"}`}>
+                    [{stepTime}s]
+                  </span>
+                  
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isRevealed ? 1 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex-1 text-[13px] leading-relaxed select-text ${
+                      isActive 
+                        ? "text-cyan-400 font-semibold" 
+                        : isRevealed 
+                        ? "text-[#a1a1aa]" 
+                        : "text-[#27272a]"
+                    }`}
+                  >
+                    <span>{step}</span>
+                    {isActive && !isComplete && (
+                      <motion.span
+                        animate={{ opacity: [1, 0, 1] }}
+                        transition={{ repeat: Infinity, duration: 0.8 }}
+                        className="ml-1 inline-block w-1.5 h-4 bg-cyan-400 align-middle shadow-[0_0_6px_rgba(34,211,238,0.5)]"
+                      />
+                    )}
+                  </motion.div>
+                </div>
+              );
+            })}
+
+            {/* Complete take-over */}
+            {isComplete && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="pt-6 border-t border-white/5 flex items-center gap-3 text-green-400 text-[14px] font-semibold"
+              >
+                <CheckCircle2 className="size-4.5 text-green-400 shrink-0" />
+                <span>Simulation complete. 2 viable trajectories identified.</span>
                 <motion.span
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ repeat: Infinity, duration: 0.8 }}
-                  className="ml-1 inline-block w-2 h-5 bg-primary"
+                  className="inline-block w-1.5 h-4 bg-green-400 align-middle"
                 />
-              )}
-            </motion.div>
-          ))}
-
-          {isComplete && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="pt-8 text-primary"
-            >
-              <span>Simulation complete. 2 viable trajectories identified.</span>
-              <motion.span
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ repeat: Infinity, duration: 0.8 }}
-                className="ml-1 inline-block w-2 h-5 bg-primary"
-              />
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+          </div>
 
         </div>
       </div>

@@ -3,9 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Input } from "@/components/ui/input";
+import { Terminal, Shield, Cpu, Activity, CornerDownLeft } from "lucide-react";
 
-// Mock Intake Script
 const INTAKE_QUESTIONS = [
   { key: "geo", text: "Where are you operating from? (City, Country)" },
   { key: "capital", text: "What is your current liquid capital available for this goal?" },
@@ -23,12 +22,17 @@ export default function IntakeTerminal() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const consoleEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isProcessing && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isProcessing, currentIndex]);
+
+  useEffect(() => {
+    consoleEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [history, currentQuestionText, isProcessing]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +75,6 @@ export default function IntakeTerminal() {
       }
     } catch (err) {
       console.error(err);
-      // Fallback logic for UI if backend is offline
       if (currentIndex < INTAKE_QUESTIONS.length - 1) {
         setCurrentIndex((prev) => prev + 1);
         setCurrentQuestionText(INTAKE_QUESTIONS[currentIndex + 1].text);
@@ -85,112 +88,219 @@ export default function IntakeTerminal() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden">
-      {/* LEFT 2/3: Conversation Area */}
-      <div className="w-2/3 h-full flex flex-col p-12 overflow-y-auto border-r border-border scrollbar-none">
+    <div className="flex h-screen w-full bg-black overflow-hidden relative font-sans text-white">
+      {/* Aurora Orbs */}
+      <div className="pointer-events-none absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-indigo-900/10 blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: "8s" }} />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-purple-900/10 blur-[120px] mix-blend-screen animate-pulse" style={{ animationDuration: "12s" }} />
+
+      {/* Grid Pattern */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.015]"
+        style={{
+          backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      />
+
+      {/* LEFT 2/3: Interactive Terminal Area */}
+      <div className="w-full lg:w-2/3 h-full flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto no-scrollbar relative z-10">
         
-        <div className="flex-1 flex flex-col justify-end max-w-3xl">
-          <AnimatePresence>
-            {history.map((item, idx) => (
+        {/* Terminal Header */}
+        <div className="flex items-center justify-between mb-8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="size-6 rounded-full bg-white flex items-center justify-center">
+              <span className="text-black text-[9px] font-bold">FP</span>
+            </div>
+            <span className="font-mono text-[10px] tracking-[0.25em] text-[#71717a] uppercase">
+              OPERATOR // TERMINAL_INFLOW
+            </span>
+          </div>
+          <div className="flex items-center gap-2 border border-white/5 bg-white/[0.02] px-3.5 py-1.5 rounded-full backdrop-blur-md">
+            <div className="size-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="font-mono text-[9px] text-cyan-400 tracking-wider">CONNECTION SECURE</span>
+          </div>
+        </div>
+
+        {/* Console Box */}
+        <div className="flex-1 flex flex-col justify-end max-w-3xl w-full mx-auto">
+          <div className="space-y-6 overflow-y-auto no-scrollbar pr-2 pb-4">
+            <AnimatePresence>
+              {history.map((item, idx) => (
+                <motion.div 
+                  key={idx} 
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-3"
+                >
+                  {/* System output */}
+                  <div className="flex items-start gap-3">
+                    <div className="size-5 rounded-md border border-white/10 bg-white/[0.03] flex items-center justify-center shrink-0 mt-0.5">
+                      <Terminal className="size-3 text-[#71717a]" />
+                    </div>
+                    <p className="font-mono text-[13px] text-[#a1a1aa] leading-relaxed select-text">
+                      {item.q}
+                    </p>
+                  </div>
+                  
+                  {/* User response */}
+                  <div className="flex items-start gap-3 pl-8">
+                    <span className="font-mono text-[13px] text-cyan-400">fp@operator:~$</span>
+                    <p className="font-mono text-[13px] text-white leading-relaxed select-text bg-white/[0.02] border border-white/5 rounded-lg px-3 py-1.5 backdrop-blur-sm shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+                      {item.a}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Current Question Block */}
+            {!isLocked && currentQuestionText && (
               <motion.div 
-                key={idx} 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-4 pt-2"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="size-6 rounded-md border border-white/15 bg-white/[0.04] flex items-center justify-center shrink-0 mt-1">
+                    <Terminal className="size-3.5 text-white animate-pulse" />
+                  </div>
+                  <p className="font-sans text-xl md:text-2xl font-normal text-white leading-snug tracking-tight">
+                    {currentQuestionText}
+                  </p>
+                </div>
+                
+                {/* Input Prompt */}
+                {!isProcessing ? (
+                  <div className="pl-9 pt-1">
+                    <form onSubmit={handleSubmit} className="flex items-center gap-3 bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 focus-within:border-white/15 transition-all duration-200 backdrop-blur-md">
+                      <span className="font-mono text-[13px] text-cyan-400 select-none">fp@operator:~$</span>
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        className="flex-1 bg-transparent border-0 outline-none text-[14px] font-mono text-white placeholder:text-[#3f3f46]"
+                        placeholder="Enter parameter..."
+                      />
+                      <button type="submit" className="size-7 rounded-lg bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-colors cursor-pointer shrink-0">
+                        <CornerDownLeft className="size-3.5" />
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="pl-9 h-12 flex items-center">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex gap-1">
+                        <span className="thinking-dot text-cyan-400" />
+                        <span className="thinking-dot text-cyan-400" />
+                        <span className="thinking-dot text-cyan-400" />
+                      </div>
+                      <span className="font-mono text-[11px] text-cyan-400/80 tracking-wider uppercase">
+                        Running constraints audit...
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Trajectory Locking Status */}
+            {isLocked && (
+              <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8 border-b border-border/50 pb-8"
+                className="pl-9 pt-4 flex items-center gap-3"
               >
-                <p className="font-sans text-lg mb-4 text-foreground">{item.q}</p>
-                <p className="font-sans text-lg text-muted-foreground opacity-70">
-                  {item.a}
-                </p>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {!isLocked && currentQuestionText && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-4"
-            >
-              <p className="font-sans text-2xl font-medium mb-6">
-                {currentQuestionText}
-              </p>
-              
-              {!isProcessing ? (
-                <form onSubmit={handleSubmit}>
-                  <Input
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    className="w-full bg-transparent border-0 border-b border-border rounded-none px-0 pb-2 text-xl font-sans focus-visible:ring-0 focus-visible:border-primary transition-colors"
-                    placeholder="Enter your response..."
-                  />
-                </form>
-              ) : (
-                <div className="h-10 flex items-end">
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="font-mono text-sm text-muted-foreground"
-                  >
-                    Processing constraint vector...
-                  </motion.p>
+                <div className="size-6 rounded-full border border-green-500/20 bg-green-500/10 flex items-center justify-center shrink-0">
+                  <Shield className="size-3.5 text-green-400 animate-pulse" />
                 </div>
-              )}
-            </motion.div>
-          )}
-
-          {isLocked && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-12"
-            >
-              <p className="font-mono text-primary text-lg tracking-wider">
-                Reality profile locked. Running survivability audit.
-              </p>
-            </motion.div>
-          )}
+                <span className="font-mono text-xs text-green-400 uppercase tracking-widest animate-pulse">
+                  REALITY PROFILE LOCKED // COMPILING DEVIATION VECTOR...
+                </span>
+              </motion.div>
+            )}
+            
+            <div ref={consoleEndRef} />
+          </div>
         </div>
       </div>
 
       {/* RIGHT 1/3: Constraint Matrix Panel */}
-      <div className="w-1/3 h-full bg-card p-12 flex flex-col">
-        <h3 className="font-mono text-sm uppercase tracking-widest text-muted-foreground mb-12">
-          Building your reality profile
-        </h3>
+      <div className="hidden lg:flex w-1/3 h-full border-l border-white/5 bg-[#09090b]/80 backdrop-blur-xl p-12 flex-col justify-between relative z-10">
+        <div>
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-12">
+            <Cpu className="size-4 text-[#71717a]" />
+            <h3 className="font-mono text-[10px] uppercase tracking-widest text-[#71717a]">
+              Constraint Vector Matrix
+            </h3>
+          </div>
 
-        <div className="space-y-6">
-          {INTAKE_QUESTIONS.map((q, idx) => {
-            const isMapped = idx < currentIndex || isLocked;
-            const isPending = idx === currentIndex && !isLocked;
+          {/* Slots / Progress Cards */}
+          <div className="space-y-4">
+            {INTAKE_QUESTIONS.map((q, idx) => {
+              const isMapped = idx < currentIndex || isLocked;
+              const isPending = idx === currentIndex && !isLocked;
 
-            return (
-              <div key={q.key} className="flex justify-between items-center border-b border-border/50 pb-4">
-                <span className="font-mono text-sm text-foreground capitalize">
-                  {q.key} Vector
-                </span>
-                
-                <div className="flex items-center space-x-2">
-                  {isMapped ? (
-                    <span className="font-mono text-xs text-status-positive">MAPPED</span>
-                  ) : isPending ? (
-                    <>
-                      <motion.div 
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        className="w-2 h-2 rounded-full bg-status-warning"
-                      />
-                      <span className="font-mono text-xs text-status-warning">PENDING</span>
-                    </>
-                  ) : (
-                    <span className="font-mono text-xs text-muted-foreground">AWAITING</span>
-                  )}
+              return (
+                <div 
+                  key={q.key} 
+                  className={`border rounded-2xl p-5 transition-all duration-300 ${
+                    isMapped 
+                      ? "border-white/10 bg-white/[0.02] shadow-[0_4px_20px_rgba(0,0,0,0.2)]" 
+                      : isPending 
+                      ? "border-cyan-500/20 bg-cyan-500/[0.02] shadow-[0_0_24px_rgba(34,211,238,0.02)]" 
+                      : "border-white/5 bg-transparent opacity-40"
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <span className={`font-mono text-[11px] uppercase tracking-wider ${isPending ? "text-cyan-400" : "text-[#71717a]"}`}>
+                      0{idx + 1} // {q.key} vector
+                    </span>
+                    
+                    <div className="flex items-center gap-2">
+                      {isMapped ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="size-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.4)]" />
+                          <span className="font-mono text-[9px] text-green-400 tracking-wider">MAPPED</span>
+                        </div>
+                      ) : isPending ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="size-1.5 rounded-full bg-cyan-400 animate-ping" />
+                          <span className="font-mono text-[9px] text-cyan-400 tracking-wider">PENDING</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <div className="size-1.5 rounded-full bg-[#27272a]" />
+                          <span className="font-mono text-[9px] text-[#52525b] tracking-wider">AWAITING</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <p className={`text-[13px] font-sans ${isMapped ? "text-white" : isPending ? "text-[#a1a1aa]" : "text-[#52525b]"}`}>
+                    {isMapped ? "Data vector integrated into strategy engine." : isPending ? "Listening to parameters..." : "Awaiting matrix slot activation."}
+                  </p>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer Widget */}
+        <div className="border border-white/5 bg-white/[0.01] rounded-2xl p-5 flex items-center gap-4">
+          <div className="size-9 rounded-xl border border-white/10 bg-white/[0.02] flex items-center justify-center shrink-0">
+            <Activity className="size-4 text-cyan-400" />
+          </div>
+          <div>
+            <div className="font-mono text-[10px] text-[#71717a] uppercase tracking-wider mb-0.5">
+              Processing Core
+            </div>
+            <div className="text-[12px] text-[#a1a1aa] leading-snug">
+              Telemetry pipeline listening on port 8000.
+            </div>
+          </div>
         </div>
       </div>
     </div>
