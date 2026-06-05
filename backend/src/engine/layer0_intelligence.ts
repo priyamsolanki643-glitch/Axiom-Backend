@@ -56,6 +56,7 @@ import {
   GeographyTier,
   ENGINE_AXIOMS,
 } from './types';
+import { LLMService } from '../services/llm.service';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 1: INTELLIGENCE BRIEF GENERATOR
@@ -910,13 +911,13 @@ export function analyzeSkillGap(
 // Assembles the full intelligence picture.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function runIntelligenceMatrix(
+export async function runIntelligenceMatrix(
   matrix: ContextMatrix,
   capability: CapabilityVector,
-): {
+): Promise<{
   intelligenceBrief: IntelligenceBrief;
   intelligenceReport: MarketIntelligenceReport;
-} {
+}> {
   // Generate the research brief (structured queries for AI backend)
   const intelligenceBrief = generateIntelligenceBrief(matrix, capability);
 
@@ -979,5 +980,16 @@ export function runIntelligenceMatrix(
     dataSourceNotes: 'Intelligence based on: geo-tier market patterns, skill demand structural inference, social media platform trend analysis, and competitive landscape modeling. For critical decisions, verify locally before committing capital.',
   };
 
-  return { intelligenceBrief, intelligenceReport };
+  try {
+    const groundedReport = await LLMService.generateGroundedIntelligenceReport(intelligenceBrief.researchMandate);
+    // Add missing fields if the LLM missed them to prevent crashes
+    groundedReport.generatedAt = new Date().toISOString();
+    groundedReport.legalDisclaimer = ENGINE_AXIOMS.FINANCIAL_ADVICE_DISCLAIMER + ' All market intelligence figures are directional estimates based on live web search data, not certified market research data.';
+    if (!groundedReport.confidenceLevel) groundedReport.confidenceLevel = 'high';
+    
+    return { intelligenceBrief, intelligenceReport: groundedReport };
+  } catch (error) {
+    // Fall back to structural inference silently
+    return { intelligenceBrief, intelligenceReport };
+  }
 }

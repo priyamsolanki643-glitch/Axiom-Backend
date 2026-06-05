@@ -28,6 +28,7 @@ import {
   Milestone,
   ENGINE_AXIOMS,
 } from './types';
+import { LLMService } from '../services/llm.service';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 1: PARKINSON'S LAW ENGINE
@@ -254,13 +255,13 @@ export function personalizeTask(
 // Respects friction profile, work style, and available hours.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function generateDailyTaskSprint(
+export async function generateDailyTaskSprint(
   dayNumber: number,
   matrix: ContextMatrix,
   capability: CapabilityVector,
   frictionProfile: FrictionProfile,
   strategyState: StrategyState,
-): TaskSprint {
+): Promise<TaskSprint> {
   const lockedPath = strategyState.lockedPath!;
   const totalTargetDays = strategyState.totalTargetDays;
   const phase = determineExecutionPhase(
@@ -276,19 +277,40 @@ export function generateDailyTaskSprint(
     .replace(/\s+/g, '_')
     .slice(0, 30);
 
-  const relevantTemplates = TASK_LIBRARY.filter((t) =>
-    (t.pathTypes.includes('all') || t.pathTypes.some((p) => pathId.includes(p.slice(0, 10))))
-    && t.phase === phase
-  ).slice(0, getMaxTasksForDay(frictionProfile));
+  let tasks: DailyTask[] = [];
 
-  // If no specific templates match, use universal ones
-  const tasksToUse = relevantTemplates.length > 0
-    ? relevantTemplates
-    : TASK_LIBRARY.filter((t) => t.phase === phase).slice(0, 2);
+  try {
+    const dynamicTasks = await LLMService.generateDynamicTaskSprint(strategyState, frictionProfile, matrix, capability);
+    tasks = dynamicTasks.map((t: any, index: number) => ({
+      id: `dynamic_${dayNumber}_${index}`,
+      title: t.title,
+      description: t.description,
+      metricBound: t.metricBound,
+      timeAllocationHours: Math.max(0.5, t.timeAllocationHours), // floor
+      isCompleted: false,
+      phase,
+      compressionResistance: 'high' as const,
+    }));
+    // Enforce max tasks per day based on friction
+    const maxTasks = getMaxTasksForDay(frictionProfile);
+    if (tasks.length > maxTasks) {
+       tasks = tasks.slice(0, maxTasks);
+    }
+  } catch (error) {
+    console.error("Dynamic task generation failed, using static fallback", error);
+    const relevantTemplates = TASK_LIBRARY.filter((t) =>
+      (t.pathTypes.includes('all') || t.pathTypes.some((p) => pathId.includes(p.slice(0, 10))))
+      && t.phase === phase
+    ).slice(0, getMaxTasksForDay(frictionProfile));
 
-  const tasks = tasksToUse.map((template) =>
-    personalizeTask(template, matrix, dayNumber, frictionProfile)
-  );
+    const tasksToUse = relevantTemplates.length > 0
+      ? relevantTemplates
+      : TASK_LIBRARY.filter((t) => t.phase === phase).slice(0, 2);
+
+    tasks = tasksToUse.map((template) =>
+      personalizeTask(template, matrix, dayNumber, frictionProfile)
+    );
+  }
 
   const totalWorkHours = tasks.reduce((sum, t) => sum + t.timeAllocationHours, 0);
 

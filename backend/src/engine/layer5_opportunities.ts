@@ -26,6 +26,7 @@ import {
   HARD_BANNED_CATEGORIES,
   HardBannedCategory,
 } from './types';
+import { LLMService } from '../services/llm.service';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 1: HARD BAN LIST ENFORCER
@@ -433,21 +434,38 @@ export function generateTrendWindowOpportunities(
 // SECTION 7: MAIN LAYER 5 ORCHESTRATOR
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function runOpportunityMapping(
+export async function runOpportunityMapping(
   matrix: ContextMatrix,
   capability: CapabilityVector,
   survivability: SurvivabilityAudit,
-): OpportunityProfile {
+): Promise<OpportunityProfile> {
   // Step 1: Evaluate hard ban list
   const hardBanList = evaluateHardBanList(matrix);
 
-  // Step 2: Generate opportunities across all three layers
+  // Step 2: Generate opportunities across all three layers (Static Fallbacks)
   const localOpportunities = generateLocalGeoArbitrageOpportunities(matrix, capability);
   const digitalOpportunities = generateDigitalArbitrageOpportunities(matrix, capability);
   const trendOpportunities = generateTrendWindowOpportunities(matrix, capability);
 
-  // Step 3: Combine and rank
-  const allOpportunities = [...localOpportunities, ...digitalOpportunities, ...trendOpportunities]
+  // Step 3: LLM Universal Infinite Generator
+  let dynamicOpps: Opportunity[] = [];
+  try {
+    const rawDynamic = await LLMService.generateDynamicOpportunities(matrix, capability);
+    dynamicOpps = rawDynamic.map(d => ({
+      ...d,
+      matchesUserProfile: true,
+      geographySpecific: d.category === 'local_geo_arbitrage',
+      saturationRisk: 'Dynamic market opportunity.',
+      intelligenceEnriched: true,
+      communicationScoreRequired: 0, // Bypassed since LLM handled constraints
+      technicalScoreRequired: 0,
+    }));
+  } catch (err) {
+    console.error("Dynamic opportunity generation failed, falling back to static", err);
+  }
+
+  // Step 4: Combine and rank
+  const allOpportunities = [...dynamicOpps, ...localOpportunities, ...digitalOpportunities, ...trendOpportunities]
     .sort((a, b) => b.opportunityScore - a.opportunityScore);
 
   // Step 4: Identify top picks

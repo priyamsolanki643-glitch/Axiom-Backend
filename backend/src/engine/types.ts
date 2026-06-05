@@ -53,6 +53,7 @@ export interface SkillNode {
   selfReportedLevel: number;     // 0.0 – 1.0 (what user claims)
   verifiedLevel: number;         // 0.0 – 1.0 (what engine assigns after calibration)
   hasVerifiableOutput: boolean;  // Did they build/write/show something real?
+  hasPassedCalibration?: boolean; // Did they pass the AI's micro-calibration test instead of providing a link?
   category: 'technical' | 'creative' | 'communication' | 'physical' | 'domain';
   compressionResistance: 'low' | 'medium' | 'high'; // GAP 11 fix: task compression tolerance
 }

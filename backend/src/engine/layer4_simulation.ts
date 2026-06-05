@@ -268,15 +268,8 @@ export function filterEligiblePaths(
   const userGeo = matrix.socioeconomic.geographyTier;
 
   for (const path of PATH_TEMPLATES) {
-    // Survivability band gates
-    if (survivability.runwayBand === 'red' && path.type !== 'survival') {
-      ineligible.push({ path, reason: 'Runway in Red Band — only survival paths permitted.' });
-      continue;
-    }
-    if (survivability.runwayBand === 'yellow' && path.type === 'high_risk_upside') {
-      ineligible.push({ path, reason: 'Runway in Yellow Band — high-risk paths blocked.' });
-      continue;
-    }
+    // Survivability band gates - RELAXED: do not block paths; let the user see them,
+    // but the system will warn them and default to Sprint 0 tasks where appropriate.
 
     // Capital requirement gate
     if (path.requiredMinCapital > matrix.socioeconomic.liquidCapital) {

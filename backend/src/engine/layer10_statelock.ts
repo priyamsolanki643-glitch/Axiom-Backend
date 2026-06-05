@@ -381,7 +381,7 @@ export function createInitialStrategyState(): StrategyState {
     status: 'intake',
     lockedPath: null,
     lockedAt: null,
-    consistencyScore: 100,         // Starts at 100 — the user proves themselves from here
+    consistencyScore: ENGINE_AXIOMS.CONSISTENCY_INITIAL_SCORE,
     currentDayNumber: 0,
     totalTargetDays: 0,
     isLocked: false,

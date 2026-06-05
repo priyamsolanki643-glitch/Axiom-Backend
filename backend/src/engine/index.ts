@@ -96,10 +96,16 @@ import {
   FPStage,
 } from './systemPrompt';
 
+import {
+  runLegalAudit,
+} from './layer13_legalaudit';
+
 // ── Type imports ────────────────────────────────────────────────────────────
 import {
   UserRuntime,
   ContextMatrix,
+  CapabilityVector,
+  FrictionProfile,
   StrategyState,
   TrajectoryPath,
   ConsistencyEvent,
@@ -278,53 +284,22 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
   const survivabilityAudit = runSurvivabilityAudit(contextMatrix);
 
   // ── LAYER 0: Market Intelligence Matrix ────────────────────────────────────
-  const { intelligenceBrief, intelligenceReport } = runIntelligenceMatrix(contextMatrix, capabilityVector);
+  const { intelligenceBrief, intelligenceReport } = await runIntelligenceMatrix(contextMatrix, capabilityVector);
 
   // ── SURVIVAL MODE GATE ─────────────────────────────────────────────────────
   let survivalModeResponse = null;
   if (!survivabilityAudit.strategyGenerationUnlocked) {
     survivalModeResponse = buildSurvivalModeResponse(contextMatrix);
-    // Return early — no strategy generation for Red Band
-    const initialState = createInitialStrategyState();
-    const userRuntime: UserRuntime = {
-      contextMatrix,
-      capabilityVector,
-      survivabilityAudit,
-      intelligenceBrief,
-      intelligenceReport,
-      opportunityProfile: {
-        rankedOpportunities: [],
-        hardBanList: null,
-        topLocalOpportunity: survivalModeResponse.immediateActions[0] as any,
-        topDigitalOpportunity: null,
-        topSocialMediaOpportunity: null,
-        intelligenceEnriched: false,
-      },
-      frictionProfile: runFrictionProfiling(contextMatrix, input.detectedFrictionSignalIds),
-      ambitionAssessment: runAmbitionFilter(contextMatrix, capabilityVector),
-      skillGapAnalysis: null,
-      availablePaths: [],
-      strategyState: initialState,
-      currentTaskSprint: null,
-      consistencyHistory: [],
-      legalAuditReport: null,
-    };
-
-    return {
-      userRuntime,
-      pathPresentation: null as any,
-      ambitionAssessment: userRuntime.ambitionAssessment,
-      socioEconomicGuardrail: applySocioEconomicGuardrail(contextMatrix, capabilityVector, input.targetAmount),
-      survivalModeResponse,
-      systemPrompt: buildFullSystemPrompt('onboarding', userRuntime),
-    };
+    // Relaxed: We no longer return early to block strategy selection.
+    // The user is allowed to proceed to choose their strategy, but their daily execution
+    // tasks will start with "Sprint 0: First-Rupee Velocity" to address immediate financial stress.
   }
 
   // ── LAYER 4: Stochastic Simulation ────────────────────────────────────────
   const simulationResults = runTrajectorySimulation(contextMatrix, capabilityVector, survivabilityAudit, intelligenceReport);
 
   // ── LAYER 5: Opportunity Mapping ───────────────────────────────────────────
-  const opportunityProfile = runOpportunityMapping(contextMatrix, capabilityVector, survivabilityAudit);
+  const opportunityProfile = await runOpportunityMapping(contextMatrix, capabilityVector, survivabilityAudit);
 
   // ── LAYER 6: Friction Profiling ────────────────────────────────────────────
   const frictionProfile = runFrictionProfiling(contextMatrix, input.detectedFrictionSignalIds);
@@ -368,6 +343,21 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
   const initialState = createInitialStrategyState();
   initialState.status = 'awaiting_selection';
 
+  const pathsForAudit = [
+    ...(pathPresentation.pathAlpha ? [pathPresentation.pathAlpha] : []),
+    pathPresentation.pathBeta,
+  ];
+  const allOutputText = pathsForAudit.map(p => `${p.label} ${p.description} ${p.milestones.map(m => m.target).join(' ')}`).join(' ');
+
+  const legalAuditReport = runLegalAudit(
+    contextMatrix,
+    pathsForAudit,
+    ambitionAssessment,
+    0,
+    100,
+    allOutputText
+  );
+
   const userRuntime: UserRuntime = {
     contextMatrix,
     capabilityVector,
@@ -378,14 +368,11 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
     frictionProfile,
     ambitionAssessment,
     skillGapAnalysis: null,
-    availablePaths: [
-      ...(pathPresentation.pathAlpha ? [pathPresentation.pathAlpha] : []),
-      pathPresentation.pathBeta,
-    ],
+    availablePaths: pathsForAudit,
     strategyState: initialState,
     currentTaskSprint: null,
     consistencyHistory: [],
-    legalAuditReport: null,
+    legalAuditReport,
   };
 
   return {
@@ -393,7 +380,7 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
     pathPresentation,
     ambitionAssessment,
     socioEconomicGuardrail,
-    survivalModeResponse: null,
+    survivalModeResponse,
     systemPrompt: buildFullSystemPrompt('simulation', userRuntime),
   };
 }
@@ -403,30 +390,41 @@ export async function processOnboarding(input: OnboardingInput): Promise<Simulat
 // Layer 10: Locks the selected path and transitions to execution mode.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function lockTrajectory(
-  userRuntime: UserRuntime,
-  selectedPathId: 'alpha' | 'beta',
-): { updatedRuntime: UserRuntime; systemPrompt: string; day1TaskSprint: ReturnType<typeof generateDailyTaskSprint> } {
-  const selectedPath = userRuntime.availablePaths.find(p => p.pathId === selectedPathId);
+export async function transitionToExecution(
+  runtime: UserRuntime,
+  lockedPathId: string,
+): Promise<{ updatedRuntime: UserRuntime; systemPrompt: string; day1TaskSprint: ReturnType<typeof generateDailyTaskSprint> extends Promise<infer T> ? T : never }> {
+  const selectedPath = runtime.availablePaths.find(p => p.pathId === lockedPathId);
   if (!selectedPath) {
-    throw new Error(`Path '${selectedPathId}' is not available in this runtime.`);
+    throw new Error(`Path '${lockedPathId}' is not available in this runtime.`);
   }
 
-  const lockedState = lockStrategy(userRuntime.strategyState, selectedPath);
+  const lockedState = lockStrategy(runtime.strategyState, selectedPath);
 
-  // Generate Day 1 task sprint immediately upon locking
-  const day1Sprint = generateDailyTaskSprint(
+  // Generate Day 1 Sprint
+  const day1Sprint = await generateDailyTaskSprint(
     1,
-    userRuntime.contextMatrix,
-    userRuntime.capabilityVector,
-    userRuntime.frictionProfile,
-    lockedState,
+    runtime.contextMatrix,
+    runtime.capabilityVector,
+    runtime.frictionProfile,
+    lockedState
+  );
+
+  const taskOutputText = day1Sprint ? day1Sprint.tasks.map(t => `${t.title}: ${t.description}`).join(' ') : '';
+  const legalAuditReport = runLegalAudit(
+    runtime.contextMatrix,
+    runtime.availablePaths,
+    runtime.ambitionAssessment,
+    0,
+    lockedState.consistencyScore,
+    taskOutputText
   );
 
   const updatedRuntime: UserRuntime = {
-    ...userRuntime,
+    ...runtime,
     strategyState: lockedState,
     currentTaskSprint: day1Sprint,
+    legalAuditReport,
   };
 
   return {
@@ -441,14 +439,19 @@ export function lockTrajectory(
 // Layer 11 + 12: Handles task completion or failure.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function processTaskUpdate(input: TaskUpdateInput): {
+export async function processTaskUpdate(
+  input: TaskUpdateInput,
+  matrix: ContextMatrix,
+  capabilityVector: CapabilityVector,
+  frictionProfile: FrictionProfile,
+): Promise<{
   updatedRuntime: UserRuntime;
   consistencyEvent: ConsistencyEvent;
   failureDiagnostic: ReturnType<typeof runFailureDiagnostic> | null;
-  nextDayTaskSprint: ReturnType<typeof generateDailyTaskSprint> | null;
+  nextDayTaskSprint: ReturnType<typeof generateDailyTaskSprint> extends Promise<infer T> ? T | null : never;
   milestoneGateResult: ReturnType<typeof checkMilestoneGate> | null;
   systemPrompt: string;
-} {
+}> {
   const { userRuntime, outcome, failureExplanation, reportedEarnings } = input;
   const currentState = userRuntime.strategyState;
 
@@ -501,20 +504,44 @@ export function processTaskUpdate(input: TaskUpdateInput): {
   // Generate next day's task sprint (unless strategy is being reset)
   let nextDayTaskSprint = null;
   if (nextDayNumber <= currentState.totalTargetDays) {
-    nextDayTaskSprint = generateDailyTaskSprint(
+    nextDayTaskSprint = await generateDailyTaskSprint(
       nextDayNumber,
-      userRuntime.contextMatrix,
-      userRuntime.capabilityVector,
-      userRuntime.frictionProfile,
+      matrix,
+      capabilityVector,
+      frictionProfile,
       updatedState,
     );
   }
+
+  const history = [...userRuntime.consistencyHistory, consistencyEvent];
+  let consecutiveFailures = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].delta < 0) {
+      consecutiveFailures++;
+    } else {
+      break;
+    }
+  }
+
+  const taskOutputText = nextDayTaskSprint
+    ? nextDayTaskSprint.tasks.map((t: any) => `${t.title}: ${t.description}`).join(' ')
+    : '';
+
+  const legalAuditReport = runLegalAudit(
+    matrix,
+    userRuntime.availablePaths,
+    userRuntime.ambitionAssessment,
+    consecutiveFailures,
+    updatedState.consistencyScore,
+    taskOutputText
+  );
 
   const updatedRuntime: UserRuntime = {
     ...userRuntime,
     strategyState: updatedState,
     currentTaskSprint: nextDayTaskSprint,
-    consistencyHistory: [...userRuntime.consistencyHistory, consistencyEvent],
+    consistencyHistory: history,
+    legalAuditReport,
   };
 
   return {

@@ -96,10 +96,10 @@ export function calibrateSkill(
 ): SkillNode {
   let verifiedLevel = skill.selfReportedLevel;
 
-  // Step 1: Apply unverified output discount first
-  if (!skill.hasVerifiableOutput) {
-    verifiedLevel *= (1 - downgradeFactors.noVerifiableOutputDowngrade);
-  }
+  // Step 1: Unverified output discount (REMOVED - we now trust baseline and verify during execution)
+  // if (!skill.hasVerifiableOutput && !skill.hasPassedCalibration) {
+  //   verifiedLevel *= (1 - downgradeFactors.noVerifiableOutputDowngrade);
+  // }
 
   // Step 2: Apply device/internet constraints to technical skills
   if (skill.category === 'technical') {
@@ -119,12 +119,11 @@ export function calibrateSkill(
     verifiedLevel *= (1 - downgradeFactors.hoursDowngrade);
   }
 
-  // Step 5: Apply the global inflation correction
-  // Users over-report by avg 45% — apply correction if no verifiable output
-  if (!skill.hasVerifiableOutput) {
-    verifiedLevel *= (1 - ENGINE_AXIOMS.SELF_REPORT_INFLATION_AVG);
-    verifiedLevel = Math.min(verifiedLevel, 0.6); // Hard cap at 0.6 without proof
-  }
+  // Step 5: Global inflation correction (REMOVED - trusting user for probationary period)
+  // if (!skill.hasVerifiableOutput && !skill.hasPassedCalibration) {
+  //   verifiedLevel *= (1 - ENGINE_AXIOMS.SELF_REPORT_INFLATION_AVG);
+  //   verifiedLevel = Math.min(verifiedLevel, 0.6); // Hard cap at 0.6 without proof
+  // }
 
   return {
     ...skill,
@@ -243,10 +242,13 @@ export function assessTechnicalBuildViability(
   const hasTechnicalSkill = calibratedSkills.some(
     (s) => s.category === 'technical' && s.verifiedLevel >= 0.3
   );
+  // Vibecoding support: High learning rate or comm score acts as a substitute for raw technical skill
+  const canVibecode = matrix.humanCapital.learningRate > 0.7 || matrix.humanCapital.communicationScore > 0.7;
+
   const hasDeviceCapacity = matrix.infrastructure.deviceTier !== 'mobile_only';
   const hasTimeCapacity = matrix.infrastructure.dailyUninterruptedHours >= 2;
 
-  return hasTechnicalSkill && hasDeviceCapacity && hasTimeCapacity;
+  return (hasTechnicalSkill || canVibecode) && hasDeviceCapacity && hasTimeCapacity;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
