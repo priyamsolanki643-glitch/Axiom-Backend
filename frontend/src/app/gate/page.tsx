@@ -1,18 +1,50 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldAlert, ArrowRight, ShieldCheck, Activity } from "lucide-react";
+import { ShieldAlert, ArrowRight, ShieldCheck, Activity, Cpu, Layers } from "lucide-react";
 
 export default function SurvivabilityGate() {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+  const [runwayDays, setRunwayDays] = useState(67);
+  const [band, setBand] = useState("YELLOW");
+  const [capabilityScore, setCapabilityScore] = useState(68);
+  const [materialScore, setMaterialScore] = useState(80);
+  const [viabilityText, setViabilityText] = useState("Optimal");
 
-  // Mocking the calculated runway for UI demonstration
-  const runwayDays = 67;
-  const band: string = "YELLOW"; // Could be RED, YELLOW, or GREEN
-  
+  useEffect(() => {
+    setIsClient(true);
+    try {
+      const cached = localStorage.getItem("diagnosticResult");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.circumstanceBrief) {
+          setRunwayDays(parsed.circumstanceBrief.runwayDays || 67);
+          setBand((parsed.circumstanceBrief.runwayStatusBand || "yellow").toUpperCase());
+          setMaterialScore(Math.round((parsed.circumstanceBrief.materialConstraintScore || 0.8) * 100));
+          setViabilityText(parsed.circumstanceBrief.infrastructureViability || "Optimal");
+        }
+        if (parsed.capabilityVector) {
+          setCapabilityScore(Math.round((parsed.capabilityVector.trueCapabilityScore || 0.68) * 100));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse diagnostic result from localStorage:", e);
+    }
+  }, []);
+
   const proceedToSimulation = () => {
     router.push("/simulation");
   };
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center font-mono text-[#52525b]">
+        Initializing diagnostics telemetry...
+      </div>
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-black text-white relative font-sans overflow-hidden">
@@ -31,7 +63,7 @@ export default function SurvivabilityGate() {
 
       <div className="w-full max-w-2xl flex flex-col relative z-10">
         {/* Header telemetry */}
-        <div className="flex items-center gap-3 mb-16 shrink-0">
+        <div className="flex items-center gap-3 mb-12 shrink-0">
           <div className="size-6 rounded-full bg-white flex items-center justify-center">
             <span className="text-black text-[9px] font-bold">FP</span>
           </div>
@@ -41,37 +73,64 @@ export default function SurvivabilityGate() {
         </div>
 
         {/* Content Box */}
-        <div className="space-y-8 mb-12">
+        <div className="space-y-6 mb-8">
           <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#52525b] mb-2">
             [01] Trajectory Diagnostics
           </div>
           
-          {/* Giant digital runway counter */}
-          <div className="relative border border-white/5 bg-white/[0.01] rounded-3xl p-8 backdrop-blur-xl">
-            {/* Ambient inner glow */}
-            <div className="absolute inset-0 rounded-3xl bg-radial-gradient from-white/[0.02] to-transparent pointer-events-none" />
+          {/* Main stats layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            <div className="flex justify-between items-start mb-6">
-              <span className="font-mono text-[10px] text-[#71717a] uppercase tracking-wider">
-                Liquid Capital Runway
-              </span>
-              <div className="flex items-center gap-1.5 border border-white/5 bg-white/[0.02] px-2 py-0.5 rounded font-mono text-[9px] text-[#71717a]">
-                <Activity className="size-2.5 text-cyan-400" /> LIVE COMPILER
+            {/* Giant digital runway counter */}
+            <div className="relative border border-white/5 bg-white/[0.01] rounded-3xl p-6 backdrop-blur-xl">
+              <div className="flex justify-between items-start mb-4">
+                <span className="font-mono text-[10px] text-[#71717a] uppercase tracking-wider">
+                  Liquid Capital Runway
+                </span>
+                <div className="flex items-center gap-1.5 border border-white/5 bg-white/[0.02] px-2 py-0.5 rounded font-mono text-[9px] text-[#71717a]">
+                  <Activity className="size-2.5 text-cyan-400" /> LIVE COMPILER
+                </div>
               </div>
+
+              <div className="flex items-baseline gap-2">
+                <span className="text-6xl md:text-7xl font-medium tracking-tight text-white font-display">
+                  {runwayDays}
+                </span>
+                <span className="text-sm font-mono text-[#71717a] uppercase tracking-wider font-semibold">
+                  DAYS
+                </span>
+              </div>
+
+              <p className="mt-3 text-[#71717a] text-[12px] leading-relaxed">
+                Duration your liquid capital covers active expenses before hitting zero-cashflow convergence.
+              </p>
             </div>
 
-            <div className="flex items-baseline gap-3">
-              <span className="text-7xl md:text-8xl font-medium tracking-tight text-white font-display">
-                {runwayDays}
-              </span>
-              <span className="text-lg md:text-xl font-mono text-[#71717a] uppercase tracking-wider font-semibold">
-                DAYS
-              </span>
-            </div>
+            {/* V_c Capability Calibration */}
+            <div className="relative border border-white/5 bg-white/[0.01] rounded-3xl p-6 backdrop-blur-xl">
+              <div className="flex justify-between items-start mb-4">
+                <span className="font-mono text-[10px] text-[#71717a] uppercase tracking-wider">
+                  Calibrated Capability (V_c)
+                </span>
+                <div className="flex items-center gap-1.5 border border-white/5 bg-white/[0.02] px-2 py-0.5 rounded font-mono text-[9px] text-[#71717a]">
+                  <Cpu className="size-2.5 text-indigo-400" /> STABILITY CORE
+                </div>
+              </div>
 
-            <p className="mt-4 text-[#71717a] text-[13px] leading-relaxed max-w-md">
-              The duration your liquid capital covers active expenses before hitting zero-cashflow convergence.
-            </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-6xl md:text-7xl font-medium tracking-tight text-white font-display">
+                  {capabilityScore}%
+                </span>
+                <span className="text-sm font-mono text-[#71717a] uppercase tracking-wider font-semibold">
+                  INDEX
+                </span>
+              </div>
+
+              <p className="mt-3 text-[#71717a] text-[12px] leading-relaxed">
+                Calibrated capability based on verified human assets, focus bandwidth, and historical discipline bounds.
+              </p>
+            </div>
+            
           </div>
 
           {/* Status Alert Banner */}
@@ -90,12 +149,12 @@ export default function SurvivabilityGate() {
               <ShieldCheck className="size-5 shrink-0 mt-0.5" />
             )}
             <div>
-              <div className="font-mono text-[11px] uppercase tracking-widest font-semibold mb-1.5">
+              <div className="font-mono text-[11px] uppercase tracking-widest font-semibold mb-1">
                 BAND: {band} // CRITICAL
               </div>
               <p className="text-[13px] leading-relaxed text-white">
                 {band === 'RED' 
-                  ? "Highly Constrained Protocol. The strategy engine will enforce short-term capital collection cycles."
+                  ? "Highly Constrained Protocol. The strategy engine will enforce short-term capital collection cycles (Sprint 0: First-Rupee Velocity)."
                   : band === 'YELLOW' 
                   ? "Constrained Strategy Mode Active. Moderate experimental range permitted with hard stop-loss buffers."
                   : "Optimal Runway Protocol. Structural long-term strategy execution pipeline unlocked."
@@ -106,12 +165,12 @@ export default function SurvivabilityGate() {
         </div>
 
         {/* Narrative Box */}
-        <div className="border border-white/5 bg-[#09090b]/40 rounded-2xl p-6 mb-16 backdrop-blur-sm">
-          <p className="font-sans text-[15px] md:text-[16px] leading-[1.7] text-[#a1a1aa]">
-            {band === 'RED' 
-              ? "Your runway does not support a long-term strategy. All system resources are redirecting to a 14-day income generation protocol. Strategy mode will unlock when your runway exceeds 45 days."
-              : "Your liquid capital allows for moderate experimentation but requires strict time-boxing. We will filter out capital-intensive strategies and focus on hybrid income-building trajectories that prioritize speed to cashflow."
-            }
+        <div className="border border-white/5 bg-[#09090b]/40 rounded-2xl p-6 mb-8 backdrop-blur-sm">
+          <h4 className="font-mono text-[10px] text-[#71717a] uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <Layers className="size-3 text-[#71717a]" /> Infrastructure Viability Score: {materialScore}/100
+          </h4>
+          <p className="font-sans text-[14px] leading-relaxed text-[#a1a1aa]">
+            {viabilityText}
           </p>
         </div>
 

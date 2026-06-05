@@ -323,12 +323,9 @@ export { processOperatorTaskUpdate, processOperatorCritique } from './operator';
 
 export {
   // Layer 1
-  ONBOARDING_QUESTION_FLOW,
   assessCommunicationScore,
   validateIntakeCompleteness,
 } from './layer1_intake';
-
-export type { OnboardingQuestion } from './layer1_intake';
 
 export { FRICTION_SIGNALS } from './layer6_friction';
 
@@ -342,6 +339,7 @@ export {
   // Layer 11
   describeWorkStyleArchitecture,
   TASK_LIBRARY,
+  generateDailyTaskSprint,
 } from './layer11_execution';
 
 export {

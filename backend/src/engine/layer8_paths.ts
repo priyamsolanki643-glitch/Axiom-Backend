@@ -243,41 +243,31 @@ export function evaluatePathGates(
   let alphaAvailable = true;
   let alphaBlockReason: string | undefined;
 
-  // Red band = alpha always blocked
+  // Red band warning
   if (survivability.runwayBand === 'red') {
-    alphaAvailable = false;
-    alphaBlockReason = `Your runway is ${survivability.runwayDays} days. The high-risk path requires a minimum of 45 days runway to attempt. You cannot afford to fail on a high-risk path right now.`;
+    alphaBlockReason = `WARNING: Your runway is ${survivability.runwayDays} days (Red Band). Typically, high-risk paths require at least 45 days. You are executing in high-constraint mode. Sprint 0 will activate.`;
   }
 
-  // Yellow band = alpha blocked
+  // Yellow band warning
   else if (survivability.runwayBand === 'yellow') {
-    alphaAvailable = false;
-    alphaBlockReason = `Your runway is ${survivability.runwayDays} days (Yellow Band). High-risk paths are blocked until runway exceeds 90 days. First build financial stability, then unlock higher-risk options.`;
+    alphaBlockReason = `WARNING: Your runway is ${survivability.runwayDays} days (Yellow Band). High-risk paths carry extreme variance under 90 days. Moderate experimental buffers advised.`;
   }
 
-  // Critical friction = alpha blocked
+  // Critical friction warning
   else if (frictionProfile.frictionLevel === 'critical') {
-    alphaAvailable = false;
-    alphaBlockReason = `Your execution friction profile is at critical level. High-risk paths require near-zero execution gaps. With your current friction coefficient, the alpha path's probability drops to non-viable levels. Address your execution patterns first.`;
+    alphaBlockReason = `WARNING: Your execution friction is critical. The high-risk path has high failure variance. Maintain strict discipline.`;
   }
 
-  // Stated path preference = safe and runway allows = alpha blocked by preference
+  // Stated path preference
   else if (matrix.goalVector.pathPreference === 'safe_compounding') {
-    alphaAvailable = false;
-    alphaBlockReason = `You explicitly stated preference for the safe-compounding path. I'm respecting that.`;
-  }
-
-  // Dependents + low risk tolerance = alpha blocked
-  else if (matrix.socioeconomic.familyDependencyScore < 0.3 && matrix.psychometric.riskTolerance < 0.4) {
-    alphaAvailable = false;
-    alphaBlockReason = `Your family financial dependency score and stated risk tolerance indicate you have obligations that the high-risk path puts at genuine risk. I will not generate that path for this profile.`;
+    alphaBlockReason = `Note: You selected safe compounding preference, but high-risk Alpha is unlocked if you wish to override.`;
   }
 
   return {
     alphaAvailable,
-    betaAvailable: true, // Beta is always available (safe path always exists)
+    betaAvailable: true,
     alphaBlockReason,
-    systemForcedToSinglePath: !alphaAvailable,
+    systemForcedToSinglePath: false,
   };
 }
 

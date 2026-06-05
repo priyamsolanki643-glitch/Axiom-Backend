@@ -94,6 +94,37 @@ export function validateUnlockRequest(
   const isCompleteReset = reasonLower.includes('reset') || reasonLower.includes('completely change')
     || reasonLower.includes('different goal') || reasonLower.includes('new goal');
 
+  // Check for evidence-backed execution failure pivot (Market Fundamental Change)
+  const evidenceKeywords = [
+    'calls', 'outreach', 'leads', 'github', 'code', 'tested', 'log',
+    'rejections', 'numbers', 'data', 'sheet', 'proof', 'link', 'sent',
+    'commits', 'response', 'rejected', 'failed outreach', 'no response'
+  ];
+  const hasEvidence = request.evidence && request.evidence.trim().length > 10;
+  const containsEvidenceKeywords = request.evidence && evidenceKeywords.some(kw => 
+    request.evidence!.toLowerCase().includes(kw)
+  );
+
+  const isEvidenceBackedPivot = (reasonLower.includes('pivot') || reasonLower.includes('stuck') || reasonLower.includes('feedback') || reasonLower.includes('fail') || reasonLower.includes('change')) && hasEvidence && containsEvidenceKeywords;
+
+  if (isEvidenceBackedPivot) {
+    return {
+      approved: true,
+      unlockReason: 'market_fundamental_change',
+      systemResponse: `Evidence-Backed Market Pivot authorized.
+
+Your submitted evidence has been analyzed: "${request.evidence}"
+
+Because you have logged verified market feedback or outreach rejections, the system evaluates this as disciplined execution encountering a structural dead end, rather than avoidance of work.
+
+Your consistency score is held at ${currentState.consistencyScore}/100 with 0 penalty points deducted.
+
+We will now authorize a pivot. The engine will guide you to reformulate your path based on this real-world feedback. Confirm this transition to proceed.`,
+      consistencyPenalty: 0,
+      nextState: 'structural_pivot',
+    };
+  }
+
   // DECISION TREE
   if (isCompleteReset) {
     return {

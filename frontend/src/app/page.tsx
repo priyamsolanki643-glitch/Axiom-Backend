@@ -9,7 +9,9 @@ import { Archive } from "lucide-react";
 
 export default function EntryPoint() {
   const [isLocked, setIsLocked] = useState(false);
+  const [hasActiveMission, setHasActiveMission] = useState(false);
   const [isVaultOpen, setIsVaultOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const doubleTapRef = useRef(0);
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function EntryPoint() {
         const res = await fetch(`${baseUrl}/api/v1/interaction/active-mission`);
         const result = await res.json();
         if (result?.data) {
-          setIsLocked(true);
+          setHasActiveMission(true);
         }
       } catch (err) {
         console.error("Failed checking active mission status:", err);
@@ -32,7 +34,6 @@ export default function EntryPoint() {
     if (!isLocked) return;
 
     const handlePointerDown = (e: PointerEvent) => {
-      // Ignore clicks on inputs, buttons, textarea, links
       const target = e.target as HTMLElement;
       if (isVaultOpen || target.closest("input, textarea, button, a")) return;
 
@@ -55,10 +56,15 @@ export default function EntryPoint() {
 
   return (
     <div className="h-screen w-screen flex bg-black overflow-hidden relative">
-      <Sidebar onOpenVault={() => setIsVaultOpen(true)} />
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        setIsOpen={setIsSidebarOpen} 
+        onOpenVault={() => setIsVaultOpen(true)} 
+        onSignOut={() => setIsLocked(false)}
+      />
       
       <ChatView
-        onOpenSidebar={() => {}} // Desktop sidebar is toggleable; mobile sidebar is hidden.
+        onOpenSidebar={() => setIsSidebarOpen(true)}
         onOpenVault={() => setIsVaultOpen(true)}
       />
       

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X } from "lucide-react";
 
 interface ChatViewProps {
@@ -15,18 +16,18 @@ interface Message {
   files?: { name: string; url: string; type: string }[];
 }
 
-const EMPTY_SUGGESTIONS = [
-  { badge: "STRATEGY", title: "Map a 90-day execution sprint" },
-  { badge: "REVIEW", title: "Audit my last week of work" },
-  { badge: "CLARITY", title: "First-principles my biggest goal" },
-  { badge: "RECON", title: "Find arbitrage in my locality" },
-];
+
 
 export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
+  const router = useRouter();
+  const [simulationData, setSimulationData] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const [greeting, setGreeting] = useState("Good afternoon.");
+  const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
+  const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
+  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("FP Flash");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -37,20 +38,27 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
   const recognitionRef = useRef<any>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photosInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Set greeting based on time of day
-  useEffect(() => {
-    const hrs = new Date().getHours();
-    if (hrs < 12) setGreeting("Good morning.");
-    else if (hrs < 18) setGreeting("Good afternoon.");
-    else setGreeting("Good evening.");
-  }, []);
+  const scrollToBottom = () => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  };
 
   // Auto-scroll on new messages
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollToBottom();
   }, [messages, isThinking]);
+
+  useEffect(() => {
+    const handleNewThread = () => {
+      setMessages([]);
+      setInput("");
+      setIsThinking(false);
+    };
+    window.addEventListener("new-thread", handleNewThread);
+    return () => window.removeEventListener("new-thread", handleNewThread);
+  }, []);
 
   // Handle textarea height auto adjustment
   useEffect(() => {
@@ -185,6 +193,10 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         reply = data.data.ai_response.response_text;
       }
 
+      if (data?.data?.engine_result?.type === "onboarding_complete") {
+        setSimulationData(data.data.engine_result.data);
+      }
+
       setMessages((prev) => [...prev, { id: String(Date.now()), role: "fp", text: reply }]);
     } catch {
       setMessages((prev) => [
@@ -196,6 +208,13 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
       inputRef.current?.focus();
     }
   }, [input, isThinking, messages, selectedFiles, filePreviews]);
+
+  const proceedToSimulation = () => {
+    if (!simulationData) return;
+    localStorage.setItem("diagnosticResult", JSON.stringify(simulationData.userRuntime));
+    localStorage.setItem("architectResult", JSON.stringify(simulationData));
+    router.push("/gate");
+  };
 
   const copyToClipboard = (txt: string) => {
     navigator.clipboard.writeText(txt);
@@ -216,7 +235,11 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         }
 
         @keyframes messageEntrance {
-          to {
+          0% {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          100% {
             opacity: 1;
             transform: translateY(0);
           }
@@ -276,40 +299,74 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center gap-3">
-          {/* Mobile menu trigger */}
+          {/* Menu trigger */}
           <button
             onClick={onOpenSidebar}
-            className="lg:hidden size-9 grid place-items-center rounded bg-[#0d0d0d] border border-white/5 text-[#666] hover:text-white cursor-pointer"
+            className="size-9 grid place-items-center bg-transparent text-white hover:text-gray-300 cursor-pointer transition-colors"
           >
-            <Menu className="size-4" />
+            <Menu className="size-5" />
           </button>
           
           {/* Model selector pill */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-white/5 cursor-pointer transition-colors">
-            <span className="text-[14px] font-sans font-medium text-[#e3e3e3]">FP Flash</span>
-            <svg className="size-3 text-[#c4c7c5] mt-0.5" viewBox="0 0 12 12" fill="none" stroke="currentColor">
-              <path d="m3 4.5 3 3 3-3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <div className="relative">
+            <button 
+              onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-white/5 cursor-pointer transition-colors"
+            >
+              <span className="text-[14px] font-sans font-medium text-[#e3e3e3]">{selectedModel}</span>
+              <svg className={`size-3 text-[#c4c7c5] mt-0.5 transition-transform duration-200 ${isModelDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none" stroke="currentColor">
+                <path d="m3 4.5 3 3 3-3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {/* Model Dropdown */}
+            {isModelDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 bg-[#000000] rounded-2xl p-2 flex flex-col gap-1 w-[320px] shadow-2xl z-50 animate-scale-in origin-top-left">
+                
+                {/* FP Go */}
+                <button 
+                  onClick={() => { setSelectedModel("FP Go"); setIsModelDropdownOpen(false); }}
+                  className="flex flex-col gap-1 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Go</span>
+                  </div>
+                  <span className="text-[11px] text-[#888888] leading-snug">Highly recommended for initial constraint scanning and runway calibration.</span>
+                </button>
+
+                {/* FP Pro */}
+                <button 
+                  onClick={() => { setSelectedModel("FP Pro"); setIsModelDropdownOpen(false); }}
+                  className="flex flex-col gap-1 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Pro</span>
+                  </div>
+                  <span className="text-[11px] text-[#888888] leading-snug">Highly recommended for pathway planning and strategy simulation.</span>
+                </button>
+
+                {/* FP Elite */}
+                <button 
+                  onClick={() => { setSelectedModel("FP Elite"); setIsModelDropdownOpen(false); }}
+                  className="flex flex-col gap-1 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Elite</span>
+                  </div>
+                  <span className="text-[11px] text-[#888888] leading-snug">Highly recommended for daily execution monitoring and streak retention.</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-3.5">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-[12px] font-medium text-white transition-colors cursor-pointer">
-            <Share2 className="size-3.5" />
-            Share
-          </button>
-          
-          <button className="text-[#c4c7c5] hover:text-white transition-colors cursor-pointer">
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z" />
-            </svg>
-          </button>
-
-          <button className="text-[#c4c7c5] hover:text-white transition-colors cursor-pointer">
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />
-            </svg>
+        <div className="flex items-center">
+          <button 
+            onClick={() => window.dispatchEvent(new Event('new-thread'))}
+            className="size-9 rounded-2xl bg-[#00ff66] text-black hover:bg-[#00cc55] transition-all cursor-pointer grid place-items-center shadow-[0_0_15px_rgba(0,255,102,0.3)]"
+          >
+            <Plus className="size-5" />
           </button>
         </div>
       </header>
@@ -319,51 +376,22 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         <div className="max-w-[760px] mx-auto px-4 md:px-8 h-full flex flex-col justify-between">
           
           {isInitial ? (
-            /* Replicating the Trajectory Forge Empty State exactly */
+            /* Minimalist Empty State */
             <div className="flex-1 flex flex-col items-center justify-center py-12">
-              
-              {/* Massive greeting */}
-              <h2 
-                className="reveal-chat-item text-[38px] md:text-[44px] font-medium tracking-tight text-white text-center font-sans mb-3 leading-none"
+              <div 
+                className="reveal-chat-item flex flex-col items-center gap-2.5"
                 style={{ animationDelay: "50ms" }}
               >
-                {greeting}
-              </h2>
-              
-              {/* Subtitle */}
-              <p 
-                className="reveal-chat-item text-[17.5px] text-center font-sans mb-14"
-                style={{ animationDelay: "150ms" }}
-              >
-                <span className="shimmer-text font-medium">Start executing.</span>
-              </p>
-
-              {/* Suggestions grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full max-w-[680px]">
-                {EMPTY_SUGGESTIONS.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSend(s.title)}
-                    className="reveal-chat-item suggestion-card-transition flex items-center justify-between p-4.5 rounded-2xl bg-[#09090b] border border-white/5 hover:border-white/10 hover:bg-[#0c0c0e] transition-all cursor-pointer group text-left"
-                    style={{ animationDelay: `${250 + i * 70}ms` }}
-                  >
-                    <div className="flex items-center gap-3">
-                      {/* Dark small badge */}
-                      <span className="font-mono text-[9px] font-bold text-[#888888] bg-white/5 border border-white/5 px-2 py-0.5 rounded shrink-0">
-                        {s.badge}
-                      </span>
-                      <span className="text-[13.5px] text-[#a1a1aa] group-hover:text-white transition-colors truncate max-w-[210px] sm:max-w-[240px]">
-                        {s.title}
-                      </span>
-                    </div>
-                    
-                    <svg className="size-3.5 text-[#52525b] group-hover:text-[#a1a1aa] transition-colors shrink-0" viewBox="0 0 12 12" fill="none" stroke="currentColor">
-                      <path d="M4.5 9l3-3-3-3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                ))}
+                <h2 className="text-[28px] md:text-[36px] font-medium tracking-tight text-white text-center font-sans leading-none">
+                  {greeting.text}
+                </h2>
+                <h2 
+                  className={`text-[28px] md:text-[36px] font-medium tracking-tight text-center font-sans leading-none text-[#22c55e] ${greeting.animateAccent ? 'shimmer-text-green' : ''}`} 
+                  style={{ textShadow: "0 0 15px rgba(34,197,94,0.3)" }}
+                >
+                  {greeting.accent}
+                </h2>
               </div>
-
             </div>
           ) : (
             /* Messages list (bubbleless, flat style) */
@@ -377,7 +405,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                       
                       {isUser ? (
                         /* User message: Dark bubble with optional files */
-                        <div className="max-w-[80%] bg-[#1a1a1a] text-white text-[14.5px] leading-relaxed px-5 py-3 rounded-2xl border border-white/5 select-text shadow-sm space-y-2.5">
+                        <div className="max-w-[80%] bg-[#1e1f20] text-[#e3e3e3] text-[14.5px] leading-relaxed px-5 py-3 rounded-[24px] select-text space-y-2.5">
                           {m.text && <div>{m.text}</div>}
                           {m.files && m.files.length > 0 && (
                             <div className="flex flex-wrap gap-2 pt-1 border-t border-white/5">
@@ -435,16 +463,30 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
               {/* Loader */}
               {isThinking && (
                 <div className="flex justify-start animate-message-reveal">
-                  <div className="flex items-center gap-3">
-                    <div className="flex gap-1.5 items-center">
-                      <span className="thinking-dot text-[#00ff66]" />
-                      <span className="thinking-dot text-[#00ff66]" />
-                      <span className="thinking-dot text-[#00ff66]" />
+                  <div className="flex items-center justify-center p-3 bg-[#000000] w-fit rounded-2xl">
+                    <div className="relative w-2.5 h-2.5 animate-[spin_1s_linear_infinite]">
+                      <span className="absolute top-0 left-0 size-1 rounded-full bg-[#888888]" />
+                      <span className="absolute bottom-0 right-0 size-1 rounded-full bg-[#888888]" />
                     </div>
-                    <span className="font-mono text-[10px] text-[#666666] uppercase tracking-wider">
-                      Compiling trajectory...
-                    </span>
                   </div>
+                </div>
+              )}
+
+              {/* Simulation Call-To-Action Banner */}
+              {simulationData && (
+                <div className="border border-cyan-500/20 bg-cyan-500/5 rounded-2xl p-5 mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-md animate-message-reveal">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">Strategy Simulations Compiled</h3>
+                    <p className="text-xs text-[#a1a1aa] mt-1">
+                      The AI operator has parsed your circumstances and generated optimal trajectories.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={proceedToSimulation}
+                    className="px-5 py-2 rounded-full bg-white text-black font-semibold text-xs uppercase tracking-wider hover:bg-gray-200 transition-colors cursor-pointer shrink-0"
+                  >
+                    Proceed to Trajectory Audit
+                  </button>
                 </div>
               )}
             </div>
@@ -460,8 +502,8 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
           style={{ animationDelay: "550ms" }}
         >
           
-          {/* Rounded 3xl capsule box */}
-          <div className="input-console-transition border border-white/5 bg-[#09090b] rounded-[24px] p-2.5 flex flex-col gap-2">
+          {/* Sleek Apple-inspired floating capsule */}
+          <div className="input-console-transition border border-white/[0.08] bg-[#0a0a0a]/80 backdrop-blur-xl rounded-[32px] p-2.5 flex flex-col gap-2 shadow-[0_8px_32px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.03)]">
             
             {/* Previews of selected files */}
             {selectedFiles.length > 0 && (
@@ -520,6 +562,14 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
             />
             <input
               type="file"
+              accept="image/*,video/*"
+              ref={photosInputRef}
+              onChange={handleFileChange}
+              multiple
+              className="hidden"
+            />
+            <input
+              type="file"
               accept="image/*"
               ref={cameraInputRef}
               onChange={handleFileChange}
@@ -530,47 +580,42 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
             {/* Bottom Row inside box */}
             <div className="flex items-center justify-between px-2 pt-1 border-t border-white/[0.02]">
               {/* Left Side feature capsules */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="size-7 rounded-full grid place-items-center hover:bg-white/5 text-[#666666] hover:text-white cursor-pointer shrink-0"
-                  title="Upload files"
+                  onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)}
+                  className={`size-7 rounded-full grid place-items-center transition-colors cursor-pointer shrink-0 ${isAttachMenuOpen ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-[#666666] hover:text-white'}`}
+                  title="Attach"
                 >
-                  <Plus className="size-4" />
-                </button>
-                
-                {/* Deep think pill */}
-                <button className="suggestion-card-transition flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[#a1a1aa] hover:text-white text-[11px] font-medium transition-colors cursor-pointer">
-                  <Target className="size-3.5 text-[#666666]" />
-                  Deep think
+                  <Plus className={`size-4 transition-transform duration-200 ${isAttachMenuOpen ? 'rotate-45' : ''}`} />
                 </button>
 
-                {/* Web search pill */}
-                <button className="suggestion-card-transition flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[#a1a1aa] hover:text-white text-[11px] font-medium transition-colors cursor-pointer">
-                  <Globe className="size-3.5 text-[#666666]" />
-                  Web
-                </button>
-
-                {/* Camera icon */}
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="size-7 rounded-full grid place-items-center hover:bg-white/5 text-[#666666] hover:text-white cursor-pointer shrink-0"
-                  title="Capture photo"
-                >
-                  <Camera className="size-4" />
-                </button>
-
-                {/* Image upload button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="size-7 rounded-full grid place-items-center hover:bg-white/5 text-[#666666] hover:text-white cursor-pointer shrink-0"
-                  title="Upload images"
-                >
-                  <Image className="size-4" />
-                </button>
+                {/* Attachment Menu Popover */}
+                {isAttachMenuOpen && (
+                  <div className="absolute bottom-full left-0 mb-3 bg-[#1e1f20] border border-white/5 rounded-2xl p-1.5 flex flex-col gap-0.5 shadow-2xl min-w-[140px] animate-scale-in origin-bottom-left">
+                    <button 
+                      onClick={() => { cameraInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[13px] text-left cursor-pointer"
+                    >
+                      <Camera className="size-4" />
+                      <span>Camera</span>
+                    </button>
+                    <button 
+                      onClick={() => { photosInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[13px] text-left cursor-pointer"
+                    >
+                      <Image className="size-4" />
+                      <span>Photos</span>
+                    </button>
+                    <button 
+                      onClick={() => { fileInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[13px] text-left cursor-pointer"
+                    >
+                      <Paperclip className="size-4" />
+                      <span>Files</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Right Side triggers */}
@@ -603,7 +648,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
           {/* Subtext info */}
           <div className="mt-3 text-center">
             <span className="font-sans text-[11px] text-[#52525b]">
-              FP can be direct. Verify what matters.
+              FP is an AI, it can make mistakes.
             </span>
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
+import { AuthModal } from "@/components/auth-modal";
 
 interface LandingPageProps {
   onLock: () => void;
@@ -10,6 +11,7 @@ interface LandingPageProps {
 export function LandingPage({ onLock }: LandingPageProps) {
   const [shutter, setShutter] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 60);
@@ -17,6 +19,11 @@ export function LandingPage({ onLock }: LandingPageProps) {
   }, []);
 
   const handleStart = () => {
+    setIsAuthOpen(true);
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthOpen(false);
     if (!shutter) {
       setShutter(true);
       setTimeout(onLock, 560);
@@ -153,8 +160,8 @@ export function LandingPage({ onLock }: LandingPageProps) {
         }}
       >
         <div className="flex items-center gap-3">
-          <button className="btn-signin-green">Sign in</button>
-          <button className="btn-login-green">Log in</button>
+          <button onClick={() => setIsAuthOpen(true)} className="btn-signin-green">Sign in</button>
+          <button onClick={() => setIsAuthOpen(true)} className="btn-login-green">Log in</button>
         </div>
       </header>
 
@@ -201,6 +208,8 @@ export function LandingPage({ onLock }: LandingPageProps) {
           </div>
         </div>
       </main>
+
+      {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} onSuccess={handleAuthSuccess} />}
 
       {/* ── Empty/Hidden Clean Footer ── */}
       <footer className="px-6 py-6 md:px-12 relative z-10 h-10 w-full" />

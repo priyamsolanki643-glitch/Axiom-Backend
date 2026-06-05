@@ -312,6 +312,39 @@ export async function generateDailyTaskSprint(
     );
   }
 
+  // ADAPTIVE LOAD BALANCING (Layer 11/12 Integration)
+  const isMicroSprintNeeded = (strategyState.consecutiveFailureCount && strategyState.consecutiveFailureCount >= 3) || strategyState.consistencyScore < 50;
+
+  if (isMicroSprintNeeded) {
+    tasks = [{
+      id: `micro_sprint_recovery_${dayNumber}`,
+      title: "Consistency Recovery Micro-Sprint",
+      description: "Set a timer for 15 minutes. Open your primary development environment, identify the single smallest step to resolve the active blocker, and execute it. Your objective is simply to start, overcoming the friction of avoidance.",
+      metricBound: "Complete: 15 minutes of documented focus logged. Initial trace verified.",
+      timeAllocationHours: 0.25,
+      isCompleted: false,
+      phase,
+      compressionResistance: 'high' as const
+    }];
+  } else {
+    // PROBATIONARY SKILLS CHALLENGE (Layer 2 Skill Verification)
+    const isProbationDay = dayNumber >= 1 && dayNumber <= 3;
+    if (isProbationDay) {
+      const skillsList = capability.calibratedSkills || [];
+      const primarySkill = skillsList.length > 0 ? skillsList[0].skillName : "core execution";
+      tasks.push({
+        id: `skills_validation_challenge_day${dayNumber}`,
+        title: `Skills Validation Challenge: ${primarySkill.toUpperCase()}`,
+        description: `Verify your claimed capability in ${primarySkill}. Write a simple proof-of-concept script, outline, or repository validating that your environment is fully configured for your locked path.`,
+        metricBound: `Complete: Proof-of-concept committed to Git or documented. Log the URL or local file path with the operator.`,
+        timeAllocationHours: 1.0,
+        isCompleted: false,
+        phase,
+        compressionResistance: 'high' as const
+      });
+    }
+  }
+
   const totalWorkHours = tasks.reduce((sum, t) => sum + t.timeAllocationHours, 0);
 
   // Determine active ideologies

@@ -40,7 +40,8 @@ export default function IntakeTerminal() {
 
     const answer = inputValue;
     setInputValue("");
-    setHistory((prev) => [...prev, { q: currentQuestionText, a: answer }]);
+    const updatedHistoryItems = [...history, { q: currentQuestionText, a: answer }];
+    setHistory(updatedHistoryItems);
     
     const newUserMsg = { role: "user" as const, parts: [{ text: answer }] };
     const updatedHistory = [...conversationHistory, newUserMsg];
@@ -68,10 +69,84 @@ export default function IntakeTerminal() {
         setCurrentIndex((prev) => prev + 1);
         setCurrentQuestionText(aiResponseText);
       } else {
+        // Run full diagnostic engine based on collected inputs
+        const geoAns = updatedHistoryItems[0]?.a || "Kanpur, India";
+        const capitalAns = updatedHistoryItems[1]?.a || "10000";
+        const hoursAns = updatedHistoryItems[2]?.a || "4";
+        const goalAns = answer;
+
+        const capitalVal = parseFloat(capitalAns.replace(/[^0-9.]/g, "")) || 10000;
+        const hoursVal = parseFloat(hoursAns.replace(/[^0-9.]/g, "")) || 4;
+
+        let geographyTier: 'tier1_city' | 'tier2_city' | 'tier3_city' = 'tier2_city';
+        const geoLower = geoAns.toLowerCase();
+        if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) {
+          geographyTier = 'tier1_city';
+        } else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) {
+          geographyTier = 'tier2_city';
+        } else {
+          geographyTier = 'tier3_city';
+        }
+
+        const diagnosticPayload = {
+          userId: "test-user",
+          geographyTier,
+          country: geoLower.includes("india") ? "IN" : "US",
+          region: geoAns,
+          liquidCapital: capitalVal,
+          monthlyBurnRate: Math.max(3000, Math.floor(capitalVal / 4)),
+          hasDebt: false,
+          debtMonthlyObligation: 0,
+          familyDependencyScore: 1.0,
+          rawSkillStrings: ["typescript", "react", "nextjs", "automation"],
+          hasVerifiableOutputMap: { "typescript": true, "react": false },
+          positiveCommSignals: ["clear", "responsive"],
+          negativeCommSignals: [],
+          dailyUninterruptedHours: hoursVal,
+          deviceTier: "mid_range" as const,
+          internetStability: "4g_stable" as const,
+          workEnvironment: "dedicated_quiet" as const,
+          canWorkAtNight: true,
+          hasDedicatedWorkspace: true,
+          procrastinationSignals: {
+            tookLongBetweenAnswers: false,
+            setOptimisticDeadlines: false,
+            gavelVagueGoalsNotSpecific: false,
+            mentionedPastFailedAttempts: false,
+            usedPassiveLanguage: false,
+            conflatedPlanningWithExecution: false
+          },
+          cognitiveEnduranceMinutes: 120,
+          emotionalResilience: 0.8,
+          baselineDiscipline: 0.7,
+          preferredWorkStyle: "deep_work_clusters" as const,
+          riskTolerance: 0.6,
+          declaredGoal: goalAns,
+          targetAmount: capitalVal * 2,
+          currency: "INR" as const,
+          timelineMonths: 3,
+          sacrificesToleratedList: ["sleep", "leisure"],
+          nonNegotiables: ["health"],
+          pathPreference: "undecided" as const,
+          onboardingText: `Goal: ${goalAns}. Capital: ${capitalAns}. Hours: ${hoursAns}. Geo: ${geoAns}`,
+          detectedFrictionSignalIds: []
+        };
+
+        const diagRes = await fetch(`${baseUrl}/api/v1/interaction/diagnostic`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(diagnosticPayload)
+        });
+        const diagData = await diagRes.json();
+        
+        if (diagData?.data) {
+          localStorage.setItem("diagnosticResult", JSON.stringify(diagData.data));
+        }
+
         setIsLocked(true);
         setTimeout(() => {
           router.push("/gate");
-        }, 2500);
+        }, 2000);
       }
     } catch (err) {
       console.error(err);
@@ -80,7 +155,7 @@ export default function IntakeTerminal() {
         setCurrentQuestionText(INTAKE_QUESTIONS[currentIndex + 1].text);
       } else {
         setIsLocked(true);
-        setTimeout(() => router.push("/gate"), 2500);
+        setTimeout(() => router.push("/gate"), 2000);
       }
     } finally {
       setIsProcessing(false);

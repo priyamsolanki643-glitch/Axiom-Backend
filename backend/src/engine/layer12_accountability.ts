@@ -509,16 +509,16 @@ export function detectDopamineLoop(userMessage: string): {
       isDopamineLoop: true,
       isExecution: false,
       confidence: Math.min(1.0, dopamineSignalCount / 3),
-      response: `Let me ask you something before I answer that.
+      response: `Ek baat bataa, is sawal ko puchne se pehle:
 
-Have you completed your current assigned task?
+Tune apna aaj ka assigned task complete kiya hai?
 
-If yes — log the completion and then ask your question. I'll answer it after the log.
-If no — the question you're asking right now is a form of productive procrastination. You're seeking mental engagement without doing the work that actually moves your trajectory.
+Agar haan — toh task completion log kar aur phir sawal puch. Main log ke baad jawab dunga.
+Agar nahi — toh ye jo tu sawal puch rha hai, ye sirf productive procrastination hai. Tu dimaag chalane ka validation chahta hai bina actually execute kiye.
 
-I am not here to be an interesting conversation. I am here to get you to your goal.
+Mujhse baatein karne se tera goal complete nahi hoga. Mera kaam tujhe motivate karna nahi, tujhse kaam karwana hai.
 
-Task completion status: [yes/no]?`,
+Task completion status kya hai: [yes/no]?`,
     };
   }
 
@@ -542,40 +542,38 @@ export function generateRealityCheck(
   egoLeveragePoint: EgoLeveragePoint,
 ): string {
   if (consecutiveFailureCount >= 3 && consistencyScore < 50) {
-    return `We need to have an honest conversation.
+    return `Bhai, ab ek seedhi aur sachhi baat karte hain.
 
-You've had ${consecutiveFailureCount} consecutive execution gaps. Your consistency score is at ${consistencyScore}/100.
+Tere continuous ${consecutiveFailureCount} failures ho chuke hain aur tera consistency score sirf ${consistencyScore}/100 bacha hai.
 
-I want to ask you something directly: Do you actually want to achieve this goal? Or do you want the feeling of working toward a goal?
+Mujhe saaf-saaf bataa: Tujhe sach me ye goal achieve karna hai, ya bas "kuch bada kar rha hun" waale zone me reh kar maza lena hai?
 
-Those are different things. And I've been designed to tell you the difference.
+Dono me bohot bada farq hota hai.
 
-Working toward a goal feels productive. Reading about strategy, planning the next steps, asking good questions — all of this generates a feeling of progress without requiring execution. This is the dopamine loop. It's comfortable, it's safe, and it will guarantee you don't reach your target.
+Planning karna, strategy padhna, mujhse sawal puchna — ye sab karne me maza aata hai kyuki bina mehnat ke lagta hai ki hum aage badh rhe hain. Ye dopamine loop hai. Comfortable hai, safe hai, aur isse guarantee hai ki tera zero kaam hoga.
 
-Achieving a goal requires doing the specific, uncomfortable task in front of you, every day, even when you don't feel like it, even when it's hard, even when you're unsure if it's working.
+Goal achieve tab hoga jab tu wo boring aur uncomfortable kaam karega jo tere saamne rakha hai. Har roz, chahe tera mood ho ya na ho.
 
-Right now, which one are you choosing?
+Abhi tu kya choose kar rha hai? Awaiting your clear response:
 
-I'm not asking rhetorically. I need your actual answer.
-
-[A] I want to achieve the goal. I am ready to commit to full execution starting now.
-[B] I'm not ready right now. I want to pause the trajectory without resetting.
-[C] I want to reset. I need to pick a goal I'm actually committed to.`;
+[A] Mujhe goal achieve karna hai. Abhi se full execution start.
+[B] Abhi mere se nahi ho raha. Mujhe trajectory bina reset kiye pause karni hai.
+[C] Mujhe reset karna hai. Main koi aisa goal select karunga jiske liye main elite sacrifice ke liye ready hun.`;
   }
 
   if (consecutiveFailureCount >= 2) {
-    return `Two consecutive execution gaps. This is a pattern forming.
+    return `Back-to-back 2 din failure. Pattern shuru ho rha hai tera.
 
-The strategy doesn't stop working because you stopped executing. It just stops advancing.
+Tere kaam rokne se strategy nahi rukti, bas progress rukti hai.
 
-Tomorrow's task is the same as yesterday's. Not because I didn't notice — but because the work still needs to happen.
+Kal ka task aur aaj ka task same rahega. Ye isliye nahi ki maine check nahi kiya, balki isliye ki jo kaam karna tha wo abhi bhi bacha hua hai.
 
-What's one specific thing you will do in the next 2 hours?`;
+Agle 2 ghante me tu kaunsa ek specific action lega? Mujhe bataye bina start kar.`;
   }
 
-  return `One execution gap. The system notes it.
+  return `Ek gap ho gaya tera. System ne note kar liya hai.
 
-Recovery is simple: execute the task today, even partially. Partial execution beats zero execution.
+Recovery simple hai: aaj ka task execute kar, chahe partial hi sahi. Zero se behtar partial execution hai.
 
-What's your plan for the next 90 minutes?`;
+Agle 90 minutes me tera kya plan hai? Muh band kar aur execution start kar.`;
 }

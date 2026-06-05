@@ -18,6 +18,41 @@ export default function SimulationSequence() {
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [isApiLoaded, setIsApiLoaded] = useState(false);
+
+  useEffect(() => {
+    const triggerArchitectCall = async () => {
+      try {
+        const cached = localStorage.getItem("diagnosticResult");
+        if (!cached) {
+          setIsApiLoaded(true);
+          return;
+        }
+        const diagnosticResult = JSON.parse(cached);
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${baseUrl}/api/v1/interaction/architect`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contextMatrix: diagnosticResult.contextMatrix,
+            capabilityVector: diagnosticResult.capabilityVector,
+            survivabilityAudit: diagnosticResult.survivabilityAudit,
+            frictionProfile: diagnosticResult.frictionProfile
+          })
+        });
+        const data = await res.json();
+        if (data?.data) {
+          localStorage.setItem("architectResult", JSON.stringify(data.data));
+        }
+      } catch (err) {
+        console.error("Architect simulation API call failed:", err);
+      } finally {
+        setIsApiLoaded(true);
+      }
+    };
+
+    triggerArchitectCall();
+  }, []);
 
   useEffect(() => {
     // Reveal steps one by one to simulate 8-second computation
@@ -28,16 +63,16 @@ export default function SimulationSequence() {
         setActiveStep(prev => prev + 1);
       }, stepDuration);
       return () => clearTimeout(timer);
-    } else {
+    } else if (isApiLoaded) {
       const completeTimer = setTimeout(() => {
         setIsComplete(true);
         setTimeout(() => {
           router.push("/selection");
-        }, 2000);
+        }, 1500);
       }, 500);
       return () => clearTimeout(completeTimer);
     }
-  }, [activeStep, router]);
+  }, [activeStep, isApiLoaded, router]);
 
   // Calculate percentage for progress loader
   const progressPercent = Math.min((activeStep / SIMULATION_STEPS.length) * 100, 100);

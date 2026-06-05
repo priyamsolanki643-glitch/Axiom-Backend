@@ -8,13 +8,20 @@ import {
   runCircumstantialDiagnosis,
   runTacticalArchitect,
   processOperatorTaskUpdate,
-  processOperatorCritique
+  processOperatorCritique,
+  generateDailyTaskSprint
 } from '../engine/index';
 import { updateConsistencyScore } from '../engine/layer10_statelock';
+import { runLegalAudit } from '../engine/layer13_legalaudit';
 import { LLMService } from '../services/llm.service';
 import { DbService } from '../services/db.service';
+import { VectorService } from '../services/vector.service';
+import { requireAuth } from '../middleware/auth.middleware';
 
-export const interactionRoutes = new Hono();
+export const interactionRoutes = new Hono<{ Variables: { userId: string } }>();
+
+// Enforce Zero-Trust auth globally on all interaction endpoints
+interactionRoutes.use('*', requireAuth);
 
 const messageSchema = z.object({
   user_id: z.string().optional(),
@@ -30,7 +37,7 @@ const messageSchema = z.object({
 // Primary chat/onboarding interaction message handler
 interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) => {
   const { user_id, message, conversationHistory, state_context, action } = c.req.valid('json');
-  const actualUserId = user_id || 'test-user';
+  const actualUserId = c.get('userId') || user_id || 'test-user';
 
   try {
     let result: any;
@@ -66,6 +73,16 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
 
         await DbService.saveMission(updatedMission);
         await DbService.addConsistencyLog(actualUserId, newScore);
+
+        // Async log outcome vector memory
+        VectorService.saveMemory({
+          user_id: actualUserId,
+          mission_name: activeMission.missionName,
+          locked_path: activeMission.lockedPath,
+          profile_text: `Goal: ${activeMission.missionName} | Path: ${activeMission.lockedPath} | Day: ${activeMission.dayNumber}`,
+          outcome_summary: `User logged task outcome: ${classification}. Consistency adjusted to ${newScore}%. Streak: ${newStreak} days.`,
+          success_rate: newScore
+        }).catch(err => console.error('HIVE_MIND: Failed to store task outcome memory:', err));
       }
 
       // 2. Fetch updated mission details for the critique prompt
@@ -130,6 +147,25 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
       };
 
       const onboardingResult = await processOnboarding(mockInput);
+
+      // Layer 13: Onboarding Legal Audit Gate Interceptor
+      if (onboardingResult.userRuntime.legalAuditReport && !onboardingResult.userRuntime.legalAuditReport.passedLegalGate) {
+        console.warn(`LEGAL_AUDIT: Onboarding blocked due to compliance violation.`);
+        const blockedReport = onboardingResult.userRuntime.legalAuditReport;
+        return c.json({
+          status: 'success',
+          data: {
+            engine_result: {
+              type: 'legal_block',
+              data: blockedReport
+            },
+            ai_response: {
+              response_text: blockedReport.requiredDisclaimers.join('\n\n') || "Strategy output blocked due to legal compliance checks."
+            }
+          }
+        });
+      }
+
       systemPrompt = onboardingResult.systemPrompt;
       result = { type: 'onboarding_complete', data: onboardingResult };
     }
@@ -137,7 +173,54 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
     // Call LLM with the generated system prompt from the engine
     let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
     if (systemPrompt) {
-      llmResponse = await LLMService.generateValidatedResponse(actualUserId, systemPrompt, conversationHistory, []);
+      // Vector DB: Query similar trajectories to inject RAG historical memory context (Hive Mind)
+      let similarMemoriesText = '';
+      try {
+        const queryText = activeMission
+          ? `Goal: ${activeMission.missionName} | Path: ${activeMission.lockedPath}`
+          : `Goal: ${message}`;
+        const similar = await VectorService.searchSimilarMemories(queryText, 3);
+        if (similar && similar.length > 0) {
+          similarMemoriesText = `\n\n## HIVE MIND OPERATOR ANALOGIES (VECTORS OF SIMILAR USERS)\n` +
+            `Based on vector matches from previous operators, here are similar trajectories and their outcomes:\n` +
+            similar.map((s, idx) => `${idx + 1}. Profile: ${s.profile_text}\n   Outcome: ${s.outcome_summary}\n   Success Rate: ${s.success_rate}%`).join('\n') +
+            `\n\nUse this real-world historical data to adjust probability calibrations and task recommendations. Do not make the same mistakes they did.`;
+        }
+      } catch (err) {
+        console.error('HIVE_MIND: Failed to inject similar memories:', err);
+      }
+
+      const enrichedPrompt = systemPrompt + similarMemoriesText;
+      llmResponse = await LLMService.generateValidatedResponse(actualUserId, enrichedPrompt, conversationHistory, []);
+
+      // Layer 13: Critique/Message LLM Output Audit Interceptor & Disclaimer Appendage
+      if (activeMission && state_context && state_context.contextMatrix) {
+        const auditReport = runLegalAudit(
+          state_context.contextMatrix,
+          state_context.availablePaths || [],
+          state_context.ambitionAssessment || { probabilityOfDeclaredGoal: 50 },
+          activeMission.streakDays === 0 ? 1 : 0,
+          activeMission.consistencyScore,
+          llmResponse.response_text
+        );
+
+        if (!auditReport.passedLegalGate) {
+          console.warn(`LEGAL_AUDIT: Critique response blocked due to compliance violation.`);
+          return c.json({
+            status: 'success',
+            data: {
+              engine_result: result,
+              ai_response: {
+                response_text: auditReport.requiredDisclaimers.join('\n\n') || "Response blocked due to legal compliance checks."
+              }
+            }
+          });
+        }
+
+        if (auditReport.requiredDisclaimers && auditReport.requiredDisclaimers.length > 0) {
+          llmResponse.response_text += "\n\n---\n*Disclaimer: " + auditReport.requiredDisclaimers.join(' | ') + "*";
+        }
+      }
     }
 
     return c.json({
@@ -156,7 +239,7 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
 
 // Endpoint to fetch current user's active locked mission
 interactionRoutes.get('/active-mission', async (c) => {
-  const userId = c.req.query('userId') || 'test-user';
+  const userId = c.get('userId') || c.req.query('userId') || 'test-user';
   const mission = await DbService.getActiveMission(userId);
   if (!mission) {
     return c.json({ status: 'success', data: null });
@@ -202,7 +285,7 @@ interactionRoutes.post('/lock-trajectory', async (c) => {
       chatThreadId
     } = await c.req.json();
     
-    const actualUserId = userId || 'test-user';
+    const actualUserId = c.get('userId') || userId || 'test-user';
     
     const mission = {
       user_id: actualUserId,
@@ -221,6 +304,17 @@ interactionRoutes.post('/lock-trajectory', async (c) => {
     
     const savedMission = await DbService.saveMission(mission);
     await DbService.addConsistencyLog(actualUserId, 100);
+
+    // Save initial lock profile to Vector Memory (Hive Mind)
+    const profileText = `Goal: ${mission.missionName} | Path: ${mission.lockedPath} | Total Days: ${mission.totalDays} | Mindset: ${mission.mindsetBrief}`;
+    VectorService.saveMemory({
+      user_id: actualUserId,
+      mission_name: mission.missionName,
+      locked_path: mission.lockedPath,
+      profile_text: profileText,
+      outcome_summary: `Trajectory locked. Initial consistency set to 100%. Path: ${mission.lockedPath}.`,
+      success_rate: 100
+    }).catch(err => console.error('HIVE_MIND: Failed to store trajectory lock memory:', err));
 
     // Asynchronously generate initial market report on locking
     const mandate = `
@@ -259,7 +353,7 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
 interactionRoutes.post('/log-task', async (c) => {
   try {
     const { userId, outcome } = await c.req.json();
-    const actualUserId = userId || 'test-user';
+    const actualUserId = c.get('userId') || userId || 'test-user';
 
     const activeMission = await DbService.getActiveMission(actualUserId);
     if (!activeMission) {
@@ -286,6 +380,16 @@ interactionRoutes.post('/log-task', async (c) => {
     await DbService.saveMission(updatedMission);
     await DbService.addConsistencyLog(actualUserId, newScore);
 
+    // Log task completion outcome in Vector Memory (Hive Mind)
+    VectorService.saveMemory({
+      user_id: actualUserId,
+      mission_name: activeMission.missionName,
+      locked_path: activeMission.lockedPath,
+      profile_text: `Goal: ${activeMission.missionName} | Path: ${activeMission.lockedPath} | Day: ${activeMission.dayNumber}`,
+      outcome_summary: `Task completion logged via action button: ${outcome}. New consistency score: ${newScore}%. Streak: ${newStreak} days.`,
+      success_rate: newScore
+    }).catch(err => console.error('HIVE_MIND: Failed to store task outcome memory:', err));
+
     return c.json({ status: 'success', data: updatedMission });
   } catch (error: any) {
     console.error('Log Task Error:', error);
@@ -295,7 +399,7 @@ interactionRoutes.post('/log-task', async (c) => {
 
 // Endpoint to fetch consistency log and AI strengths/bottlenecks for Reality Mirror
 interactionRoutes.get('/reality-mirror', async (c) => {
-  const userId = c.req.query('userId') || 'test-user';
+  const userId = c.get('userId') || c.req.query('userId') || 'test-user';
   
   const activeMission = await DbService.getActiveMission(userId);
   if (!activeMission) {
@@ -360,7 +464,11 @@ Do not include markdown or backticks.`;
         }
       } catch {}
     } else if (response && response.strengths && response.bottlenecks) {
-      insightData = response;
+      insightData = {
+        strengths: response.strengths,
+        bottlenecks: response.bottlenecks,
+        insight: response.insight || ""
+      };
     }
   } catch (err) {
     console.error('REALITY_MIRROR: Insight LLM fail, using fallback:', err);
@@ -380,7 +488,7 @@ Do not include markdown or backticks.`;
 
 // Endpoint to fetch and cache dynamic market reports
 interactionRoutes.get('/market-report', async (c) => {
-  const userId = c.req.query('userId') || 'test-user';
+  const userId = c.get('userId') || c.req.query('userId') || 'test-user';
   
   let report = await DbService.getMarketReport(userId);
   
@@ -433,7 +541,7 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
 
 // Endpoint to fetch aggregated anonymous stats for Rival Index
 interactionRoutes.get('/rival-index', async (c) => {
-  const userId = c.req.query('userId') || 'test-user';
+  const userId = c.get('userId') || c.req.query('userId') || 'test-user';
   const activeMission = await DbService.getActiveMission(userId);
   
   if (!activeMission) {
@@ -479,10 +587,13 @@ interactionRoutes.post('/architect', async (c) => {
 interactionRoutes.post('/operator/task', async (c) => {
   try {
     const { input: taskInput, matrix, capabilityVector, frictionProfile } = await c.req.json();
+    const actualUserId = c.get('userId') || taskInput.userId || 'test-user';
+    taskInput.userId = actualUserId;
+
     const result = await processOperatorTaskUpdate(taskInput, matrix, capabilityVector, frictionProfile);
     
     // Save state back to DB if mission is active
-    const activeMission = await DbService.getActiveMission(taskInput.userId);
+    const activeMission = await DbService.getActiveMission(actualUserId);
     if (activeMission) {
       const updatedMission = {
         ...activeMission,
@@ -491,7 +602,17 @@ interactionRoutes.post('/operator/task', async (c) => {
         dayNumber: result.updatedRuntime.strategyState.currentDayNumber
       };
       await DbService.saveMission(updatedMission);
-      await DbService.addConsistencyLog(taskInput.userId, updatedMission.consistencyScore);
+      await DbService.addConsistencyLog(actualUserId, updatedMission.consistencyScore);
+
+      // Log task update in Vector Memory (Hive Mind)
+      VectorService.saveMemory({
+        user_id: actualUserId,
+        mission_name: activeMission.missionName,
+        locked_path: activeMission.lockedPath,
+        profile_text: `Goal: ${activeMission.missionName} | Path: ${activeMission.lockedPath} | Day: ${activeMission.dayNumber}`,
+        outcome_summary: `Operator task update processed. Outcomes: ${taskInput.outcome}. Consistency updated to ${result.updatedRuntime.strategyState.consistencyScore}%.`,
+        success_rate: result.updatedRuntime.strategyState.consistencyScore
+      }).catch(err => console.error('HIVE_MIND: Failed to store task outcome memory:', err));
     }
     
     return c.json({ status: 'success', data: result });
@@ -505,10 +626,30 @@ interactionRoutes.post('/operator/task', async (c) => {
 interactionRoutes.post('/operator/critique', async (c) => {
   try {
     const input = await c.req.json();
+    input.userId = c.get('userId') || input.userId || 'test-user';
+
     const result = processOperatorCritique(input);
     return c.json({ status: 'success', data: result });
   } catch (error: any) {
     console.error('Execution Operator Critique API Error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Mode 3: Dynamic task generation/fetch for current day execution
+interactionRoutes.post('/operator/current-tasks', async (c) => {
+  try {
+    const { dayNumber, matrix, capabilityVector, frictionProfile, strategyState } = await c.req.json();
+    const taskSprint = await generateDailyTaskSprint(
+      dayNumber || 1,
+      matrix,
+      capabilityVector,
+      frictionProfile,
+      strategyState
+    );
+    return c.json({ status: 'success', data: taskSprint });
+  } catch (error: any) {
+    console.error('Fetch Current Tasks API Error:', error);
     return c.json({ error: error.message }, 500);
   }
 });

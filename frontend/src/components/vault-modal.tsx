@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  Lock, X, ArrowUpRight, TrendingUp, CheckCircle, XCircle
+  Lock, X, ArrowUpRight, TrendingUp, CheckCircle, XCircle, Folder, MessageCircle, MoreVertical, Trash, Share2
 } from "lucide-react";
 
 type TabId = "missions" | "mirror" | "debt" | "rival" | "market";
@@ -64,14 +64,14 @@ export function VaultModal({ onClose }: VaultModalProps) {
             : "opacity-0 translate-y-6 scale-[0.97]"
         }`}
         style={{
-          background: "#09090b",
-          border: "1px solid rgba(255,255,255,0.06)",
+          background: "#000000",
+
           boxShadow: "0 0 0 1px rgba(0,0,0,0.8), 0 25px 80px -12px rgba(0,0,0,0.85), 0 0 60px rgba(0,0,0,0.4)",
           transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         {/* Header Top Bar */}
-        <div className="flex items-center justify-between px-5 md:px-6 h-14 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(9,9,11,0.95)" }}>
+        <div className="flex items-center justify-between px-5 md:px-6 h-14 shrink-0" style={{ background: "rgba(0,0,0,0.95)" }}>
           <div className="flex items-center gap-3">
             <div
               className="size-[22px] rounded-[6px] grid place-items-center"
@@ -83,7 +83,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
               <span className="font-semibold text-[15px] text-white tracking-tight">Vault</span>
               <span
                 className="text-[9px] font-mono px-1.5 py-0.5 rounded tracking-[0.15em]"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "#71717a" }}
+                style={{ background: "rgba(255,255,255,0.04)", color: "#71717a" }}
               >
                 OPERATOR
               </span>
@@ -110,7 +110,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
 
         {/* Tabs Bar */}
         {/* Tab Bar with animated underline */}
-        <div className="flex items-center gap-1 px-4 md:px-6 h-[46px] shrink-0 overflow-x-auto no-scrollbar" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div className="flex items-center gap-1 px-4 md:px-6 h-[46px] shrink-0 overflow-x-auto no-scrollbar">
           {TABS.map((tab) => {
             const active = activeTab === tab.id;
             return (
@@ -145,7 +145,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto relative" style={{ background: "#09090b" }}>
+        <div className="flex-1 overflow-y-auto relative" style={{ background: "#000000" }}>
           {/* Faint dot grid — Vercel-inspired */}
           <div
             className="absolute inset-0 pointer-events-none"
@@ -179,7 +179,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
               </div>
             </div>
 
-            {activeTab === "missions" && <TabMissions />}
+            {activeTab === "missions" && <TabMissions onClose={onClose} />}
             {activeTab === "mirror" && <TabMirror />}
             {activeTab === "debt" && <TabDebt />}
             {activeTab === "rival" && <TabRival />}
@@ -191,69 +191,236 @@ export function VaultModal({ onClose }: VaultModalProps) {
   );
 }
 
-function TabMissions() {
-  const missions = [
+function TabMissions({ onClose }: { onClose: () => void }) {
+  const [missions, setMissions] = useState([
     {
+      id: "1",
       badge: "ACADEMIC", tag: "/jee-2025",
       title: "JEE 2025 · Top 1000",
-      quote: `"Tu average nahi hai. Yeh summer vacation teri zindagi badal sakti hai — sirf tu decide kar."`,
+      quote: "Tu average nahi hai. Yeh summer vacation teri zindagi badal sakti hai — sirf tu decide kar.",
       path: "Phase 1: Physics fundamentals + 40 mock sets. Phase 2: Inorganic compression. Phase 3: Maths daily rotation. No skips.",
-      day: 23, total: 180, score: 71
+      day: 23, total: 180, score: 71,
+      time: "10:42 AM", unread: 2,
+      fullStrategy: {
+        goal: "Rank under 1000 in JEE Advanced 2025. Seat locked in top 5 IITs.",
+        motivation: "Tu average nahi hai. The next 180 days will dictate your entire trajectory. Comfort is your enemy. The pain of discipline weighs ounces, the pain of regret weighs tons.",
+        tasks: [
+          "Complete HC Verma Vol 1 & 2 thoroughly.",
+          "Solve 40 full-length advanced mock tests.",
+          "Daily 2 hours of Inorganic Chemistry rote memorization.",
+          "Mathematical problem rotation: 50 advanced questions daily."
+        ],
+        executionProtocol: "1. Wake up at 4:30 AM.\n2. Deep work blocks of 3 hours.\n3. Zero social media. Zero distractions.\n4. Weekly review every Sunday evening."
+      }
     },
     {
+      id: "2",
       badge: "BUILD", tag: "/saas-launch",
       title: "WhatsApp CRM · ₹1L MRR",
-      quote: `"Tere paas ek 6-week window hai. Market ready hai. Tu nahi. Wahi fix karna hai."`,
+      quote: "Tere paas ek 6-week window hai. Market ready hai. Tu nahi. Wahi fix karna hai.",
       path: "Week 1-2: 20 cold demos. Week 3: paid pilot. Week 4-6: retention loops. Sales > polish.",
-      day: 9, total: 42, score: 54
+      day: 9, total: 42, score: 54,
+      time: "Yesterday", unread: 0,
+      fullStrategy: {
+        goal: "Hit ₹1L Monthly Recurring Revenue within 42 days. Establish market foothold.",
+        motivation: "Market kisi ka wait nahi karta. The window is closing. Either you launch now and iterate, or watch someone else take your customers. Speed over perfection.",
+        tasks: [
+          "Scrape leads and send 20 highly personalized cold emails/demos daily.",
+          "Deploy MVP this weekend with core messaging features only.",
+          "Close 3 initial paid pilots to validate pricing.",
+          "Build retention loop: automated follow-ups."
+        ],
+        executionProtocol: "1. 9:00 AM - 12:00 PM: Outreach and Sales.\n2. 1:00 PM - 5:00 PM: Product and Engineering.\n3. 8:00 PM: Review metrics. Send nightly updates."
+      }
     },
     {
+      id: "3",
       badge: "DISCIPLINE", tag: "/body-recomp",
       title: "Body Recomp · 12% BF",
-      quote: `"Discipline jo yahan banegi, woh har domain mein leak hogi. Body is the first ledger."`,
+      quote: "Discipline jo yahan banegi, woh har domain mein leak hogi. Body is the first ledger.",
       path: "5 lifts/week · protein floor 1.6g/kg · 2 cardio blocks. Weigh-in Sunday. No negotiation.",
-      day: 47, total: 120, score: 88
+      day: 47, total: 120, score: 88,
+      time: "Monday", unread: 5,
+      fullStrategy: {
+        goal: "Hit 12% Body Fat while maintaining muscle mass within 120 days.",
+        motivation: "Body is the first ledger of discipline. If you can't control what you eat and how you train, you can't control your business or academics. This builds the operator mindset.",
+        tasks: [
+          "5 heavy lifting sessions per week (Push/Pull/Legs).",
+          "Hit minimum protein floor of 1.6g/kg daily.",
+          "2 dedicated Zone-2 cardio blocks of 45 mins weekly.",
+          "Strict calorie tracking and Sunday morning weigh-ins."
+        ],
+        executionProtocol: "1. Meal prep every Sunday evening.\n2. Gym at 6:00 AM sharp. No snooze button.\n3. Track macros in app immediately after eating.\n4. Zero liquid calories. Zero exceptions."
+      }
     }
-  ];
+  ]);
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {missions.map((m, i) => (
-        <div key={i} className="rounded-2xl border border-[#18181b] bg-[#09090b] p-5 flex flex-col h-full hover:border-[#27272a] transition-colors">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-[9px] font-mono text-[#a1a1aa] tracking-widest border border-[#27272a] rounded px-2 py-1 bg-[#18181b]">
-              {m.badge}
-            </span>
-            <span className="text-[10px] font-mono text-[#52525b]">{m.tag}</span>
+  const [activeMission, setActiveMission] = useState<any>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMissions(missions.filter(m => m.id !== id));
+    setMenuOpenId(null);
+  };
+
+  const handleShare = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (navigator.share) {
+      navigator.share({
+        title: 'FP Strategy',
+        text: 'Check out this strategy plan',
+      }).catch(console.error);
+    } else {
+      alert("Sharing options opened.");
+    }
+    setMenuOpenId(null);
+  };
+
+  if (activeMission) {
+    return (
+      <div className="h-[500px] flex flex-col relative bg-[#0a0a0c] rounded-3xl overflow-hidden animate-scale-in">
+        {/* Sticky Header with Back Button */}
+        <div className="sticky top-0 left-0 right-0 z-10 bg-[#0a0a0c]/90 backdrop-blur-md px-6 md:px-8 py-4 border-b border-white/5 flex items-center justify-between">
+          <button 
+            onClick={() => setActiveMission(null)} 
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white text-[12px] font-medium transition-colors cursor-pointer"
+          >
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+            Back to Folders
+          </button>
+        </div>
+        
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto no-scrollbar px-6 md:px-8 py-6">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-2">{activeMission.title}</h3>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono text-[#a1a1aa] tracking-widest rounded px-2 py-0.5 bg-[#18181b]">{activeMission.badge}</span>
+                <span className="text-[11px] font-mono text-[#52525b]">{activeMission.tag}</span>
+              </div>
+            </div>
+          </div>
+
+        <p className="text-[14px] text-[#a1a1aa] leading-relaxed italic mb-8 border-l-2 border-[#27272a] pl-4">
+          "{activeMission.quote}"
+        </p>
+        
+        <div className="bg-[#121214] rounded-2xl p-6 text-[#d4d4d8] text-[14.5px] leading-relaxed flex-1 overflow-y-auto no-scrollbar shadow-inner">
+          <div className="flex items-center gap-2 text-[10px] font-mono text-[#22c55e] mb-6 tracking-widest uppercase">
+            <Lock className="size-3" /> Locked Strategy Path
           </div>
           
-          <h3 className="text-lg font-semibold text-white mb-3">{m.title}</h3>
-          <p className="text-[13px] text-[#a1a1aa] leading-relaxed mb-6 italic">
-            {m.quote}
-          </p>
-
-          <div className="mb-8">
-            <div className="text-[10px] font-mono text-[#52525b] mb-2 flex items-center gap-1.5">
-              <Lock className="size-3" /> LOCKED PATH
+          <div className="space-y-8">
+            <div>
+              <h4 className="text-[11px] font-mono text-[#a1a1aa] uppercase tracking-widest mb-2 pb-1 inline-block">Primary Goal</h4>
+              <p className="text-white font-medium mt-1">{activeMission.fullStrategy?.goal || activeMission.title}</p>
             </div>
-            <p className="text-[13px] text-[#71717a] leading-relaxed">
-              {m.path}
-            </p>
+
+            <div>
+              <h4 className="text-[11px] font-mono text-[#a1a1aa] uppercase tracking-widest mb-2 pb-1 inline-block">Motivation & Mindset</h4>
+              <p className="text-[#d4d4d8] mt-1">"{activeMission.fullStrategy?.motivation || activeMission.quote}"</p>
+            </div>
+
+            <div>
+              <h4 className="text-[11px] font-mono text-[#a1a1aa] uppercase tracking-widest mb-3 pb-1 inline-block">Core Tasks</h4>
+              <ul className="space-y-2.5">
+                {activeMission.fullStrategy?.tasks?.map((task: string, idx: number) => (
+                  <li key={idx} className="flex gap-3">
+                    <span className="text-[#22c55e] shrink-0 font-mono text-[10px] mt-1">0{idx + 1}</span>
+                    <span className="text-[#d4d4d8]">{task}</span>
+                  </li>
+                ))}
+                {!activeMission.fullStrategy?.tasks && <p>{activeMission.path}</p>}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-[11px] font-mono text-[#a1a1aa] uppercase tracking-widest mb-3 pb-1 inline-block">Execution Protocol</h4>
+              <div className="text-[#d4d4d8] whitespace-pre-wrap leading-loose">
+                {activeMission.fullStrategy?.executionProtocol || "No protocol assigned."}
+              </div>
+            </div>
           </div>
+          
+          <div className="mt-8 pt-6 flex justify-between items-center text-[11px] font-mono text-[#666]">
+            <span>DAY {activeMission.day} / {activeMission.total}</span>
+            <span className="text-white bg-white/5 px-3 py-1 rounded-full">SCORE {activeMission.score}/100</span>
+          </div>
+        </div>
+        </div>
 
-          <div className="mt-auto pt-6 border-t border-[#18181b]">
-            <div className="flex justify-between text-[10px] font-mono text-[#a1a1aa] mb-2">
-              <span>DAY {m.day} OF {m.total}</span>
-              <span className="text-white">{m.score}/100</span>
+        {/* Floating Chat Icon */}
+        <button 
+          className="absolute bottom-6 right-6 size-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_8px_30px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 transition-transform cursor-pointer z-10"
+          onClick={() => {
+            onClose();
+          }}
+          title="Return to Strategy Chat"
+        >
+          <MessageCircle className="size-6 fill-black" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5 md:gap-2">
+      {missions.map(m => (
+        <div 
+          key={m.id} 
+          onClick={() => setActiveMission(m)}
+          className="flex items-center justify-between p-3 md:p-4 rounded-2xl hover:bg-[#121214] transition-colors cursor-pointer group relative border border-transparent hover:border-white/5"
+        >
+          <div className="flex items-center gap-4 overflow-hidden flex-1">
+            <div className="size-11 md:size-12 rounded-full bg-[#18181b] flex items-center justify-center shrink-0 shadow-sm relative">
+              <Folder className="size-5 text-[#888888]" />
+              {m.unread > 0 && (
+                <div className="absolute -top-1 -right-1 size-[18px] rounded-full bg-[#22c55e] flex items-center justify-center text-[10px] font-bold text-black border-2 border-[#000000]">
+                  {m.unread}
+                </div>
+              )}
             </div>
-            <div className="h-1 bg-[#18181b] rounded-full mb-6 overflow-hidden">
-              <div className="h-full bg-white" style={{ width: `${(m.day/m.total)*100}%` }} />
+            <div className="flex flex-col min-w-0 pr-4">
+              <span className="text-[15px] font-medium text-[#e3e3e3] truncate tracking-tight">{m.title}</span>
+              <span className="text-[13px] text-[#666666] truncate mt-0.5 max-w-[280px] md:max-w-[400px]">
+                {m.quote}
+              </span>
             </div>
+          </div>
+          
+          <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
+            <span className={`text-[11px] font-medium ${m.unread > 0 ? 'text-[#22c55e]' : 'text-[#52525b]'}`}>{m.time}</span>
             
-            <button className="w-full bg-white text-black font-medium text-[14px] py-3 rounded-xl flex items-center justify-between px-5 hover:bg-gray-100 transition-colors">
-              Continue Mission
-              <ArrowUpRight className="size-4" />
-            </button>
+            <div className="relative">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpenId(menuOpenId === m.id ? null : m.id);
+                }}
+                className="p-1 rounded-full hover:bg-white/10 text-[#52525b] hover:text-white transition-colors cursor-pointer"
+              >
+                <MoreVertical className="size-4" />
+              </button>
+
+              {menuOpenId === m.id && (
+                <div className="absolute right-0 top-full mt-1 w-[140px] bg-[#1e1f20] border border-white/10 rounded-xl p-1.5 shadow-2xl z-50 animate-scale-in origin-top-right">
+                  <button 
+                    onClick={(e) => handleShare(m.id, e)}
+                    className="w-full text-left px-3 py-2 rounded-lg text-[13px] text-[#d4d4d8] hover:bg-white/5 hover:text-white flex items-center gap-2.5 cursor-pointer"
+                  >
+                    <Share2 className="size-3.5" /> Share
+                  </button>
+                  <button 
+                    onClick={(e) => handleDelete(m.id, e)}
+                    className="w-full text-left px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2.5 mt-0.5 cursor-pointer"
+                  >
+                    <Trash className="size-3.5" /> Delete
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ))}
@@ -265,7 +432,7 @@ function TabMirror() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Graph Area */}
-      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 flex flex-col justify-between row-span-2">
+      <div className="rounded-2xl bg-[#000000] p-6 flex flex-col justify-between row-span-2">
         <div>
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -291,7 +458,7 @@ function TabMirror() {
               <path d="M0,25 Q20,15 40,20 T80,25 T100,30 L100,40 L0,40 Z" fill="url(#g)" />
               <path d="M0,25 Q20,15 40,20 T80,25 T100,30" fill="none" stroke="#4ade80" strokeWidth="0.5" />
             </svg>
-            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 pb-2 border-t border-[#18181b] text-[10px] font-mono text-[#52525b]">
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 pb-2 text-[10px] font-mono text-[#52525b]">
               <span>D5</span><span>D9</span><span>D13</span><span>D17</span><span>D21</span><span>D25</span><span>D29</span>
             </div>
           </div>
@@ -308,7 +475,7 @@ function TabMirror() {
       </div>
 
       {/* Insight */}
-      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-fit">
+      <div className="rounded-2xl bg-[#000000] p-6 h-fit">
         <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-4">BEHAVIOURAL INSIGHT</div>
         <p className="text-[14px] text-white leading-relaxed">
           Tu highly specialized hai — teri problem-solving speed <span className="font-semibold">top 15%</span> hai. Lekin execution windows mein tu disappear ho jaata hai. Yeh teri sabse badi bottleneck hai.
@@ -316,7 +483,7 @@ function TabMirror() {
       </div>
 
       {/* Pros & Cons */}
-      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 grid grid-cols-2 gap-8 h-fit">
+      <div className="rounded-2xl bg-[#000000] p-6 grid grid-cols-2 gap-8 h-fit">
         <div>
           <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-4">EDGES</div>
           <ul className="space-y-4">
@@ -344,8 +511,8 @@ function TabDebt() {
       {/* 3 Rings */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Consistency */}
-        <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-8 flex flex-col items-center justify-center">
-          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-6 border border-[#27272a] px-3 py-1 rounded bg-[#18181b]">CONSISTENCY SCORE</div>
+        <div className="rounded-2xl bg-[#000000] p-8 flex flex-col items-center justify-center">
+          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-6 px-3 py-1 rounded bg-[#18181b]">CONSISTENCY SCORE</div>
           <div className="relative size-32">
             <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
               <circle cx="50" cy="50" r="45" fill="none" stroke="#18181b" strokeWidth="8" />
@@ -359,7 +526,7 @@ function TabDebt() {
         </div>
 
         {/* Debt Days */}
-        <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-8 flex flex-col items-center justify-center">
+        <div className="rounded-2xl bg-[#000000] p-8 flex flex-col items-center justify-center">
           <div className="text-[10px] font-mono text-[#ef4444] tracking-widest mb-6 border border-[#ef4444]/20 px-3 py-1 rounded bg-[#ef4444]/5">DEBT DAYS</div>
           <div className="relative size-32">
             <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
@@ -374,8 +541,8 @@ function TabDebt() {
         </div>
 
         {/* Days to Goal */}
-        <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-8 flex flex-col items-center justify-center">
-          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-6 border border-[#27272a] px-3 py-1 rounded bg-[#18181b]">DAYS TO GOAL</div>
+        <div className="rounded-2xl bg-[#000000] p-8 flex flex-col items-center justify-center">
+          <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-6 px-3 py-1 rounded bg-[#18181b]">DAYS TO GOAL</div>
           <div className="relative size-32">
             <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
               <circle cx="50" cy="50" r="45" fill="none" stroke="#18181b" strokeWidth="8" />
@@ -390,14 +557,14 @@ function TabDebt() {
       </div>
 
       {/* Debt Impact Block */}
-      <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
-        <div className="text-[10px] font-mono text-red-500 tracking-widest mb-4 border border-red-500/20 px-2 py-1 rounded w-fit">DEBT IMPACT</div>
+      <div className="rounded-2xl bg-red-500/5 p-6">
+        <div className="text-[10px] font-mono text-red-500 tracking-widest mb-4 px-2 py-1 rounded w-fit">DEBT IMPACT</div>
         <p className="text-[14px] text-white leading-relaxed">
           In <span className="text-red-500 font-medium">4 dinon</span> mein teri competition ne 4 tasks complete kiye. Market window 6 weeks thi — ab 5.3 weeks hai. Tu wahan khada hai jahan tha — duniya aage nikal gayi.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 text-[10px] font-mono text-[#52525b]">
+      <div className="rounded-2xl bg-[#000000] p-6 text-[10px] font-mono text-[#52525b]">
         CONSISTENCY WIN · 12 DAY STREAK
       </div>
     </div>
@@ -406,7 +573,7 @@ function TabDebt() {
 
 function TabRival() {
   return (
-    <div className="rounded-3xl border border-[#18181b] bg-[#09090b] p-10 flex flex-col md:flex-row gap-12 relative overflow-hidden h-[400px]">
+    <div className="rounded-3xl bg-[#000000] p-10 flex flex-col md:flex-row gap-12 relative overflow-hidden h-[400px]">
       {/* Background stars/dots */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 right-1/4 size-1 bg-white rounded-full opacity-20 blur-[1px]" />
@@ -416,7 +583,7 @@ function TabRival() {
 
       {/* Left side text */}
       <div className="flex-1 flex flex-col justify-center">
-        <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-8 border border-[#27272a] rounded px-3 py-1 bg-[#18181b] w-fit">
+        <div className="text-[10px] font-mono text-[#52525b] tracking-widest mb-8 rounded px-3 py-1 bg-[#18181b] w-fit">
           ANONYMOUS COHORT
         </div>
         
@@ -433,19 +600,19 @@ function TabRival() {
 
       {/* Right side stats */}
       <div className="w-[300px] grid grid-cols-2 gap-4 shrink-0 h-fit self-center z-10">
-        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+        <div className="bg-[#000] p-5 rounded-2xl">
           <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Same goal</div>
           <div className="text-3xl text-white font-medium">847</div>
         </div>
-        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+        <div className="bg-[#000] p-5 rounded-2xl">
           <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Crossed</div>
           <div className="text-3xl text-white font-medium">23</div>
         </div>
-        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+        <div className="bg-[#000] p-5 rounded-2xl">
           <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Active 7d</div>
           <div className="text-3xl text-white font-medium">612</div>
         </div>
-        <div className="border border-[#18181b] bg-[#000] p-5 rounded-2xl">
+        <div className="bg-[#000] p-5 rounded-2xl">
           <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-2 uppercase">Your rank</div>
           <div className="text-3xl text-white font-medium">#347</div>
         </div>
@@ -458,9 +625,9 @@ function TabMarket() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Live Market */}
-      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-[340px] flex flex-col relative overflow-hidden">
+      <div className="rounded-2xl bg-[#000000] p-6 h-full min-h-[340px] flex flex-col relative overflow-hidden">
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2 border border-[#27272a] bg-[#18181b] rounded px-2 py-1">
+          <div className="flex items-center gap-2 bg-[#18181b] rounded px-2 py-1">
             <div className="size-1.5 rounded-full bg-white animate-pulse" />
             <span className="text-[9px] font-mono text-white tracking-widest uppercase">LIVE</span>
           </div>
@@ -471,18 +638,18 @@ function TabMarket() {
         <p className="text-[13px] text-[#52525b] mb-6">Teri city mein aaj:</p>
 
         <ul className="space-y-3 flex-1 overflow-y-auto no-scrollbar">
-          <li className="flex items-center gap-3 border border-[#18181b] bg-[#000] p-3 rounded-xl">
-            <div className="size-5 border border-[#27272a] rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">↗</div>
+          <li className="flex items-center gap-3 bg-[#000] p-3 rounded-xl">
+            <div className="size-5 rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">↗</div>
             <p className="text-[12px] text-[#a1a1aa] leading-tight flex-1">4 businesses ne automation tools adopt kiye</p>
             <span className="text-[9px] font-mono text-[#52525b] uppercase tracking-widest shrink-0">TODAY</span>
           </li>
-          <li className="flex items-center gap-3 border border-[#18181b] bg-[#000] p-3 rounded-xl">
-            <div className="size-5 border border-[#27272a] rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">~</div>
+          <li className="flex items-center gap-3 bg-[#000] p-3 rounded-xl">
+            <div className="size-5 rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">~</div>
             <p className="text-[12px] text-[#a1a1aa] leading-tight flex-1">WhatsApp CRM demand</p>
             <span className="text-[10px] font-mono text-green-400 shrink-0">+31% THIS WEEK</span>
           </li>
-          <li className="flex items-center gap-3 border border-[#18181b] bg-[#000] p-3 rounded-xl">
-            <div className="size-5 border border-[#27272a] rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">↘</div>
+          <li className="flex items-center gap-3 bg-[#000] p-3 rounded-xl">
+            <div className="size-5 rounded grid place-items-center text-[10px] text-[#52525b] shrink-0">↘</div>
             <p className="text-[12px] text-[#a1a1aa] leading-tight flex-1">Active competitors in your niche</p>
             <span className="text-[10px] font-mono text-[#52525b] shrink-0 text-white font-semibold">12 NOW</span>
           </li>
@@ -490,8 +657,8 @@ function TabMarket() {
       </div>
 
       {/* Window Alert */}
-      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-[340px] flex flex-col justify-center">
-        <div className="text-[9px] font-mono text-[#a1a1aa] tracking-widest mb-6 border border-[#27272a] bg-[#18181b] rounded px-3 py-1 w-fit">
+      <div className="rounded-2xl bg-[#000000] p-6 h-full min-h-[340px] flex flex-col justify-center">
+        <div className="text-[9px] font-mono text-[#a1a1aa] tracking-widest mb-6 bg-[#18181b] rounded px-3 py-1 w-fit">
           ⌛ WINDOW ALERT
         </div>
         
@@ -510,15 +677,15 @@ function TabMarket() {
       </div>
 
       {/* Category Movers */}
-      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] p-6 h-[340px] flex flex-col">
-        <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-6 uppercase border border-[#18181b] rounded px-2 py-1 w-fit">
+      <div className="rounded-2xl bg-[#000000] p-6 h-full min-h-[340px] flex flex-col">
+        <div className="text-[9px] font-mono text-[#52525b] tracking-widest mb-6 uppercase rounded px-2 py-1 w-fit">
           CATEGORY MOVERS
         </div>
 
         <h3 className="text-lg text-white font-medium mb-8">Teri category mein is hafte</h3>
 
         <div className="space-y-4">
-          <div className="flex justify-between items-center border border-[#18181b] p-4 rounded-xl bg-[#000]">
+          <div className="flex justify-between items-center p-4 rounded-xl bg-[#000]">
             <span className="text-[12px] text-[#52525b]">Top performer</span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl text-white font-medium">3</span>
@@ -544,8 +711,8 @@ function TabMarket() {
       </div>
 
       {/* Ego Attack Banner */}
-      <div className="md:col-span-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4 flex gap-4 items-center mt-2">
-        <div className="text-[10px] font-mono text-red-500 tracking-widest border border-red-500/20 px-2 py-1 rounded bg-[#000] shrink-0">
+      <div className="md:col-span-3 rounded-xl bg-red-500/5 p-4 flex gap-4 items-center mt-2">
+        <div className="text-[10px] font-mono text-red-500 tracking-widest px-2 py-1 rounded bg-[#000] shrink-0">
           EGO ATTACK
         </div>
         <p className="text-[13px] text-white">
