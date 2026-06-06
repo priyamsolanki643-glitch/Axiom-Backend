@@ -65,6 +65,71 @@ export class LLMService {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  static async generateSmartResponse(
+    userId: string,
+    systemPrompt: string,
+    conversationHistory: { role: "user" | "model", parts: { text: string }[] }[] = [],
+    isModeOnboarding: boolean
+  ): Promise<{ 
+    response_text: string; 
+    task_classification: "completed" | "failed" | "none"; 
+    onboarding_data?: any 
+  }> {
+    try {
+      const responseSchema: Schema = {
+        type: Type.OBJECT,
+        properties: {
+          response_text: { 
+            type: Type.STRING,
+            description: "Your conversational response to the user. Maintain the aggressive, buddy-like Hinglish persona."
+          },
+          task_classification: { 
+            type: Type.STRING,
+            description: "If the user is reporting the outcome of a task they were supposed to do, classify it as 'completed' or 'failed'. Otherwise return 'none'."
+          }
+        },
+        required: ['response_text', 'task_classification']
+      };
+
+      if (isModeOnboarding) {
+        responseSchema.properties!['onboarding_data'] = {
+          type: Type.OBJECT,
+          properties: {
+            isComplete: { type: Type.BOOLEAN, description: "True if all constraints (Goal, Capital, Time, Location) are extracted." },
+            declaredGoal: { type: Type.STRING },
+            region: { type: Type.STRING },
+            liquidCapital: { type: Type.NUMBER },
+            dailyUninterruptedHours: { type: Type.NUMBER },
+            pathPreference: { type: Type.STRING },
+            rawSkillStrings: { type: Type.ARRAY, items: { type: Type.STRING } }
+          },
+          required: ['isComplete']
+        };
+      }
+
+      const response = await this.executeWithRotation(async (aiClient) => {
+        return await aiClient.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: conversationHistory as any,
+          config: {
+            systemInstruction: systemPrompt,
+            responseMimeType: 'application/json',
+            responseSchema: responseSchema,
+            temperature: 0.3, 
+          }
+        });
+      });
+
+      const rawText = response.text;
+      if (!rawText) throw new Error("Empty response from LLM");
+
+      return JSON.parse(rawText);
+    } catch (error: any) {
+      console.error('LLM Smart Generation Error:', error);
+      throw error;
+    }
+  }
+
   /**
    * Sends a constructed prompt to the LLM and guarantees output via responseSchema.
    */
