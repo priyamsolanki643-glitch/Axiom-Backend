@@ -75,11 +75,6 @@ export class LLMService {
     isBackground = false
   ): Promise<{ response_text: string; strengths?: string[]; bottlenecks?: string[]; insight?: string }> {
     try {
-      const contents = [
-        { role: 'user', parts: [{ text: systemPrompt }] },
-        ...conversationHistory
-      ];
-
       const responseSchema: Schema = {
         type: Type.OBJECT,
         properties: {
@@ -94,8 +89,9 @@ export class LLMService {
       const response = await this.executeWithRotation(async (aiClient) => {
         return await aiClient.models.generateContent({
           model: 'gemini-1.5-flash',
-          contents: contents as any,
+          contents: conversationHistory as any,
           config: {
+            systemInstruction: systemPrompt,
             responseMimeType: 'application/json',
             responseSchema: responseSchema,
             temperature: 0.3, 
