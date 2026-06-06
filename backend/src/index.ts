@@ -11,6 +11,14 @@ import { requireIdempotency } from './middleware/idempotency.middleware';
 
 const app = new Hono();
 
+// Global crash handlers to prevent Cloud Run from failing health checks
+process.on('uncaughtException', (err) => {
+  console.error('CRITICAL UNCAUGHT EXCEPTION:', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('CRITICAL UNHANDLED REJECTION:', reason);
+});
+
 // Enable CORS for all routes so Vercel frontend can connect
 app.use('*', cors());
 app.use('*', requireIdempotency);
