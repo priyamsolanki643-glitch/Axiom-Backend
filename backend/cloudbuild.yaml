@@ -26,7 +26,7 @@ steps:
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--port=8080'
-      - '--set-env-vars=AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT,PORT=8080'
+      - '--set-env-vars=AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT,PORT=8080,SUPABASE_URL=$_SUPABASE_URL,SUPABASE_SERVICE_KEY=$_SUPABASE_SERVICE_KEY'
 
 images:
   - 'gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
@@ -34,3 +34,5 @@ images:
 # Substitutions must be set in the Cloud Build Trigger settings
 substitutions:
   _AI_PROVIDER_KEY: ''
+  _SUPABASE_URL: ''
+  _SUPABASE_SERVICE_KEY: ''

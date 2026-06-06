@@ -194,6 +194,39 @@ export function VaultModal({ onClose }: VaultModalProps) {
 function TabMissions({ onClose }: { onClose: () => void }) {
   const [missions, setMissions] = useState<any[]>([]);
 
+  useEffect(() => {
+    const fetchMission = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${baseUrl}/api/v1/interaction/active-mission`, {
+          headers: { "Authorization": "Bearer test-user" }
+        });
+        const data = await res.json();
+        if (data?.data && data.data.missionName) {
+          const m = data.data;
+          setMissions([{
+            id: m.id,
+            badge: "ACTIVE", tag: m.lockedPath,
+            title: m.missionName,
+            quote: m.mindsetBrief,
+            path: m.strategyContent,
+            day: m.dayNumber, total: m.totalDays, score: m.consistencyScore,
+            time: "Live", unread: 0,
+            fullStrategy: {
+              goal: m.missionName,
+              motivation: m.mindsetBrief,
+              tasks: m.strategyContent.split('\n').filter((l: string) => l.trim().length > 0),
+              executionProtocol: "Refer to the strategy content."
+            }
+          }]);
+        }
+      } catch (err) {
+        console.error("Failed to load active mission", err);
+      }
+    };
+    fetchMission();
+  }, []);
+
   const [activeMission, setActiveMission] = useState<any>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 

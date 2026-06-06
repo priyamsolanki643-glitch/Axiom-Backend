@@ -16,6 +16,51 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+
+  const fetchThreads = async () => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${baseUrl}/api/v1/threads`, {
+        headers: { "Authorization": "Bearer test-user" }
+      });
+      const data = await res.json();
+      if (data?.data && Array.isArray(data.data)) {
+        // Group by 'Today', 'Yesterday', etc. based on updated_at
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const last7Days = new Date(today);
+        last7Days.setDate(last7Days.getDate() - 7);
+
+        const grouped = [
+          { group: "Today", chats: [] as any[] },
+          { group: "Yesterday", chats: [] as any[] },
+          { group: "Previous 7 Days", chats: [] as any[] },
+          { group: "Older", chats: [] as any[] }
+        ];
+
+        data.data.forEach((t: any) => {
+          const tDate = new Date(t.updated_at);
+          if (tDate >= today) grouped[0].chats.push(t);
+          else if (tDate >= yesterday) grouped[1].chats.push(t);
+          else if (tDate >= last7Days) grouped[2].chats.push(t);
+          else grouped[3].chats.push(t);
+        });
+
+        setHistoryData(grouped.filter(g => g.chats.length > 0));
+      }
+    } catch (err) {
+      console.error("Failed to load threads", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchThreads();
+    window.addEventListener('refresh-sidebar', fetchThreads);
+    return () => window.removeEventListener('refresh-sidebar', fetchThreads);
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX);
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -139,11 +184,9 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
             <>
               {/* History List */}
               {(() => {
-                const historyData: {group: string, chats: string[]}[] = [];
-
                 const filteredHistory = historyData.map(g => ({
                   ...g,
-                  chats: g.chats.filter(c => c.toLowerCase().includes(searchQuery.toLowerCase()))
+                  chats: g.chats.filter((c: any) => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
                 })).filter(g => g.chats.length > 0);
 
                 if (filteredHistory.length === 0) {
@@ -159,9 +202,16 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
                     <div className="text-[10px] font-semibold text-[#666666] tracking-wider uppercase px-3 mb-1">
                       {group.group}
                     </div>
-                    {group.chats.map((chat, j) => (
-                      <button key={j} className="w-full text-left py-1.5 px-3 rounded-lg text-[#a1a1aa] hover:text-white transition-colors text-[13px] truncate cursor-pointer block">
-                        {chat}
+                    {group.chats.map((chat: any, j: number) => (
+                      <button 
+                        key={j} 
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('load-thread', { detail: { threadId: chat.id } }));
+                          if (window.innerWidth < 768) setIsOpen(false);
+                        }}
+                        className="w-full text-left py-1.5 px-3 rounded-lg text-[#a1a1aa] hover:text-white transition-colors text-[13px] truncate cursor-pointer block"
+                      >
+                        {chat.title}
                       </button>
                     ))}
                   </div>
