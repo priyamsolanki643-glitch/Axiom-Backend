@@ -6,10 +6,14 @@ let _currentClientIndex = 0;
 
 function getAIClients(): GoogleGenAI[] {
   if (_aiClients.length === 0) {
-    const keysStr = process.env.AI_KEYS || process.env.AI_BACKGROUND_KEY || process.env.AI_PROVIDER_KEY || '';
-    const keys = keysStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    const keys = process.env.AI_KEYS 
+      ? process.env.AI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+      : process.env.AI_PROVIDER_KEY 
+      ? [process.env.AI_PROVIDER_KEY]
+      : [];
+
     if (keys.length === 0) {
-      console.warn("No AI API keys provided in environment variables!");
+      throw new Error('No AI API Keys configured');
     }
     _aiClients = keys.map(k => new GoogleGenAI({ apiKey: k }));
   }
