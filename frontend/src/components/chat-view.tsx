@@ -29,8 +29,43 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
   const [attachMenuState, setAttachMenuState] = useState<"main" | "models">("main");
   const [selectedModel, setSelectedModel] = useState("FP Flash");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const placeholders = [
+    "Help me achieve my goal...",
+    "Find opportunities in my area...",
+    "How to crack the exam...",
+    "How to earn money..."
+  ];
+
+  const loadingPhrases = [
+    "Analyzing market dynamics...",
+    "Extracting constraints...",
+    "Formulating strategy...",
+    "Optimizing execution paths..."
+  ];
+
+  // Placeholder rotation
+  useEffect(() => {
+    if (isInputFocused || input.length > 0) return;
+    const interval = setInterval(() => {
+      setPlaceholderIndex(prev => (prev + 1) % placeholders.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isInputFocused, input.length]);
+
+  // Loading phrase rotation
+  useEffect(() => {
+    if (!isThinking) return;
+    const interval = setInterval(() => {
+      setLoadingPhraseIndex(prev => (prev + 1) % loadingPhrases.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [isThinking]);
 
   // File and multimedia upload states
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -345,6 +380,16 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         .action-icon-btn:hover {
           transform: scale(1.05);
         }
+
+        @keyframes placeholderFadeUp {
+          0% { opacity: 0; transform: translateY(4px); }
+          15% { opacity: 1; transform: translateY(0); }
+          85% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-4px); }
+        }
+        .animate-placeholder {
+          animation: placeholderFadeUp 3s ease-in-out infinite;
+        }
       `}</style>
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
@@ -465,11 +510,14 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
               {/* Loader */}
               {isThinking && (
                 <div className="flex justify-start animate-message-reveal">
-                  <div className="flex items-center justify-center p-3 bg-[#000000] w-fit rounded-2xl">
-                    <div className="relative w-2.5 h-2.5 animate-[spin_1s_linear_infinite]">
-                      <span className="absolute top-0 left-0 size-1 rounded-full bg-[#888888]" />
-                      <span className="absolute bottom-0 right-0 size-1 rounded-full bg-[#888888]" />
+                  <div className="flex items-center gap-3 p-3 w-fit rounded-2xl text-[#888888] text-[14px]">
+                    <div className="relative w-3 h-3 animate-[spin_1.5s_linear_infinite]">
+                      <span className="absolute top-0 left-0 size-1.5 rounded-full bg-[#00ff66]/60" />
+                      <span className="absolute bottom-0 right-0 size-1.5 rounded-full bg-[#00ff66]/60" />
                     </div>
+                    <span className="font-mono text-xs text-[#a1a1aa] tracking-wide animate-pulse">
+                      {loadingPhrases[loadingPhraseIndex]}
+                    </span>
                   </div>
                 </div>
               )}
@@ -637,21 +685,34 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 </div>
               )}
 
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder="Ask FP anything"
-                rows={1}
-                className="w-full bg-transparent outline-none resize-none text-[16px] text-white placeholder:text-[#888888] py-1 px-1 no-scrollbar leading-[1.5] self-center my-auto"
-                style={{ maxHeight: 120 }}
-              />
+              <div className="relative flex-1 flex flex-col justify-center min-w-0 min-h-[24px]">
+                {!(isInputFocused || input.length > 0) && (
+                  <div className="absolute inset-y-0 left-1 flex items-center pointer-events-none overflow-hidden h-full">
+                    <span 
+                      key={placeholderIndex} 
+                      className="text-[#888888] text-[16px] animate-placeholder whitespace-nowrap"
+                    >
+                      {placeholders[placeholderIndex]}
+                    </span>
+                  </div>
+                )}
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  rows={1}
+                  className="w-full bg-transparent outline-none resize-none text-[16px] text-white py-1 px-1 no-scrollbar leading-[1.5] self-center my-auto"
+                  style={{ maxHeight: 120 }}
+                />
+              </div>
 
               {/* Hidden file inputs */}
               <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple className="hidden" />

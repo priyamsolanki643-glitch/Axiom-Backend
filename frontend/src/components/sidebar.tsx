@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Compass, Archive, HelpCircle, ChevronDown, LogOut, MoreHorizontal, Trash2 } from "lucide-react";
+import { Plus, Search, Compass, Archive, HelpCircle, ChevronDown, LogOut, MoreVertical, Trash2 } from "lucide-react";
 
 interface SidebarProps {
   onOpenVault: () => void;
@@ -16,6 +16,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [activeChatMenu, setActiveChatMenu] = useState<string | null>(null);
 
@@ -243,7 +244,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
                           }}
                           className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-[#666666] hover:text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-md"
                         >
-                          <MoreHorizontal className="size-3.5" />
+                          <MoreVertical className="size-3.5" />
                         </button>
                         {activeChatMenu === chat.id && (
                           <div className="absolute right-2 top-8 z-50 w-32 bg-[#18181b] border border-[#27272a] rounded-lg shadow-xl overflow-hidden animate-message-reveal">
@@ -271,14 +272,50 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
           {/* User profile row */}
           <div className="relative">
             {isSignOutOpen && isOpen && (
-              <div className="absolute bottom-full mb-2 left-0 w-full bg-[#000000] border border-[#18181b] rounded-xl p-1 shadow-2xl animate-message-reveal z-50">
-                <button 
-                  onClick={onSignOut}
-                  className="flex items-center justify-center gap-2 w-full text-center py-2.5 text-[#ff3333] hover:bg-[#ff3333]/10 font-medium text-[13px] rounded-lg transition-colors cursor-pointer"
-                >
-                  <LogOut className="size-3.5" />
-                  Sign out
-                </button>
+              <div className="absolute bottom-full mb-2 left-0 w-full bg-[#000000] border border-[#18181b] rounded-xl p-1.5 shadow-2xl animate-message-reveal z-50">
+                {isDeletingAccount ? (
+                  <div className="flex flex-col gap-2 p-1">
+                    <span className="text-[12px] font-medium text-white mb-1 text-center leading-snug">Are you absolutely sure you want to delete your account?</span>
+                    <button 
+                      onClick={() => {
+                        onSignOut(); // In a real app, hit DELETE /user endpoint first
+                      }}
+                      className="flex items-center justify-center w-full py-2 text-black bg-[#ff3333] hover:bg-[#ff1a1a] font-semibold text-[11px] rounded transition-colors cursor-pointer uppercase tracking-wider shadow-[0_0_15px_rgba(255,51,51,0.3)]"
+                    >
+                      Yes, Delete
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsDeletingAccount(false);
+                      }}
+                      className="flex items-center justify-center w-full py-1.5 text-[#a1a1aa] hover:bg-white/5 hover:text-white font-medium text-[12px] rounded transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    <button 
+                      onClick={onSignOut}
+                      className="flex items-center gap-2.5 w-full px-2.5 py-2 text-[#e4e4e7] hover:bg-white/5 font-medium text-[13px] rounded-lg transition-colors cursor-pointer"
+                    >
+                      <LogOut className="size-3.5 text-[#a1a1aa]" />
+                      Sign out
+                    </button>
+                    <div className="h-px bg-[#18181b] my-0.5 mx-1" />
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsDeletingAccount(true);
+                      }}
+                      className="flex items-center gap-2.5 w-full px-2.5 py-2 text-[#eab308] hover:bg-[#eab308]/10 font-medium text-[13px] rounded-lg transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="size-3.5" />
+                      Delete my account
+                    </button>
+                  </div>
+                )}
               </div>
             )}
             <button 

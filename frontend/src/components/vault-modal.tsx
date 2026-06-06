@@ -149,7 +149,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
               <button
                 key={tab.id}
                 onClick={() => switchTab(tab.id)}
-                className={`relative flex items-center gap-2 px-3 h-full transition-colors duration-150 cursor-pointer ${
+                className={`relative flex items-center shrink-0 gap-2 px-3 h-full transition-colors duration-150 cursor-pointer ${
                   active ? "text-white" : "text-[#52525b] hover:text-[#a1a1aa]"
                 }`}
               >
