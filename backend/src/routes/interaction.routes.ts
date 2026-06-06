@@ -31,15 +31,26 @@ const messageSchema = z.object({
     parts: z.array(z.object({ text: z.string() }))
   })).optional().default([]),
   state_context: z.any().optional(),
-  action: z.enum(['onboarding', 'task_update', 'critique', 'unlock']).default('onboarding')
+  action: z.enum(['onboarding', 'task_update', 'critique', 'unlock']).default('onboarding'),
+  thread_id: z.string().optional()
 });
 
 // Primary chat/onboarding interaction message handler
 interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) => {
-  const { user_id, message, conversationHistory, state_context, action } = c.req.valid('json');
+  const { user_id, message, conversationHistory, state_context, action, thread_id } = c.req.valid('json');
   const actualUserId = c.get('userId') || user_id || 'test-user';
 
   try {
+    let currentThreadId = thread_id;
+    if (!currentThreadId) {
+      const title = message.substring(0, 40) + (message.length > 40 ? '...' : '');
+      const newThread = await DbService.createChatThread(actualUserId, title);
+      currentThreadId = newThread.id;
+    }
+
+    // Save user message
+    await DbService.saveMessage(currentThreadId, actualUserId, 'user', message);
+
     let result: any;
     let systemPrompt = '';
     
@@ -223,11 +234,66 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
       }
     }
 
+    // Save AI response
+    if (llmResponse && llmResponse.response_text) {
+      await DbService.saveMessage(currentThreadId, actualUserId, 'fp', llmResponse.response_text);
+    }
+
+    // Background task: Auto-extract mission if no active mission exists yet and this seems like a goal
+    if (!activeMission && conversationHistory.length >= 2) {
+      LLMService.classifyMessageOutcome(message).then(async () => {
+        try {
+          const extractionPrompt = `
+Analyze the following conversation to determine if the user has established a clear overarching goal or mission.
+If they have NOT established a clear goal, return null.
+If they HAVE established a goal, extract it into this JSON format:
+{
+  "missionName": "Short descriptive title (max 4 words)",
+  "lockedPath": "alpha or beta (alpha = aggressive, beta = conservative)",
+  "totalDays": 90,
+  "mindsetBrief": "Short motivational quote summarizing their drive",
+  "strategyContent": "High-level summary of the phases/steps they need to execute."
+}
+
+Conversation:
+${conversationHistory.map(m => m.role + ': ' + m.parts[0].text).join('\n')}
+user: ${message}
+
+Output ONLY valid JSON or null. Do not include markdown formatting or backticks.`;
+
+          const extractionRes = await LLMService.generateValidatedResponse(actualUserId, extractionPrompt, [], []);
+          if (extractionRes.response_text && extractionRes.response_text.trim() !== 'null') {
+            const parsed = JSON.parse(extractionRes.response_text);
+            if (parsed.missionName) {
+              await DbService.saveMission({
+                user_id: actualUserId,
+                missionName: parsed.missionName,
+                lockedPath: parsed.lockedPath || 'alpha',
+                probabilityLow: 25.0,
+                probabilityHigh: 75.0,
+                dayNumber: 1,
+                totalDays: parsed.totalDays || 90,
+                consistencyScore: 100,
+                streakDays: 0,
+                mindsetBrief: parsed.mindsetBrief || "Execute the vision.",
+                strategyContent: parsed.strategyContent || "Phase 1 initialized.",
+                chatThreadId: currentThreadId
+              });
+              await DbService.addConsistencyLog(actualUserId, 100);
+            }
+          }
+        } catch (e) {
+          console.error('Background Mission Extraction Error:', e);
+        }
+      });
+    }
+
     return c.json({
       status: 'success',
       data: {
         engine_result: result,
-        ai_response: llmResponse
+        ai_response: llmResponse,
+        thread_id: currentThreadId
       }
     });
 

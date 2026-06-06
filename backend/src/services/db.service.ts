@@ -358,4 +358,87 @@ export class DbService {
       milestonePassedUsers: matches.filter((m: any) => m.dayNumber > 30).length
     };
   }
+
+  // CHAT THREADS AND MESSAGES OPERATIONS
+  static async createChatThread(userId: string, title: string): Promise<any> {
+    const payload = {
+      user_id: userId,
+      title,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (isLocalFallback) {
+      return { id: `thread-${Date.now()}`, ...payload };
+    }
+
+    const { data, error } = await supabase
+      .from('chat_threads')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async getChatThreads(userId: string): Promise<any[]> {
+    if (isLocalFallback) return [];
+    
+    const { data, error } = await supabase
+      .from('chat_threads')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('getChatThreads DB error:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  static async saveMessage(threadId: string, userId: string, role: string, content: string): Promise<any> {
+    const payload = {
+      thread_id: threadId,
+      user_id: userId,
+      role,
+      content,
+      created_at: new Date().toISOString()
+    };
+
+    if (isLocalFallback) return { id: `msg-${Date.now()}`, ...payload };
+
+    const { data, error } = await supabase
+      .from('messages')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('saveMessage DB error:', error);
+      return null;
+    }
+
+    // Update thread timestamp
+    await supabase.from('chat_threads').update({ updated_at: new Date().toISOString() }).eq('id', threadId);
+
+    return data;
+  }
+
+  static async getMessages(threadId: string): Promise<any[]> {
+    if (isLocalFallback) return [];
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('thread_id', threadId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('getMessages DB error:', error);
+      return [];
+    }
+    return data || [];
+  }
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X } from "lucide-react";
+import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu } from "lucide-react";
 
 interface ChatViewProps {
   onOpenSidebar: () => void;
@@ -22,11 +22,12 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
   const router = useRouter();
   const [simulationData, setSimulationData] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
-  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [attachMenuState, setAttachMenuState] = useState<"main" | "models">("main");
   const [selectedModel, setSelectedModel] = useState("FP Flash");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -55,9 +56,46 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
       setMessages([]);
       setInput("");
       setIsThinking(false);
+      setThreadId(null);
     };
+
+    const handleLoadThread = async (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const tId = customEvent.detail?.threadId;
+      if (!tId) return;
+      
+      setThreadId(tId);
+      setMessages([]);
+      setInput("");
+      setIsThinking(true);
+      
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${baseUrl}/api/v1/threads/${tId}/messages`, {
+          headers: { "Authorization": "Bearer test-user" }
+        });
+        const data = await res.json();
+        
+        if (data?.data && Array.isArray(data.data)) {
+          setMessages(data.data.map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            text: m.content
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to load thread messages", err);
+      } finally {
+        setIsThinking(false);
+      }
+    };
+
     window.addEventListener("new-thread", handleNewThread);
-    return () => window.removeEventListener("new-thread", handleNewThread);
+    window.addEventListener("load-thread", handleLoadThread);
+    return () => {
+      window.removeEventListener("new-thread", handleNewThread);
+      window.removeEventListener("load-thread", handleLoadThread);
+    };
   }, []);
 
   // Handle textarea height auto adjustment
@@ -176,14 +214,24 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": "Bearer test-user" 
+        },
         body: JSON.stringify({
           userId: "test-user",
           message: text,
-          conversationHistory: historyPayload
+          conversationHistory: historyPayload,
+          thread_id: threadId
         }),
       });
       const data = await res.json();
+      
+      if (data?.data?.thread_id && !threadId) {
+        setThreadId(data.data.thread_id);
+        // Let sidebar know to refresh its list
+        window.dispatchEvent(new Event('refresh-sidebar'));
+      }
 
       let reply = "Parameter logged.";
       if (data?.error) {
@@ -306,61 +354,6 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
           >
             <Menu className="size-5" />
           </button>
-          
-          {/* Model selector pill */}
-          <div className="relative">
-            <button 
-              onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-white/5 cursor-pointer transition-colors"
-            >
-              <span className="text-[14px] font-sans font-medium text-[#e3e3e3]">{selectedModel}</span>
-              <svg className={`size-3 text-[#c4c7c5] mt-0.5 transition-transform duration-200 ${isModelDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none" stroke="currentColor">
-                <path d="m3 4.5 3 3 3-3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-
-            {/* Model Dropdown */}
-            {isModelDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 bg-[#000000] rounded-xl p-1 md:p-2 flex flex-col w-[200px] md:w-[280px] shadow-2xl border border-white/5 z-50 animate-scale-in origin-top-left">
-                
-                {/* FP Flash */}
-                <button 
-                  onClick={() => { setSelectedModel("FP Flash"); setIsModelDropdownOpen(false); }}
-                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
-                >
-                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Flash</span>
-                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Default high-speed cognitive processing core.</span>
-                </button>
-
-                {/* FP Go */}
-                <button 
-                  onClick={() => { setSelectedModel("FP Go"); setIsModelDropdownOpen(false); }}
-                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
-                >
-                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Go</span>
-                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Highly recommended for initial constraint scanning and runway calibration.</span>
-                </button>
-
-                {/* FP Pro */}
-                <button 
-                  onClick={() => { setSelectedModel("FP Pro"); setIsModelDropdownOpen(false); }}
-                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
-                >
-                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Pro</span>
-                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Highly recommended for pathway planning and strategy simulation.</span>
-                </button>
-
-                {/* FP Elite */}
-                <button 
-                  onClick={() => { setSelectedModel("FP Elite"); setIsModelDropdownOpen(false); }}
-                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
-                >
-                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Elite</span>
-                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Highly recommended for daily execution monitoring and streak retention.</span>
-                </button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Header Actions */}
@@ -512,7 +505,15 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
             <div className="relative shrink-0 flex items-center justify-center">
               <button
                 type="button"
-                onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)}
+                onClick={() => {
+                  if (isAttachMenuOpen) {
+                    setIsAttachMenuOpen(false);
+                    setTimeout(() => setAttachMenuState("main"), 200); // reset state after close animation
+                  } else {
+                    setIsAttachMenuOpen(true);
+                    setAttachMenuState("main");
+                  }
+                }}
                 className={`size-10 rounded-full grid place-items-center transition-colors cursor-pointer ${isAttachMenuOpen ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-[#a1a1aa] hover:text-white'}`}
                 title="Attach"
               >
@@ -521,28 +522,79 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
               {/* Attachment Menu Popover */}
               {isAttachMenuOpen && (
-                <div className="absolute bottom-full left-0 mb-4 bg-[#1e1f20] border border-white/5 rounded-2xl p-1.5 flex flex-col gap-0.5 shadow-2xl min-w-[140px] animate-scale-in origin-bottom-left z-50">
-                  <button 
-                    onClick={() => { cameraInputRef.current?.click(); setIsAttachMenuOpen(false); }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
-                  >
-                    <Camera className="size-4" />
-                    <span>Camera</span>
-                  </button>
-                  <button 
-                    onClick={() => { photosInputRef.current?.click(); setIsAttachMenuOpen(false); }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
-                  >
-                    <Image className="size-4" />
-                    <span>Photos</span>
-                  </button>
-                  <button 
-                    onClick={() => { fileInputRef.current?.click(); setIsAttachMenuOpen(false); }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
-                  >
-                    <Paperclip className="size-4" />
-                    <span>Files</span>
-                  </button>
+                <div className="absolute bottom-full left-0 mb-4 bg-[#1a1b1e] border border-white/5 rounded-[24px] p-2 flex flex-col shadow-2xl min-w-[200px] animate-scale-in origin-bottom-left z-50 overflow-hidden">
+                  
+                  {attachMenuState === "main" ? (
+                    <div className="flex flex-col gap-1 animate-fade-in">
+                      <button 
+                        onClick={() => { cameraInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
+                      >
+                        <Camera className="size-[18px]" />
+                        <span>Camera</span>
+                      </button>
+                      <button 
+                        onClick={() => { photosInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
+                      >
+                        <Image className="size-[18px]" />
+                        <span>Photos</span>
+                      </button>
+                      <button 
+                        onClick={() => { fileInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
+                      >
+                        <Paperclip className="size-[18px]" />
+                        <span>Files</span>
+                      </button>
+
+                      <div className="h-px bg-white/5 my-1" />
+
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setAttachMenuState("models"); }}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 text-[#00ff66] transition-colors text-[14px] text-left cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Cpu className="size-[18px]" />
+                          <span>AI Models</span>
+                        </div>
+                        <ChevronRight className="size-[18px] text-[#00ff66]/50 group-hover:text-[#00ff66]" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col w-[260px] animate-fade-in">
+                      <div className="flex items-center gap-2 px-2 pb-2 mb-1 border-b border-white/5">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setAttachMenuState("main"); }}
+                          className="size-7 grid place-items-center rounded-full hover:bg-white/10 text-white cursor-pointer"
+                        >
+                          <ChevronLeft className="size-5" />
+                        </button>
+                        <span className="text-[13px] font-semibold text-[#a1a1aa] uppercase tracking-wider">Select Model</span>
+                      </div>
+                      
+                      <div className="flex flex-col gap-1 mt-1">
+                        {[
+                          { name: "FP Flash", desc: "High-speed cognitive processing core." },
+                          { name: "FP Go", desc: "Constraint scanning and runway calibration." },
+                          { name: "FP Pro", desc: "Pathway planning and strategy simulation." },
+                          { name: "FP Elite", desc: "Execution monitoring and streak retention." }
+                        ].map((model) => (
+                          <button 
+                            key={model.name}
+                            onClick={() => { setSelectedModel(model.name); setIsAttachMenuOpen(false); setTimeout(() => setAttachMenuState("main"), 200); }}
+                            className="flex flex-col px-3 py-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className={`text-[14px] font-medium ${selectedModel === model.name ? 'text-[#00ff66]' : 'text-white'}`}>{model.name}</span>
+                              {selectedModel === model.name && <div className="size-1.5 rounded-full bg-[#00ff66] shadow-[0_0_8px_rgba(0,255,102,0.6)]" />}
+                            </div>
+                            <span className="text-[12px] text-[#888888] leading-snug mt-1 group-hover:text-[#a1a1aa]">{model.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { interactionRoutes } from './routes/interaction.routes';
 import { authRoutes } from './routes/auth.routes';
+import { threadRoutes } from './routes/thread.routes';
 import { DbService } from './services/db.service';
 import { VectorService } from './services/vector.service';
 import { WebSocketService } from './services/websocket.service';
@@ -21,6 +22,7 @@ app.get('/health', (c) => c.json({ status: 'ok' }));
 // Mount specific domains
 app.route('/api/v1/interaction', interactionRoutes);
 app.route('/api/v1/auth', authRoutes);
+app.route('/api/v1/threads', threadRoutes);
 
 // Cloud Run sets PORT env var to 8080 — always read directly from process.env
 const port = parseInt(process.env.PORT || '8080', 10);
