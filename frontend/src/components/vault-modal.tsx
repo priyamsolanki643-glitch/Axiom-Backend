@@ -192,68 +192,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
 }
 
 function TabMissions({ onClose }: { onClose: () => void }) {
-  const [missions, setMissions] = useState([
-    {
-      id: "1",
-      badge: "ACADEMIC", tag: "/jee-2025",
-      title: "JEE 2025 · Top 1000",
-      quote: "Tu average nahi hai. Yeh summer vacation teri zindagi badal sakti hai — sirf tu decide kar.",
-      path: "Phase 1: Physics fundamentals + 40 mock sets. Phase 2: Inorganic compression. Phase 3: Maths daily rotation. No skips.",
-      day: 23, total: 180, score: 71,
-      time: "10:42 AM", unread: 2,
-      fullStrategy: {
-        goal: "Rank under 1000 in JEE Advanced 2025. Seat locked in top 5 IITs.",
-        motivation: "Tu average nahi hai. The next 180 days will dictate your entire trajectory. Comfort is your enemy. The pain of discipline weighs ounces, the pain of regret weighs tons.",
-        tasks: [
-          "Complete HC Verma Vol 1 & 2 thoroughly.",
-          "Solve 40 full-length advanced mock tests.",
-          "Daily 2 hours of Inorganic Chemistry rote memorization.",
-          "Mathematical problem rotation: 50 advanced questions daily."
-        ],
-        executionProtocol: "1. Wake up at 4:30 AM.\n2. Deep work blocks of 3 hours.\n3. Zero social media. Zero distractions.\n4. Weekly review every Sunday evening."
-      }
-    },
-    {
-      id: "2",
-      badge: "BUILD", tag: "/saas-launch",
-      title: "WhatsApp CRM · ₹1L MRR",
-      quote: "Tere paas ek 6-week window hai. Market ready hai. Tu nahi. Wahi fix karna hai.",
-      path: "Week 1-2: 20 cold demos. Week 3: paid pilot. Week 4-6: retention loops. Sales > polish.",
-      day: 9, total: 42, score: 54,
-      time: "Yesterday", unread: 0,
-      fullStrategy: {
-        goal: "Hit ₹1L Monthly Recurring Revenue within 42 days. Establish market foothold.",
-        motivation: "Market kisi ka wait nahi karta. The window is closing. Either you launch now and iterate, or watch someone else take your customers. Speed over perfection.",
-        tasks: [
-          "Scrape leads and send 20 highly personalized cold emails/demos daily.",
-          "Deploy MVP this weekend with core messaging features only.",
-          "Close 3 initial paid pilots to validate pricing.",
-          "Build retention loop: automated follow-ups."
-        ],
-        executionProtocol: "1. 9:00 AM - 12:00 PM: Outreach and Sales.\n2. 1:00 PM - 5:00 PM: Product and Engineering.\n3. 8:00 PM: Review metrics. Send nightly updates."
-      }
-    },
-    {
-      id: "3",
-      badge: "DISCIPLINE", tag: "/body-recomp",
-      title: "Body Recomp · 12% BF",
-      quote: "Discipline jo yahan banegi, woh har domain mein leak hogi. Body is the first ledger.",
-      path: "5 lifts/week · protein floor 1.6g/kg · 2 cardio blocks. Weigh-in Sunday. No negotiation.",
-      day: 47, total: 120, score: 88,
-      time: "Monday", unread: 5,
-      fullStrategy: {
-        goal: "Hit 12% Body Fat while maintaining muscle mass within 120 days.",
-        motivation: "Body is the first ledger of discipline. If you can't control what you eat and how you train, you can't control your business or academics. This builds the operator mindset.",
-        tasks: [
-          "5 heavy lifting sessions per week (Push/Pull/Legs).",
-          "Hit minimum protein floor of 1.6g/kg daily.",
-          "2 dedicated Zone-2 cardio blocks of 45 mins weekly.",
-          "Strict calorie tracking and Sunday morning weigh-ins."
-        ],
-        executionProtocol: "1. Meal prep every Sunday evening.\n2. Gym at 6:00 AM sharp. No snooze button.\n3. Track macros in app immediately after eating.\n4. Zero liquid calories. Zero exceptions."
-      }
-    }
-  ]);
+  const [missions, setMissions] = useState<any[]>([]);
 
   const [activeMission, setActiveMission] = useState<any>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
@@ -367,63 +306,75 @@ function TabMissions({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex flex-col gap-1.5 md:gap-2">
-      {missions.map(m => (
-        <div 
-          key={m.id} 
-          onClick={() => setActiveMission(m)}
-          className="flex items-center justify-between p-3 md:p-4 rounded-2xl hover:bg-[#121214] transition-colors cursor-pointer group relative border border-transparent hover:border-white/5"
-        >
-          <div className="flex items-center gap-4 overflow-hidden flex-1">
-            <div className="size-11 md:size-12 rounded-full bg-[#18181b] flex items-center justify-center shrink-0 shadow-sm relative">
-              <Folder className="size-5 text-[#888888]" />
-              {m.unread > 0 && (
-                <div className="absolute -top-1 -right-1 size-[18px] rounded-full bg-[#22c55e] flex items-center justify-center text-[10px] font-bold text-black border-2 border-[#000000]">
-                  {m.unread}
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col min-w-0 pr-4">
-              <span className="text-[15px] font-medium text-[#e3e3e3] truncate tracking-tight">{m.title}</span>
-              <span className="text-[13px] text-[#666666] truncate mt-0.5 max-w-[280px] md:max-w-[400px]">
-                {m.quote}
-              </span>
-            </div>
+      {missions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-[300px] text-center px-4">
+          <div className="size-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+            <Folder className="size-6 text-[#52525b]" />
           </div>
-          
-          <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
-            <span className={`text-[11px] font-medium ${m.unread > 0 ? 'text-[#22c55e]' : 'text-[#52525b]'}`}>{m.time}</span>
-            
-            <div className="relative">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpenId(menuOpenId === m.id ? null : m.id);
-                }}
-                className="p-1 rounded-full hover:bg-white/10 text-[#52525b] hover:text-white transition-colors cursor-pointer"
-              >
-                <MoreVertical className="size-4" />
-              </button>
-
-              {menuOpenId === m.id && (
-                <div className="absolute right-0 top-full mt-1 w-[140px] bg-[#1e1f20] border border-white/10 rounded-xl p-1.5 shadow-2xl z-50 animate-scale-in origin-top-right">
-                  <button 
-                    onClick={(e) => handleShare(m.id, e)}
-                    className="w-full text-left px-3 py-2 rounded-lg text-[13px] text-[#d4d4d8] hover:bg-white/5 hover:text-white flex items-center gap-2.5 cursor-pointer"
-                  >
-                    <Share2 className="size-3.5" /> Share
-                  </button>
-                  <button 
-                    onClick={(e) => handleDelete(m.id, e)}
-                    className="w-full text-left px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2.5 mt-0.5 cursor-pointer"
-                  >
-                    <Trash className="size-3.5" /> Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <h3 className="text-white font-medium text-lg mb-2">No active missions</h3>
+          <p className="text-[#a1a1aa] text-[13px] max-w-[280px]">
+            Start chatting with the Strategist to initialize your first mission protocol.
+          </p>
         </div>
-      ))}
+      ) : (
+        missions.map(m => (
+          <div 
+            key={m.id} 
+            onClick={() => setActiveMission(m)}
+            className="flex items-center justify-between p-3 md:p-4 rounded-2xl hover:bg-[#121214] transition-colors cursor-pointer group relative border border-transparent hover:border-white/5"
+          >
+            <div className="flex items-center gap-4 overflow-hidden flex-1">
+              <div className="size-11 md:size-12 rounded-full bg-[#18181b] flex items-center justify-center shrink-0 shadow-sm relative">
+                <Folder className="size-5 text-[#888888]" />
+                {m.unread > 0 && (
+                  <div className="absolute -top-1 -right-1 size-[18px] rounded-full bg-[#22c55e] flex items-center justify-center text-[10px] font-bold text-black border-2 border-[#000000]">
+                    {m.unread}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col min-w-0 pr-4">
+                <span className="text-[15px] font-medium text-[#e3e3e3] truncate tracking-tight">{m.title}</span>
+                <span className="text-[13px] text-[#666666] truncate mt-0.5 max-w-[280px] md:max-w-[400px]">
+                  {m.quote}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
+              <span className={`text-[11px] font-medium ${m.unread > 0 ? 'text-[#22c55e]' : 'text-[#52525b]'}`}>{m.time}</span>
+              
+              <div className="relative">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpenId(menuOpenId === m.id ? null : m.id);
+                  }}
+                  className="p-1 rounded-full hover:bg-white/10 text-[#52525b] hover:text-white transition-colors cursor-pointer"
+                >
+                  <MoreVertical className="size-4" />
+                </button>
+
+                {menuOpenId === m.id && (
+                  <div className="absolute right-0 top-full mt-1 w-[140px] bg-[#1e1f20] border border-white/10 rounded-xl p-1.5 shadow-2xl z-50 animate-scale-in origin-top-right">
+                    <button 
+                      onClick={(e) => handleShare(m.id, e)}
+                      className="w-full text-left px-3 py-2 rounded-lg text-[13px] text-[#d4d4d8] hover:bg-white/5 hover:text-white flex items-center gap-2.5 cursor-pointer"
+                    >
+                      <Share2 className="size-3.5" /> Share
+                    </button>
+                    <button 
+                      onClick={(e) => handleDelete(m.id, e)}
+                      className="w-full text-left px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-2.5 mt-0.5 cursor-pointer"
+                    >
+                      <Trash className="size-3.5" /> Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }

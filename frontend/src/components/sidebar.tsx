@@ -139,20 +139,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
             <>
               {/* History List */}
               {(() => {
-                const historyData = [
-                  {
-                    group: "Today",
-                    chats: ["Compress 90-day SaaS sprint", "First-principles: portfolio site"]
-                  },
-                  {
-                    group: "Yesterday",
-                    chats: ["Audit week 21 execution", "Locality arbitrage scan"]
-                  },
-                  {
-                    group: "Previous 7 Days",
-                    chats: ["Recovery sprint protocol"]
-                  }
-                ];
+                const historyData: {group: string, chats: string[]}[] = [];
 
                 const filteredHistory = historyData.map(g => ({
                   ...g,

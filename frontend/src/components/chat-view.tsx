@@ -275,12 +275,12 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
         /* Input area glow transitions */
         .input-console-transition {
-          transition: border-color 0.25s ease, box-shadow 0.25s ease;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         
         .input-console-transition:focus-within {
-          border-color: rgba(255, 255, 255, 0.15) !important;
-          box-shadow: 0 4px 24px rgba(255, 255, 255, 0.03);
+          border-color: #ffffff !important;
+          box-shadow: 0 0 24px rgba(255, 255, 255, 0.15) !important;
         }
 
         /* Action triggers hover dynamics */
@@ -321,39 +321,42 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
             {/* Model Dropdown */}
             {isModelDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 bg-[#000000] rounded-2xl p-2 flex flex-col gap-1 w-[320px] shadow-2xl z-50 animate-scale-in origin-top-left">
+              <div className="absolute top-full left-0 mt-2 bg-[#000000] rounded-xl p-1 md:p-2 flex flex-col w-[200px] md:w-[280px] shadow-2xl border border-white/5 z-50 animate-scale-in origin-top-left">
                 
+                {/* FP Flash */}
+                <button 
+                  onClick={() => { setSelectedModel("FP Flash"); setIsModelDropdownOpen(false); }}
+                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                >
+                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Flash</span>
+                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Default high-speed cognitive processing core.</span>
+                </button>
+
                 {/* FP Go */}
                 <button 
                   onClick={() => { setSelectedModel("FP Go"); setIsModelDropdownOpen(false); }}
-                  className="flex flex-col gap-1 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Go</span>
-                  </div>
-                  <span className="text-[11px] text-[#888888] leading-snug">Highly recommended for initial constraint scanning and runway calibration.</span>
+                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Go</span>
+                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Highly recommended for initial constraint scanning and runway calibration.</span>
                 </button>
 
                 {/* FP Pro */}
                 <button 
                   onClick={() => { setSelectedModel("FP Pro"); setIsModelDropdownOpen(false); }}
-                  className="flex flex-col gap-1 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Pro</span>
-                  </div>
-                  <span className="text-[11px] text-[#888888] leading-snug">Highly recommended for pathway planning and strategy simulation.</span>
+                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Pro</span>
+                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Highly recommended for pathway planning and strategy simulation.</span>
                 </button>
 
                 {/* FP Elite */}
                 <button 
                   onClick={() => { setSelectedModel("FP Elite"); setIsModelDropdownOpen(false); }}
-                  className="flex flex-col gap-1 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
+                  className="flex flex-col px-3 py-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left group"
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Elite</span>
-                  </div>
-                  <span className="text-[11px] text-[#888888] leading-snug">Highly recommended for daily execution monitoring and streak retention.</span>
+                  <span className="text-[13px] font-semibold text-[#e3e3e3] group-hover:text-white">FP Elite</span>
+                  <span className="text-[11px] text-[#888888] leading-snug hidden md:block mt-0.5">Highly recommended for daily execution monitoring and streak retention.</span>
                 </button>
               </div>
             )}
@@ -361,10 +364,10 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center">
+        <div className="flex items-center -mr-1">
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
-            className="size-9 rounded-2xl bg-[#00ff66] text-black hover:bg-[#00cc55] transition-all cursor-pointer grid place-items-center shadow-[0_0_15px_rgba(0,255,102,0.3)]"
+            className="size-9 rounded-full bg-[#000000] text-[#00ff66] border border-[#00ff66]/30 hover:bg-[#00ff66]/10 transition-all cursor-pointer grid place-items-center shadow-[0_0_15px_rgba(0,255,102,0.15)] hover:shadow-[0_0_20px_rgba(0,255,102,0.3)]"
           >
             <Plus className="size-5" />
           </button>
@@ -498,151 +501,127 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
       {/* ── Input Box (Trajectory Forge copy) ── */}
       <div className="shrink-0 px-4 md:px-8 pb-6 pt-2 bg-[#000000] relative z-10">
         <div 
-          className="reveal-chat-item max-w-[760px] w-full mx-auto"
+          className="reveal-chat-item max-w-[640px] w-full mx-auto"
           style={{ animationDelay: "550ms" }}
         >
           
-          {/* Sleek Apple-inspired floating capsule */}
-          <div className="input-console-transition border border-white/[0.08] bg-[#0a0a0a]/80 backdrop-blur-xl rounded-[32px] p-2.5 flex flex-col gap-2 shadow-[0_8px_32px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.03)]">
+          {/* Sleek Apple-inspired floating capsule (Gemini Size) */}
+          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 border border-[#27272a] bg-[#1a1a1c] rounded-[48px] px-3 py-2 md:py-2.5 shadow-xl transition-all duration-300 min-h-[64px]">
             
-            {/* Previews of selected files */}
-            {selectedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2 px-3 pt-1">
-                {selectedFiles.map((file, idx) => (
-                  <div key={idx} className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[12px] text-[#a1a1aa] pr-8 animate-message-reveal">
-                    {file.type.startsWith("image/") ? (
-                      <img src={filePreviews[idx]} alt="preview" className="size-5 object-cover rounded" />
-                    ) : (
-                      <Paperclip className="size-3.5" />
-                    )}
-                    <span className="truncate max-w-[100px]">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeSelectedFile(idx)}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 size-5 rounded-full hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white cursor-pointer"
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Left Action - Attach */}
+            <div className="relative shrink-0 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)}
+                className={`size-10 rounded-full grid place-items-center transition-colors cursor-pointer ${isAttachMenuOpen ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-[#a1a1aa] hover:text-white'}`}
+                title="Attach"
+              >
+                <Plus className={`size-[22px] transition-transform duration-200 ${isAttachMenuOpen ? 'rotate-45' : ''}`} />
+              </button>
 
-            {isRecording && (
-              <div className="flex items-center gap-2.5 px-3 py-1 text-xs text-red-400 font-mono animate-pulse">
-                <span className="size-2 rounded-full bg-red-500" />
-                Listening to voice inputs... Speak now (Click Mic to stop)
-              </div>
-            )}
-
-            {/* Input area */}
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Ask FP anything"
-              rows={1}
-              className="w-full bg-transparent outline-none resize-none text-[14px] text-white placeholder:text-[#666666] py-1.5 px-3 no-scrollbar leading-[1.6]"
-              style={{ maxHeight: 120 }}
-            />
-
-            {/* Hidden file inputs */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              multiple
-              className="hidden"
-            />
-            <input
-              type="file"
-              accept="image/*,video/*"
-              ref={photosInputRef}
-              onChange={handleFileChange}
-              multiple
-              className="hidden"
-            />
-            <input
-              type="file"
-              accept="image/*"
-              ref={cameraInputRef}
-              onChange={handleFileChange}
-              capture="environment"
-              className="hidden"
-            />
-
-            {/* Bottom Row inside box */}
-            <div className="flex items-center justify-between px-2 pt-1 border-t border-white/[0.02]">
-              {/* Left Side feature capsules */}
-              <div className="flex items-center gap-2 relative">
-                <button
-                  type="button"
-                  onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)}
-                  className={`size-7 rounded-full grid place-items-center transition-colors cursor-pointer shrink-0 ${isAttachMenuOpen ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-[#666666] hover:text-white'}`}
-                  title="Attach"
-                >
-                  <Plus className={`size-4 transition-transform duration-200 ${isAttachMenuOpen ? 'rotate-45' : ''}`} />
-                </button>
-
-                {/* Attachment Menu Popover */}
-                {isAttachMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-3 bg-[#1e1f20] border border-white/5 rounded-2xl p-1.5 flex flex-col gap-0.5 shadow-2xl min-w-[140px] animate-scale-in origin-bottom-left">
-                    <button 
-                      onClick={() => { cameraInputRef.current?.click(); setIsAttachMenuOpen(false); }}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[13px] text-left cursor-pointer"
-                    >
-                      <Camera className="size-4" />
-                      <span>Camera</span>
-                    </button>
-                    <button 
-                      onClick={() => { photosInputRef.current?.click(); setIsAttachMenuOpen(false); }}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[13px] text-left cursor-pointer"
-                    >
-                      <Image className="size-4" />
-                      <span>Photos</span>
-                    </button>
-                    <button 
-                      onClick={() => { fileInputRef.current?.click(); setIsAttachMenuOpen(false); }}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[13px] text-left cursor-pointer"
-                    >
-                      <Paperclip className="size-4" />
-                      <span>Files</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Right Side triggers */}
-              <div className="flex items-center gap-2">
-                {/* Microphone */}
-                <button 
-                  type="button"
-                  onClick={toggleRecording}
-                  className={`size-7 rounded-full grid place-items-center cursor-pointer shrink-0 transition-colors ${
-                    isRecording ? "bg-red-500/20 text-red-400" : "hover:bg-white/5 text-[#666666] hover:text-white"
-                  }`}
-                  title={isRecording ? "Stop voice input" : "Voice input"}
-                >
-                  <Mic className="size-4" />
-                </button>
-
-                {/* Send action arrow */}
-                <button
-                  onClick={() => handleSend()}
-                  disabled={!input.trim() && selectedFiles.length === 0}
-                  className="action-icon-btn size-7 rounded-full grid place-items-center bg-white text-black hover:bg-gray-200 disabled:bg-white/5 disabled:text-[#666666] transition-colors cursor-pointer shrink-0"
-                >
-                  <ArrowUp className="size-4 stroke-[2.5]" />
-                </button>
-              </div>
+              {/* Attachment Menu Popover */}
+              {isAttachMenuOpen && (
+                <div className="absolute bottom-full left-0 mb-4 bg-[#1e1f20] border border-white/5 rounded-2xl p-1.5 flex flex-col gap-0.5 shadow-2xl min-w-[140px] animate-scale-in origin-bottom-left z-50">
+                  <button 
+                    onClick={() => { cameraInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
+                  >
+                    <Camera className="size-4" />
+                    <span>Camera</span>
+                  </button>
+                  <button 
+                    onClick={() => { photosInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
+                  >
+                    <Image className="size-4" />
+                    <span>Photos</span>
+                  </button>
+                  <button 
+                    onClick={() => { fileInputRef.current?.click(); setIsAttachMenuOpen(false); }}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/5 text-[#d4d4d8] hover:text-white transition-colors text-[14px] text-left cursor-pointer"
+                  >
+                    <Paperclip className="size-4" />
+                    <span>Files</span>
+                  </button>
+                </div>
+              )}
             </div>
 
+            {/* Input area */}
+            <div className="flex-1 flex flex-col justify-center min-w-0">
+              {/* Previews of selected files */}
+              {selectedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1 pb-1">
+                  {selectedFiles.map((file, idx) => (
+                    <div key={idx} className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[12px] text-[#a1a1aa] pr-8 animate-message-reveal">
+                      {file.type.startsWith("image/") ? (
+                        <img src={filePreviews[idx]} alt="preview" className="size-5 object-cover rounded" />
+                      ) : (
+                        <Paperclip className="size-3.5" />
+                      )}
+                      <span className="truncate max-w-[100px]">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSelectedFile(idx)}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 size-5 rounded-full hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white cursor-pointer"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {isRecording && (
+                <div className="flex items-center gap-2.5 px-1 py-1 text-xs text-red-400 font-mono animate-pulse">
+                  <span className="size-2 rounded-full bg-red-500" />
+                  Listening...
+                </div>
+              )}
+
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Ask FP anything"
+                rows={1}
+                className="w-full bg-transparent outline-none resize-none text-[16px] text-white placeholder:text-[#888888] py-1 px-1 no-scrollbar leading-[1.5] self-center my-auto"
+                style={{ maxHeight: 120 }}
+              />
+
+              {/* Hidden file inputs */}
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple className="hidden" />
+              <input type="file" accept="image/*,video/*" ref={photosInputRef} onChange={handleFileChange} multiple className="hidden" />
+              <input type="file" accept="image/*" ref={cameraInputRef} onChange={handleFileChange} capture="environment" className="hidden" />
+            </div>
+
+            {/* Right Actions - Mic & Send */}
+            <div className="shrink-0 flex items-center gap-1.5">
+              <button 
+                type="button"
+                onClick={toggleRecording}
+                className={`size-10 rounded-full grid place-items-center cursor-pointer transition-colors ${
+                  isRecording ? "bg-red-500/20 text-red-400" : "hover:bg-white/5 text-[#a1a1aa] hover:text-white"
+                }`}
+                title={isRecording ? "Stop voice input" : "Voice input"}
+              >
+                <Mic className="size-[20px]" />
+              </button>
+
+              <button
+                onClick={() => handleSend()}
+                disabled={!input.trim() && selectedFiles.length === 0}
+                className="action-icon-btn size-10 rounded-full grid place-items-center bg-[#29292c] text-[#e4e4e7] hover:bg-white hover:text-black disabled:bg-[#1f1f22] disabled:text-[#52525b] transition-all cursor-pointer"
+              >
+                <ArrowUp className="size-[20px] stroke-[2.5]" />
+              </button>
+            </div>
           </div>
 
           {/* Subtext info */}

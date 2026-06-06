@@ -108,14 +108,6 @@ export default function EntryPoint() {
       
       {isVaultOpen && <VaultModal onClose={() => setIsVaultOpen(false)} />}
       
-      {/* Floating Action Button for mobile vault access */}
-      <button
-        onClick={() => setIsVaultOpen(true)}
-        className="lg:hidden fixed bottom-24 right-4 z-40 size-12 grid place-items-center rounded-full bg-text-primary text-black shadow-2xl cursor-pointer"
-        aria-label="Open vault"
-      >
-        <Archive className="size-5" />
-      </button>
     </div>
   );
 }
