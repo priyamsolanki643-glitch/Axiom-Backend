@@ -12,8 +12,7 @@ steps:
     entrypoint: gcloud
     args:
       - 'run'
-      - 'services'
-      - 'update'
+      - 'deploy'
       - 'fp'
       - '--image=gcr.io/$PROJECT_ID/github.com/priyamsolanki643-glitch/fp:$COMMIT_SHA'
       - '--region=europe-west1'
