@@ -39,6 +39,9 @@ export class LLMService {
     }
 
     try {
+      if (clients.length === 0) {
+        throw new Error("No AI API Keys configured. Please set AI_KEYS environment variable with valid Gemini API keys.");
+      }
       const client = clients[_currentClientIndex];
       return await operation(client);
     } catch (error: any) {
