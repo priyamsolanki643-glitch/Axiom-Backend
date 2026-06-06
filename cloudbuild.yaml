@@ -18,8 +18,7 @@ steps:
       - '--region=europe-west1'
       - '--platform=managed'
       - '--allow-unauthenticated'
-      - '--port=8080'
-      - '--update-env-vars=AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT,PORT=8080'
+      - '--update-env-vars=AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT'
 
 options:
   logging: CLOUD_LOGGING_ONLY
