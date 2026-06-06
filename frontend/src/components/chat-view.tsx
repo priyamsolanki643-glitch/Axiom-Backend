@@ -366,9 +366,9 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         <div className="flex items-center -mr-1">
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
-            className="size-9 rounded-full bg-[#000000] text-[#00ff66] border border-[#00ff66]/30 hover:bg-[#00ff66]/10 transition-all cursor-pointer grid place-items-center shadow-[0_0_15px_rgba(0,255,102,0.15)] hover:shadow-[0_0_20px_rgba(0,255,102,0.3)]"
+            className="p-2 text-[#00ff66] hover:text-[#33ff85] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(0,255,102,0.6)]"
           >
-            <Plus className="size-5" />
+            <Plus className="size-6" />
           </button>
         </div>
       </header>
@@ -520,7 +520,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                     setAttachMenuState("main");
                   }
                 }}
-                className={`size-10 rounded-full grid place-items-center transition-colors cursor-pointer ${isAttachMenuOpen ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-[#a1a1aa] hover:text-white'}`}
+                className={`size-10 rounded-full grid place-items-center transition-all duration-200 cursor-pointer active:scale-90 active:bg-white/10 ${isAttachMenuOpen ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-[#a1a1aa] hover:text-white'}`}
                 title="Attach"
               >
                 <Plus className={`size-[22px] transition-transform duration-200 ${isAttachMenuOpen ? 'rotate-45' : ''}`} />
@@ -664,7 +664,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
               <button 
                 type="button"
                 onClick={toggleRecording}
-                className={`size-10 rounded-full grid place-items-center cursor-pointer transition-colors ${
+                className={`size-10 rounded-full grid place-items-center cursor-pointer transition-all duration-200 active:scale-90 active:bg-white/10 ${
                   isRecording ? "bg-red-500/20 text-red-400" : "hover:bg-white/5 text-[#a1a1aa] hover:text-white"
                 }`}
                 title={isRecording ? "Stop voice input" : "Voice input"}
@@ -675,7 +675,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() && selectedFiles.length === 0}
-                className="action-icon-btn size-10 rounded-full grid place-items-center bg-[#29292c] text-[#e4e4e7] hover:bg-white hover:text-black disabled:bg-[#1f1f22] disabled:text-[#52525b] transition-all cursor-pointer"
+                className="action-icon-btn size-10 rounded-full grid place-items-center bg-[#29292c] text-[#e4e4e7] hover:bg-white hover:text-black active:scale-90 active:bg-white active:text-black disabled:bg-[#1f1f22] disabled:text-[#52525b] transition-all cursor-pointer"
               >
                 <ArrowUp className="size-[20px] stroke-[2.5]" />
               </button>

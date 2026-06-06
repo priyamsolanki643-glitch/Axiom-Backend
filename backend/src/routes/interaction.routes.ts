@@ -44,7 +44,17 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
   try {
     let currentThreadId = thread_id;
     if (!currentThreadId) {
-      const title = message.substring(0, 40) + (message.length > 40 ? '...' : '');
+      let title = "New Conversation";
+      try {
+        const titlePrompt = `Summarize the following message into a concise 2-4 word topic or context suitable for a chat sidebar menu. Output ONLY the short title string and nothing else.\n\nMessage: "${message}"`;
+        // Quick background-priority generation to prevent hanging
+        const titleRes = await LLMService.generateValidatedResponse(actualUserId, titlePrompt, [], [], 1, 1000, true);
+        if (titleRes && titleRes.response_text) {
+          title = titleRes.response_text.trim().replace(/^["']|["']$/g, '');
+        }
+      } catch (err) {
+        title = message.substring(0, 40) + (message.length > 40 ? '...' : '');
+      }
       const newThread = await DbService.createChatThread(actualUserId, title);
       currentThreadId = newThread.id;
     }

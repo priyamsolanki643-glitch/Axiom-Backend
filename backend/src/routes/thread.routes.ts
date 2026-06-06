@@ -29,3 +29,19 @@ threadRoutes.get('/:id/messages', async (c) => {
     return c.json({ error: error.message }, 500);
   }
 });
+
+// Delete a thread
+threadRoutes.delete('/:id', async (c) => {
+  try {
+    const threadId = c.req.param('id');
+    const userId = c.get('userId') || 'test-user';
+    const success = await DbService.deleteChatThread(threadId, userId);
+    if (!success) {
+      return c.json({ error: 'Failed to delete thread' }, 500);
+    }
+    return c.json({ status: 'success' });
+  } catch (error: any) {
+    console.error('Delete Thread Error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});

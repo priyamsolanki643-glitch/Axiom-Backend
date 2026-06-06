@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Search, Compass, Archive, HelpCircle, ChevronDown, LogOut } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Search, Compass, Archive, HelpCircle, ChevronDown, LogOut, MoreHorizontal, Trash2 } from "lucide-react";
 
 interface SidebarProps {
   onOpenVault: () => void;
@@ -17,6 +17,29 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
   const [searchQuery, setSearchQuery] = useState("");
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
   const [historyData, setHistoryData] = useState<any[]>([]);
+  const [activeChatMenu, setActiveChatMenu] = useState<string | null>(null);
+
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClick = () => setActiveChatMenu(null);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  const deleteChat = async (threadId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      await fetch(`${baseUrl}/api/v1/threads/${threadId}`, {
+        method: 'DELETE',
+        headers: { "Authorization": "Bearer test-user" }
+      });
+      fetchThreads();
+      setActiveChatMenu(null);
+    } catch (err) {
+      console.error("Failed to delete thread", err);
+    }
+  };
 
   const fetchThreads = async () => {
     try {
@@ -203,16 +226,37 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
                       {group.group}
                     </div>
                     {group.chats.map((chat: any, j: number) => (
-                      <button 
-                        key={j} 
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent('load-thread', { detail: { threadId: chat.id } }));
-                          if (window.innerWidth < 768) setIsOpen(false);
-                        }}
-                        className="w-full text-left py-1.5 px-3 rounded-lg text-[#a1a1aa] hover:text-white transition-colors text-[13px] truncate cursor-pointer block"
-                      >
-                        {chat.title}
-                      </button>
+                      <div key={j} className="group relative">
+                        <button 
+                          onClick={() => {
+                            window.dispatchEvent(new CustomEvent('load-thread', { detail: { threadId: chat.id } }));
+                            if (window.innerWidth < 768) setIsOpen(false);
+                          }}
+                          className="w-full text-left py-1.5 px-3 pr-8 rounded-lg text-[#a1a1aa] hover:text-white transition-colors text-[13px] truncate cursor-pointer block"
+                        >
+                          {chat.title}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveChatMenu(activeChatMenu === chat.id ? null : chat.id);
+                          }}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-[#666666] hover:text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-md"
+                        >
+                          <MoreHorizontal className="size-3.5" />
+                        </button>
+                        {activeChatMenu === chat.id && (
+                          <div className="absolute right-2 top-8 z-50 w-32 bg-[#18181b] border border-[#27272a] rounded-lg shadow-xl overflow-hidden animate-message-reveal">
+                            <button
+                              onClick={(e) => deleteChat(chat.id, e)}
+                              className="flex items-center gap-2 w-full text-left px-3 py-2 text-[12px] text-[#ff3333] hover:bg-[#ff3333]/10 transition-colors"
+                            >
+                              <Trash2 className="size-3.5" />
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 ));
