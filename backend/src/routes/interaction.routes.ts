@@ -61,20 +61,49 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
     if (activeMission) {
       console.log(`MESSAGE: Found active locked mission for ${actualUserId}. Running execution/critique mode.`);
       
-      // 1. Detect if the message is logging a task outcome in chat
-      const classification = await LLMService.classifyMessageOutcome(message);
+      const critiqueResult = processCritiqueMessage({
+        userId: actualUserId,
+        userRuntime: state_context || {},
+        userMessage: message,
+        tasksCompletedToDate: activeMission.dayNumber,
+        tasksAttemptedToDate: activeMission.dayNumber,
+        consecutiveFailureCount: activeMission.streakDays === 0 ? 1 : 0
+      });
+
+      systemPrompt = critiqueResult.systemPrompt;
+      result = { type: 'critique_response', data: critiqueResult };
+    } else {
+      // Onboarding & Diagnostic Chat Mode
+      console.log(`MESSAGE: No active mission for ${actualUserId}. Running onboarding chat.`);
+      systemPrompt = buildFullSystemPrompt('onboarding', {});
+      result = { type: 'chat_response', data: {} };
+    }
+
+    // Call LLM with the generated system prompt from the engine
+    let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
+    if (systemPrompt) {
+      const enrichedPrompt = systemPrompt + "\n\nINSTRUCTION: Maintain the brutal Sukuna-like Hinglish persona. " + 
+        (activeMission ? "If user explicitly logs a task completion/failure, set task_classification to 'completed' or 'failed'." : "Extract any provided onboarding constraints and set isComplete to true if all are gathered.");
       
-      if (classification === 'completed' || classification === 'failed') {
-        console.log(`MESSAGE: Detected task outcome in chat message -> ${classification}. Updating database.`);
+      const smartResponse = await LLMService.generateSmartResponse(
+        actualUserId, 
+        enrichedPrompt, 
+        [...conversationHistory, { role: 'user', parts: [{ text: message }] }] as any,
+        !activeMission
+      );
+
+      llmResponse.response_text = smartResponse.response_text;
+
+      // 1. Handle Task Outcome Logging
+      if (activeMission && smartResponse.task_classification && smartResponse.task_classification !== 'none') {
+        const classification = smartResponse.task_classification;
+        console.log(`MESSAGE: Detected task outcome -> ${classification}. Updating database.`);
         const scoreEvent = classification === 'completed' ? 'task_completed' : 'task_failed';
         const { newScore } = updateConsistencyScore(activeMission.consistencyScore, scoreEvent);
         
         let newStreak = activeMission.streakDays;
-        if (classification === 'completed') {
-          newStreak += 1;
-        } else {
-          newStreak = 0;
-        }
+        if (classification === 'completed') newStreak += 1;
+        else newStreak = 0;
 
         const updatedMission = {
           ...activeMission,
@@ -85,56 +114,17 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
 
         await DbService.saveMission(updatedMission);
         await DbService.addConsistencyLog(actualUserId, newScore);
-
-        // Async log outcome vector memory
-        VectorService.saveMemory({
-          user_id: actualUserId,
-          mission_name: activeMission.missionName,
-          locked_path: activeMission.lockedPath,
-          profile_text: `Goal: ${activeMission.missionName} | Path: ${activeMission.lockedPath} | Day: ${activeMission.dayNumber}`,
-          outcome_summary: `User logged task outcome: ${classification}. Consistency adjusted to ${newScore}%. Streak: ${newStreak} days.`,
-          success_rate: newScore
-        }).catch(err => console.error('HIVE_MIND: Failed to store task outcome memory:', err));
       }
 
-      // 2. Fetch updated mission details for the critique prompt
-      const latestMission = await DbService.getActiveMission(actualUserId);
-      const critiqueResult = processCritiqueMessage({
-        userId: actualUserId,
-        userRuntime: state_context || {},
-        userMessage: message,
-        tasksCompletedToDate: latestMission.dayNumber,
-        tasksAttemptedToDate: latestMission.dayNumber,
-        consecutiveFailureCount: latestMission.streakDays === 0 ? 1 : 0
-      });
-
-      systemPrompt = critiqueResult.systemPrompt;
-      result = { type: 'critique_response', data: critiqueResult };
-    } else {
-      // Onboarding & Diagnostic Chat Mode
-      console.log(`MESSAGE: No active mission for ${actualUserId}. Running onboarding chat.`);
-      
-      // Construct history array for LLMService.extractOnboardingData
-      const extractionHistory = [
-        ...conversationHistory,
-        { role: 'user' as const, parts: [{ text: message }] }
-      ];
-      
-      // Perform extraction
-      const extraction = await LLMService.extractOnboardingData(extractionHistory);
-      console.log(`ONBOARDING: Extraction result isComplete = ${extraction.isComplete}`, extraction);
-      
-      if (extraction.isComplete) {
+      // 2. Handle Onboarding Completion
+      if (!activeMission && smartResponse.onboarding_data && smartResponse.onboarding_data.isComplete) {
+        const extraction = smartResponse.onboarding_data;
         console.log(`ONBOARDING: Constraints complete. Running processOnboarding.`);
         const geoLower = (extraction.region || '').toLowerCase();
         let geographyTier: 'tier1_city' | 'tier2_city' | 'tier3_city' = 'tier2_city';
-        if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) {
-          geographyTier = 'tier1_city';
-        } else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) {
-          geographyTier = 'tier2_city';
-        } else {
-          geographyTier = 'tier3_city';
-        }
+        if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_city';
+        else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) geographyTier = 'tier2_city';
+        else geographyTier = 'tier3_city';
 
         const onboardingInput = {
           userId: actualUserId,
@@ -146,7 +136,7 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
           hasDebt: false,
           debtMonthlyObligation: 0,
           familyDependencyScore: 1.0,
-          rawSkillStrings: extraction.rawSkillStrings.length > 0 ? extraction.rawSkillStrings : ["general"],
+          rawSkillStrings: extraction.rawSkillStrings && extraction.rawSkillStrings.length > 0 ? extraction.rawSkillStrings : ["general"],
           hasVerifiableOutputMap: {} as Record<string, boolean>,
           positiveCommSignals: ["clear"] as string[],
           negativeCommSignals: [] as string[],
@@ -157,12 +147,7 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
           canWorkAtNight: true,
           hasDedicatedWorkspace: true,
           procrastinationSignals: {
-            tookLongBetweenAnswers: false,
-            setOptimisticDeadlines: false,
-            gavelVagueGoalsNotSpecific: false,
-            mentionedPastFailedAttempts: false,
-            usedPassiveLanguage: false,
-            conflatedPlanningWithExecution: false
+            tookLongBetweenAnswers: false, setOptimisticDeadlines: false, gavelVagueGoalsNotSpecific: false, mentionedPastFailedAttempts: false, usedPassiveLanguage: false, conflatedPlanningWithExecution: false
           },
           cognitiveEnduranceMinutes: 120,
           emotionalResilience: 0.8,
@@ -175,45 +160,14 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
           timelineMonths: 3,
           sacrificesToleratedList: ["sleep"] as string[],
           nonNegotiables: [] as string[],
-          pathPreference: extraction.pathPreference,
+          pathPreference: extraction.pathPreference || 'alpha',
           onboardingText: `Goal: ${extraction.declaredGoal}. Capital: ${extraction.liquidCapital}. Hours: ${extraction.dailyUninterruptedHours}. Geo: ${extraction.region}`,
           detectedFrictionSignalIds: [] as string[]
         };
 
         const simulationData = await processOnboarding(onboardingInput);
         result = { type: 'onboarding_complete', data: simulationData };
-        
-        // Custom system prompt that forces the AI to present the simulations
-        systemPrompt = `You are FP, the user's execution buddy. Onboarding is 100% complete. You have compiled their constraints and simulated their strategy trajectories (Alpha vs Beta).
-Confirm this to them in a high-energy, friendly brotherly buddy tone (Hinglish). Tell them you have run the analysis for their goal "${extraction.declaredGoal}" considering their skills (${extraction.rawSkillStrings.join(', ')}) and location. Tell them to click the "Proceed to Trajectory Audit" button below to view the paths and lock their trajectory.`;
-      } else {
-        systemPrompt = buildFullSystemPrompt('onboarding', {});
-        result = { type: 'chat_response', data: {} };
       }
-    }
-
-    // Call LLM with the generated system prompt from the engine
-    let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
-    if (systemPrompt) {
-      // Vector DB: Query similar trajectories to inject RAG historical memory context (Hive Mind)
-      let similarMemoriesText = '';
-      try {
-        const queryText = activeMission
-          ? `Goal: ${activeMission.missionName} | Path: ${activeMission.lockedPath}`
-          : `Goal: ${message}`;
-        const similar = await VectorService.searchSimilarMemories(queryText, 3);
-        if (similar && similar.length > 0) {
-          similarMemoriesText = `\n\n## HIVE MIND OPERATOR ANALOGIES (VECTORS OF SIMILAR USERS)\n` +
-            `Based on vector matches from previous operators, here are similar trajectories and their outcomes:\n` +
-            similar.map((s, idx) => `${idx + 1}. Profile: ${s.profile_text}\n   Outcome: ${s.outcome_summary}\n   Success Rate: ${s.success_rate}%`).join('\n') +
-            `\n\nUse this real-world historical data to adjust probability calibrations and task recommendations. Do not make the same mistakes they did.`;
-        }
-      } catch (err) {
-        console.error('HIVE_MIND: Failed to inject similar memories:', err);
-      }
-
-      const enrichedPrompt = systemPrompt + similarMemoriesText;
-      llmResponse = await LLMService.generateValidatedResponse(actualUserId, enrichedPrompt, conversationHistory, []);
 
       // Layer 13: Critique/Message LLM Output Audit Interceptor & Disclaimer Appendage
       if (activeMission && state_context && state_context.contextMatrix) {
