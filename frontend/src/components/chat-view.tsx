@@ -235,7 +235,13 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
       let reply = "Parameter logged.";
       if (data?.error) {
-        try { reply = "System Error: " + (JSON.parse(data.error)?.error?.message ?? data.error); }
+        try { 
+          if (typeof data.error === 'object') {
+            reply = "System Error: " + (data.error.message || JSON.stringify(data.error));
+          } else {
+            reply = "System Error: " + (JSON.parse(data.error)?.error?.message ?? data.error); 
+          }
+        }
         catch { reply = "System Error: " + data.error; }
       } else if (data?.data?.ai_response?.response_text) {
         reply = data.data.ai_response.response_text;
