@@ -110,75 +110,10 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
       systemPrompt = critiqueResult.systemPrompt;
       result = { type: 'critique_response', data: critiqueResult };
     } else {
-      // Run the initial onboarding intake sequence
-      console.log(`MESSAGE: No active mission. Running onboarding simulation engine.`);
-      
-      const mockInput = {
-        userId: actualUserId,
-        geographyTier: 'tier2_city' as const,
-        country: 'IN',
-        region: 'Uttar Pradesh',
-        liquidCapital: 15000,
-        monthlyBurnRate: 5000,
-        hasDebt: false,
-        debtMonthlyObligation: 0,
-        familyDependencyScore: 1.0,
-        rawSkillStrings: ['typescript', 'react', 'no-code-automation'],
-        hasVerifiableOutputMap: { 'typescript': true },
-        positiveCommSignals: ['clear', 'proactive'],
-        negativeCommSignals: [] as string[],
-        dailyUninterruptedHours: 4,
-        deviceTier: 'mid_range' as const,
-        internetStability: '4g_stable' as const,
-        workEnvironment: 'dedicated_quiet' as const,
-        canWorkAtNight: true,
-        hasDedicatedWorkspace: true,
-        procrastinationSignals: {
-          tookLongBetweenAnswers: false,
-          setOptimisticDeadlines: false,
-          gavelVagueGoalsNotSpecific: false,
-          mentionedPastFailedAttempts: false,
-          usedPassiveLanguage: false,
-          conflatedPlanningWithExecution: false
-        },
-        cognitiveEnduranceMinutes: 120,
-        emotionalResilience: 0.8,
-        baselineDiscipline: 0.7,
-        preferredWorkStyle: 'deep_work_clusters' as const,
-        riskTolerance: 0.5,
-        declaredGoal: message, // Treat user input as goal
-        targetAmount: 50000,
-        currency: 'INR' as const,
-        timelineMonths: 3,
-        sacrificesToleratedList: ['sleep', 'entertainment'],
-        nonNegotiables: ['health'],
-        pathPreference: 'high_risk_upside' as const,
-        onboardingText: message,
-        detectedFrictionSignalIds: [] as string[]
-      };
-
-      const onboardingResult = await processOnboarding(mockInput);
-
-      // Layer 13: Onboarding Legal Audit Gate Interceptor
-      if (onboardingResult.userRuntime.legalAuditReport && !onboardingResult.userRuntime.legalAuditReport.passedLegalGate) {
-        console.warn(`LEGAL_AUDIT: Onboarding blocked due to compliance violation.`);
-        const blockedReport = onboardingResult.userRuntime.legalAuditReport;
-        return c.json({
-          status: 'success',
-          data: {
-            engine_result: {
-              type: 'legal_block',
-              data: blockedReport
-            },
-            ai_response: {
-              response_text: blockedReport.requiredDisclaimers.join('\n\n') || "Strategy output blocked due to legal compliance checks."
-            }
-          }
-        });
-      }
-
-      systemPrompt = onboardingResult.systemPrompt;
-      result = { type: 'onboarding_complete', data: onboardingResult };
+      // Simple Chat Mode
+      console.log(`MESSAGE: No active mission. Running simple chat.`);
+      systemPrompt = "You are a helpful and friendly AI assistant. Answer the user's queries concisely and nicely.";
+      result = { type: 'chat_response', data: {} };
     }
 
     // Call LLM with the generated system prompt from the engine
