@@ -33,9 +33,9 @@ app.route('/api/v1/auth', authRoutes);
 app.route('/api/v1/threads', threadRoutes);
 
 // Cloud Run sets PORT env var to 8080 — always read directly from process.env
-const port = parseInt(process.env.PORT || '8080', 10);
+const PORT = process.env.PORT || 8080;
 
-console.log(`Starting FP-OS Backend on port ${port}...`);
+console.log(`Starting FP-OS Backend...`);
 
 // Initialize database, vector storage & seeding
 DbService.init().catch(console.error);
@@ -43,11 +43,14 @@ VectorService.init().catch(console.error);
 
 const server = serve({
   fetch: app.fetch,
-  port,
+  port: Number(PORT),
   hostname: '0.0.0.0'
+}, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Attach WebSocket Server
 WebSocketService.init(server);
+
 
 
