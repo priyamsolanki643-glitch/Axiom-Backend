@@ -55,7 +55,7 @@ export class LLMService {
           return this.executeWithRotation(operation, retriesLeft - 1);
         } else {
           // All keys exhausted
-          throw new Error("App usage limit hit. Try again after 25 minutes.");
+          throw new Error(`Google API Quota Limit Hit: ${error.message}. Please check your Google Cloud quota limits.`);
         }
       }
       throw error;
@@ -177,7 +177,7 @@ export class LLMService {
       return JSON.parse(rawText);
     } catch (error: any) {
       // 429 is now handled inside executeWithRotation, it throws a custom message if all keys fail
-      if (error.message && error.message.includes("App usage limit hit")) {
+      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
         throw error; // Let the custom UI error bubble up
       }
       
@@ -230,7 +230,7 @@ export class LLMService {
 
       return JSON.parse(rawText);
     } catch (error: any) {
-      if (error.message && error.message.includes("App usage limit hit")) {
+      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
         throw error;
       }
       if (retries > 0) {
@@ -320,7 +320,7 @@ LEGAL SAFETY: You are strictly forbidden from generating any task that constitut
 
       return JSON.parse(rawText);
     } catch (error: any) {
-      if (error.message && error.message.includes("App usage limit hit")) {
+      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
         throw error;
       }
       if (retries > 0) {
@@ -381,7 +381,7 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
 
       return JSON.parse(rawText);
     } catch (error: any) {
-      if (error.message && error.message.includes("App usage limit hit")) {
+      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
         throw error;
       }
       if (retries > 0) {
