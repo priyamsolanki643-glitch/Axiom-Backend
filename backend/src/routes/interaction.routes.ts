@@ -259,7 +259,8 @@ Conversation:
 ${conversationHistory.map(m => m.role + ': ' + m.parts[0].text).join('\n')}
 user: ${message}
 
-Output ONLY valid JSON or null. Do not include markdown formatting or backticks.`;
+Output ONLY valid JSON inside the response_text string value. Do not include markdown formatting.
+For example: {"response_text": "{\\"missionName\\":\\"My Goal\\", \\"lockedPath\\":\\"alpha\\"}"}`;
 
           const extractionRes = await LLMService.generateValidatedResponse(actualUserId, extractionPrompt, [], []);
           if (extractionRes.response_text && extractionRes.response_text.trim() !== 'null') {
