@@ -43,6 +43,44 @@ export function VaultModal({ onClose }: VaultModalProps) {
     }, 120);
   };
 
+  const [globalMission, setGlobalMission] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMission = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${baseUrl}/api/v1/interaction/active-mission`, {
+          headers: { "Authorization": "Bearer test-user" }
+        });
+        const data = await res.json();
+        if (data?.data && data.data.missionName) {
+          const m = data.data;
+          setGlobalMission({
+            id: m.id,
+            badge: "ACTIVE", tag: m.lockedPath,
+            title: m.missionName,
+            quote: m.mindsetBrief,
+            path: m.strategyContent,
+            day: m.dayNumber, total: m.totalDays, score: m.consistencyScore,
+            time: "Live", unread: 0,
+            fullStrategy: {
+              goal: m.missionName,
+              motivation: m.mindsetBrief,
+              tasks: (m.strategyContent || "Phase 1 initialized.").split('\n').filter((l: string) => l.trim().length > 0),
+              executionProtocol: "Refer to the strategy content."
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load active mission", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMission();
+  }, []);
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 md:p-6">
       {/* Backdrop with enhanced blur */}
@@ -179,11 +217,27 @@ export function VaultModal({ onClose }: VaultModalProps) {
               </div>
             </div>
 
-            {activeTab === "missions" && <TabMissions onClose={onClose} />}
-            {activeTab === "mirror" && <TabMirror />}
-            {activeTab === "debt" && <TabDebt />}
-            {activeTab === "rival" && <TabRival />}
-            {activeTab === "market" && <TabMarket />}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-[300px] text-[#52525b]">Loading...</div>
+            ) : !globalMission ? (
+              <div className="flex flex-col items-center justify-center h-[300px] text-center px-4">
+                <div className="size-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+                  <Folder className="size-6 text-[#52525b]" />
+                </div>
+                <h3 className="text-white font-medium text-lg mb-2">No active missions</h3>
+                <p className="text-[#a1a1aa] text-[13px] max-w-[280px]">
+                  Start chatting with the Strategist to initialize your first mission protocol.
+                </p>
+              </div>
+            ) : (
+              <>
+                {activeTab === "missions" && <TabMissions onClose={onClose} globalMission={globalMission} />}
+                {activeTab === "mirror" && <TabMirror />}
+                {activeTab === "debt" && <TabDebt />}
+                {activeTab === "rival" && <TabRival />}
+                {activeTab === "market" && <TabMarket />}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -191,42 +245,8 @@ export function VaultModal({ onClose }: VaultModalProps) {
   );
 }
 
-function TabMissions({ onClose }: { onClose: () => void }) {
-  const [missions, setMissions] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchMission = async () => {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${baseUrl}/api/v1/interaction/active-mission`, {
-          headers: { "Authorization": "Bearer test-user" }
-        });
-        const data = await res.json();
-        if (data?.data && data.data.missionName) {
-          const m = data.data;
-          setMissions([{
-            id: m.id,
-            badge: "ACTIVE", tag: m.lockedPath,
-            title: m.missionName,
-            quote: m.mindsetBrief,
-            path: m.strategyContent,
-            day: m.dayNumber, total: m.totalDays, score: m.consistencyScore,
-            time: "Live", unread: 0,
-            fullStrategy: {
-              goal: m.missionName,
-              motivation: m.mindsetBrief,
-              tasks: (m.strategyContent || "Phase 1 initialized.").split('\n').filter((l: string) => l.trim().length > 0),
-              executionProtocol: "Refer to the strategy content."
-            }
-          }]);
-        }
-      } catch (err) {
-        console.error("Failed to load active mission", err);
-      }
-    };
-    fetchMission();
-  }, []);
-
+function TabMissions({ onClose, globalMission }: { onClose: () => void, globalMission: any }) {
+  const [missions, setMissions] = useState<any[]>([globalMission]);
   const [activeMission, setActiveMission] = useState<any>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
