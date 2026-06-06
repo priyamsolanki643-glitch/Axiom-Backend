@@ -91,7 +91,7 @@ export class LLMService {
 
       const response = await this.executeWithRotation(async (aiClient) => {
         return await aiClient.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.0-flash',
           contents: conversationHistory as any,
           config: {
             systemInstruction: systemPrompt,
@@ -145,7 +145,7 @@ export class LLMService {
 
       const response = await this.executeWithRotation(async (aiClient) => {
         return await aiClient.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.0-flash',
           contents: [{ role: 'user', parts: [{ text: researchMandate }] }] as any,
           config: {
             responseMimeType: 'application/json',
@@ -236,7 +236,7 @@ LEGAL SAFETY: You are strictly forbidden from generating any task that constitut
 
       const response = await this.executeWithRotation(async (aiClient) => {
         return await aiClient.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.0-flash',
           contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
           config: {
             responseMimeType: 'application/json',
@@ -297,7 +297,7 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
 
       const response = await this.executeWithRotation(async (aiClient) => {
         return await aiClient.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.0-flash',
           contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
           config: {
             responseMimeType: 'application/json',
@@ -395,7 +395,7 @@ Extract the parameters and output ONLY a JSON object matching the requested sche
 
       const response = await this.executeWithRotation(async (aiClient) => {
         return await aiClient.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.0-flash',
           contents: [{ role: 'user', parts: [{ text: prompt }] }] as any,
           config: {
             responseMimeType: 'application/json',
