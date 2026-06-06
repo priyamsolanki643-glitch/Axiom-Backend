@@ -1,15 +1,24 @@
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 import { ContextMatrix, CapabilityVector } from '../engine/types';
 
-// Lazy client — created only when first needed, NOT at import time.
-// This prevents crashes during Cloud Run startup health checks.
-let _ai: GoogleGenAI | null = null;
-function getAI(): GoogleGenAI {
-  if (!_ai) {
+// Lazy clients — created only when first needed
+let _chatAI: GoogleGenAI | null = null;
+let _bgAI: GoogleGenAI | null = null;
+
+function getChatAI(): GoogleGenAI {
+  if (!_chatAI) {
     const apiKey = process.env.AI_PROVIDER_KEY || '';
-    _ai = new GoogleGenAI({ apiKey });
+    _chatAI = new GoogleGenAI({ apiKey });
   }
-  return _ai;
+  return _chatAI;
+}
+
+function getBgAI(): GoogleGenAI {
+  if (!_bgAI) {
+    const apiKey = process.env.AI_BACKGROUND_KEY || process.env.AI_PROVIDER_KEY || '';
+    _bgAI = new GoogleGenAI({ apiKey });
+  }
+  return _bgAI;
 }
 
 export class LLMService {
@@ -30,7 +39,8 @@ export class LLMService {
     conversationHistory: { role: "user" | "model", parts: { text: string }[] }[] = [],
     bannedCategories: string[],
     retries = 3,
-    delayMs = 1000
+    delayMs = 1000,
+    isBackground = false
   ): Promise<{ response_text: string; strengths?: string[]; bottlenecks?: string[]; insight?: string }> {
     try {
       const contents = [
@@ -49,7 +59,8 @@ export class LLMService {
         required: ['response_text']
       };
 
-      const response = await getAI().models.generateContent({
+      const aiClient = isBackground ? getBgAI() : getChatAI();
+      const response = await aiClient.models.generateContent({
         model: 'gemini-1.5-flash',
         contents: contents as any,
         config: {
@@ -70,7 +81,7 @@ export class LLMService {
       }
       if (retries > 0) {
         console.warn(`LLM Generation failed. Retries left: ${retries - 1}`);
-        return this.generateValidatedResponse(userId, systemPrompt, conversationHistory, bannedCategories, retries - 1, delayMs);
+        return this.generateValidatedResponse(userId, systemPrompt, conversationHistory, bannedCategories, retries - 1, delayMs, isBackground);
       }
       console.error('LLM Generation Error:', error);
       throw error;
@@ -98,7 +109,7 @@ export class LLMService {
         required: ['marketSummary', 'localOpportunities', 'competitorLandscape', 'recommendedAction', 'confidenceScore']
       };
 
-      const response = await getAI().models.generateContent({
+      const response = await getBgAI().models.generateContent({
         model: 'gemini-1.5-flash',
         contents: [{ role: 'user', parts: [{ text: researchMandate }] }] as any,
         config: {
@@ -184,7 +195,7 @@ LEGAL SAFETY: You are strictly forbidden from generating any task that constitut
         }
       };
 
-      const response = await getAI().models.generateContent({
+      const response = await getBgAI().models.generateContent({
         model: 'gemini-1.5-flash',
         contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
         config: {
@@ -240,7 +251,7 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
         }
       };
 
-      const response = await getAI().models.generateContent({
+      const response = await getBgAI().models.generateContent({
         model: 'gemini-1.5-flash',
         contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
         config: {
@@ -283,6 +294,95 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
     } catch (error) {
       console.error("LLMService: Embedding generation failed:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Conversation-based extractor to check if onboarding parameters are fully mapped.
+   */
+  static async extractOnboardingData(
+    conversationHistory: { role: "user" | "model", parts: { text: string }[] }[]
+  ): Promise<{
+    isComplete: boolean;
+    declaredGoal: string;
+    liquidCapital: number;
+    region: string;
+    dailyUninterruptedHours: number;
+    rawSkillStrings: string[];
+    pathPreference: 'high_risk_upside' | 'safe_compounding' | 'undecided';
+  }> {
+    try {
+      const prompt = `You are a data extractor for a startup strategy engine.
+Analyze the conversation history between the User and the AI Buddy (FP) to extract the following circumstantial parameters.
+Only set isComplete to true if the user has clearly specified:
+1. What their goal is (e.g. build an app, crack JEE, make 20 crores, get clients)
+2. Their approximate financial resources/liquid capital (e.g. ₹10k, ₹0, less privileged, 1 lakh)
+3. Their current skills (e.g. coding, no-code, sales, none)
+4. Their available hours per day (e.g. 4 hours, full-time, 14 hours)
+5. Their approximate location/locality (needed to analyze local trends)
+
+If any of these 5 core items are missing or unclear, set isComplete to false.
+
+Conversation History:
+${JSON.stringify(conversationHistory)}
+
+Extract the parameters and output ONLY a JSON object matching the requested schema.`;
+
+      const responseSchema: Schema = {
+        type: Type.OBJECT,
+        properties: {
+          isComplete: { type: Type.BOOLEAN },
+          declaredGoal: { type: Type.STRING },
+          liquidCapital: { type: Type.NUMBER },
+          region: { type: Type.STRING },
+          dailyUninterruptedHours: { type: Type.NUMBER },
+          rawSkillStrings: { type: Type.ARRAY, items: { type: Type.STRING } },
+          pathPreference: { type: Type.STRING }
+        },
+        required: ['isComplete', 'declaredGoal', 'liquidCapital', 'region', 'dailyUninterruptedHours', 'rawSkillStrings', 'pathPreference']
+      };
+
+      const response = await getAI().models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }] as any,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.1,
+        }
+      });
+
+      const rawText = response.text;
+      if (!rawText) throw new Error("Empty response from Onboarding Extractor");
+
+      const parsed = JSON.parse(rawText);
+      
+      // Map path preference values safely
+      let pathPref: 'high_risk_upside' | 'safe_compounding' | 'undecided' = 'undecided';
+      if (parsed.pathPreference === 'high_risk_upside' || parsed.pathPreference === 'safe_compounding') {
+        pathPref = parsed.pathPreference;
+      }
+
+      return {
+        isComplete: !!parsed.isComplete,
+        declaredGoal: parsed.declaredGoal || '',
+        liquidCapital: parsed.liquidCapital || 0,
+        region: parsed.region || '',
+        dailyUninterruptedHours: parsed.dailyUninterruptedHours || 4,
+        rawSkillStrings: Array.isArray(parsed.rawSkillStrings) ? parsed.rawSkillStrings : [],
+        pathPreference: pathPref
+      };
+    } catch (error) {
+      console.error("LLMService: Onboarding extraction failed:", error);
+      return {
+        isComplete: false,
+        declaredGoal: '',
+        liquidCapital: 0,
+        region: '',
+        dailyUninterruptedHours: 4,
+        rawSkillStrings: [],
+        pathPreference: 'undecided'
+      };
     }
   }
 }

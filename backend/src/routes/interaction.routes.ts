@@ -9,7 +9,8 @@ import {
   runTacticalArchitect,
   processOperatorTaskUpdate,
   processOperatorCritique,
-  generateDailyTaskSprint
+  generateDailyTaskSprint,
+  buildFullSystemPrompt
 } from '../engine/index';
 import { updateConsistencyScore } from '../engine/layer10_statelock';
 import { runLegalAudit } from '../engine/layer13_legalaudit';
@@ -110,10 +111,85 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
       systemPrompt = critiqueResult.systemPrompt;
       result = { type: 'critique_response', data: critiqueResult };
     } else {
-      // Simple Chat Mode
-      console.log(`MESSAGE: No active mission. Running simple chat.`);
-      systemPrompt = "You are a helpful and friendly AI assistant. Answer the user's queries concisely and nicely.";
-      result = { type: 'chat_response', data: {} };
+      // Onboarding & Diagnostic Chat Mode
+      console.log(`MESSAGE: No active mission for ${actualUserId}. Running onboarding chat.`);
+      
+      // Construct history array for LLMService.extractOnboardingData
+      const extractionHistory = [
+        ...conversationHistory,
+        { role: 'user' as const, parts: [{ text: message }] }
+      ];
+      
+      // Perform extraction
+      const extraction = await LLMService.extractOnboardingData(extractionHistory);
+      console.log(`ONBOARDING: Extraction result isComplete = ${extraction.isComplete}`, extraction);
+      
+      if (extraction.isComplete) {
+        console.log(`ONBOARDING: Constraints complete. Running processOnboarding.`);
+        const geoLower = (extraction.region || '').toLowerCase();
+        let geographyTier: 'tier1_city' | 'tier2_city' | 'tier3_city' = 'tier2_city';
+        if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) {
+          geographyTier = 'tier1_city';
+        } else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) {
+          geographyTier = 'tier2_city';
+        } else {
+          geographyTier = 'tier3_city';
+        }
+
+        const onboardingInput = {
+          userId: actualUserId,
+          geographyTier,
+          country: geoLower.includes("india") ? "IN" : "US",
+          region: extraction.region || 'Unknown',
+          liquidCapital: extraction.liquidCapital || 5000,
+          monthlyBurnRate: Math.max(3000, Math.floor((extraction.liquidCapital || 5000) / 4)),
+          hasDebt: false,
+          debtMonthlyObligation: 0,
+          familyDependencyScore: 1.0,
+          rawSkillStrings: extraction.rawSkillStrings.length > 0 ? extraction.rawSkillStrings : ["general"],
+          hasVerifiableOutputMap: {},
+          positiveCommSignals: ["clear"],
+          negativeCommSignals: [],
+          dailyUninterruptedHours: extraction.dailyUninterruptedHours || 4,
+          deviceTier: "mid_range" as const,
+          internetStability: "4g_stable" as const,
+          workEnvironment: "dedicated_quiet" as const,
+          canWorkAtNight: true,
+          hasDedicatedWorkspace: true,
+          procrastinationSignals: {
+            tookLongBetweenAnswers: false,
+            setOptimisticDeadlines: false,
+            gavelVagueGoalsNotSpecific: false,
+            mentionedPastFailedAttempts: false,
+            usedPassiveLanguage: false,
+            conflatedPlanningWithExecution: false
+          },
+          cognitiveEnduranceMinutes: 120,
+          emotionalResilience: 0.8,
+          baselineDiscipline: 0.7,
+          preferredWorkStyle: "deep_work_clusters" as const,
+          riskTolerance: 0.6,
+          declaredGoal: extraction.declaredGoal || message,
+          targetAmount: (extraction.liquidCapital || 5000) * 2,
+          currency: "INR" as const,
+          timelineMonths: 3,
+          sacrificesToleratedList: ["sleep"],
+          nonNegotiables: [],
+          pathPreference: extraction.pathPreference,
+          onboardingText: `Goal: ${extraction.declaredGoal}. Capital: ${extraction.liquidCapital}. Hours: ${extraction.dailyUninterruptedHours}. Geo: ${extraction.region}`,
+          detectedFrictionSignalIds: []
+        };
+
+        const simulationData = await processOnboarding(onboardingInput);
+        result = { type: 'onboarding_complete', data: simulationData };
+        
+        // Custom system prompt that forces the AI to present the simulations
+        systemPrompt = `You are FP, the user's execution buddy. Onboarding is 100% complete. You have compiled their constraints and simulated their strategy trajectories (Alpha vs Beta).
+Confirm this to them in a high-energy, friendly brotherly buddy tone (Hinglish). Tell them you have run the analysis for their goal "${extraction.declaredGoal}" considering their skills (${extraction.rawSkillStrings.join(', ')}) and location. Tell them to click the "Proceed to Trajectory Audit" button below to view the paths and lock their trajectory.`;
+      } else {
+        systemPrompt = buildFullSystemPrompt('onboarding', {});
+        result = { type: 'chat_response', data: {} };
+      }
     }
 
     // Call LLM with the generated system prompt from the engine
@@ -197,7 +273,7 @@ user: ${message}
 Output ONLY valid JSON inside the response_text string value. Do not include markdown formatting.
 For example: {"response_text": "{\\"missionName\\":\\"My Goal\\", \\"lockedPath\\":\\"alpha\\"}"}`;
 
-          const extractionRes = await LLMService.generateValidatedResponse(actualUserId, extractionPrompt, [], []);
+          const extractionRes = await LLMService.generateValidatedResponse(actualUserId, extractionPrompt, [], [], 3, 1000, true);
           if (extractionRes.response_text && extractionRes.response_text.trim() !== 'null') {
             const parsed = JSON.parse(extractionRes.response_text);
             if (parsed.missionName) {
