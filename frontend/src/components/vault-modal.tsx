@@ -553,16 +553,20 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
 }
 
 function TabDebt({ missionData }: { missionData?: any }) {
-  const debtDays = missionData?.debtDays || 0;
-  const consistencyScore = missionData?.consistencyScore || 0;
-  const daysToGoal = missionData?.daysToGoal || 0;
-  const streakDays = missionData?.streakDays || 0;
+  if (!missionData) {
+    return <div className="text-[#a1a1aa] text-center font-mono py-20 animate-pulse text-xs tracking-widest uppercase">Fetching Execution Logs...</div>;
+  }
+  
+  const debtDays = missionData.debtDays || 0;
+  const consistencyScore = missionData.consistencyScore || 0;
+  const daysToGoal = missionData.daysToGoal || 0;
+  const streakDays = missionData.streakDays || 0;
   const hasDebt = debtDays > 0;
   return (
     <div className="space-y-8 animate-fade-in w-full max-w-6xl mx-auto">
       <div>
         <div className="text-[11px] font-mono tracking-[0.2em] text-[#a1a1aa] mb-2 uppercase">Feature 03</div>
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">Execution Debt Tracker</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">Execution Debt</h2>
         <p className="text-[#a1a1aa] text-sm md:text-[15px]">The market doesn't pause. Your debt compounds — or your consistency does.</p>
       </div>
 
@@ -578,9 +582,9 @@ function TabDebt({ missionData }: { missionData?: any }) {
         <div className="text-[10px] font-mono text-red-500 tracking-[0.2em] uppercase mb-4">DEBT IMPACT</div>
         <p className="text-[14px] md:text-[15px] text-white leading-relaxed">
           {hasDebt ? (
-            <>In <span className="text-red-500 font-semibold">{debtDays} dinon</span> mein teri competition ne {debtDays} tasks complete kiye. Tu wahan khada hai jahan tha — duniya aage nikal gayi.</>
+            <>In <span className="text-red-500 font-semibold">{debtDays} dinon</span> mein teri competition ne {debtDays} tasks complete kiye. Market window chhoti ho rahi hai. Tu wahan khada hai jahan tha — duniya aage nikal gayi.</>
           ) : (
-            <>Teri current execution pe koi debt nahi hai. Maintain this velocity.</>
+            <>Teri current execution pe koi debt nahi hai. Perfect consistency record maintained. Stay relentless.</>
           )}
         </p>
       </div>
@@ -631,8 +635,12 @@ const Dial = ({ title, value, sub, color, strokeOffset }: { title: string, value
 );
 
 function TabRival({ rivalData }: { rivalData?: any }) {
-  const totalUsers = rivalData?.totalUsers || 847;
-  const milestonePassed = rivalData?.milestonePassedUsers || 23;
+  if (!rivalData) {
+    return <div className="text-[#a1a1aa] text-center font-mono py-20 animate-pulse text-xs tracking-widest uppercase">Gathering Anonymous Analytics...</div>;
+  }
+  const totalUsers = rivalData.totalUsers || 0;
+  const milestonePassed = rivalData.milestonePassedUsers || 0;
+  const category = rivalData.category || "your current goal";
   return (
     <div className="space-y-8 animate-fade-in w-full max-w-6xl mx-auto flex flex-col h-full">
       <div>
@@ -657,7 +665,7 @@ function TabRival({ rivalData }: { rivalData?: any }) {
 
         <div className="relative z-10 max-w-3xl space-y-12">
           <div className="border-b border-white/5 pb-8">
-            <div className="text-[10px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-4">The Field</div>
+            <div className="text-[10px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-4">The Field ({category})</div>
             <div className="text-2xl md:text-4xl font-bold text-white tracking-tight">Tere jaisa {totalUsers} log same goal pe hain.</div>
           </div>
           <div className="border-b border-white/5 pb-8">
@@ -678,7 +686,15 @@ function TabRival({ rivalData }: { rivalData?: any }) {
 }
 
 function TabMarket({ marketData }: { marketData?: any }) {
-  const trends = marketData?.marketTrends || [];
+  if (!marketData) {
+    return <div className="text-[#a1a1aa] text-center font-mono py-20 animate-pulse text-xs tracking-widest uppercase">Fetching Live Market Intelligence...</div>;
+  }
+
+  const signals = marketData.skillDemandSignals || [];
+  const gaps = marketData.localMarketGaps || [];
+  const timing = marketData.timingSignals?.[0] || { timeframe: "Unknown", urgency: "Medium" };
+  const insight = marketData.topInsight || "Market is shifting. Stay alert.";
+
   return (
     <div className="space-y-8 animate-fade-in w-full max-w-6xl mx-auto">
       <div>
@@ -697,21 +713,19 @@ function TabMarket({ marketData }: { marketData?: any }) {
             <Radio className="size-4 text-[#52525b]" />
           </div>
           
-          <p className="text-[13px] md:text-[14px] text-[#a1a1aa] mb-8 font-medium">Teri city mein aaj:</p>
+          <p className="text-[13px] md:text-[14px] text-[#a1a1aa] mb-8 font-medium">Market Demand Signals:</p>
 
           <div className="space-y-6 flex-1">
-            <div className="flex justify-between items-center pb-4 border-b border-white/5">
-              <span className="text-[13px] md:text-[14px] text-white">Businesses <span className="text-[#52525b]">→ automation</span></span>
-              <span className="text-[16px] font-bold text-white">4</span>
-            </div>
-            <div className="flex justify-between items-center pb-4 border-b border-white/5">
-              <span className="text-[13px] md:text-[14px] text-white">WhatsApp CRM demand</span>
-              <span className="text-[16px] font-bold text-white">+31%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[13px] md:text-[14px] text-white">Active competitors <span className="text-[#52525b]">- niche</span></span>
-              <span className="text-[16px] font-bold text-white">12</span>
-            </div>
+            {signals.length === 0 ? (
+              <div className="text-[#52525b] text-[13px]">Analyzing incoming signals...</div>
+            ) : (
+              signals.map((signal: any, idx: number) => (
+                <div key={idx} className="flex flex-col pb-4 border-b border-white/5 gap-1">
+                  <span className="text-[13px] md:text-[14px] text-white capitalize">{signal.skillName || signal.name}</span>
+                  <span className="text-[16px] font-bold text-[#22c55e]">{signal.demandLevel || signal.trend}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -722,37 +736,39 @@ function TabMarket({ marketData }: { marketData?: any }) {
           </div>
 
           <div className="mb-8">
-            <div className="text-6xl md:text-7xl font-bold text-red-500 tracking-tighter mb-2">3.5</div>
-            <div className="text-[10px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase">Weeks Remaining</div>
+            <div className="text-4xl md:text-5xl font-bold text-red-500 tracking-tighter mb-2">{timing.timeframe}</div>
+            <div className="text-[10px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase">Timeframe</div>
           </div>
 
           <p className="text-[14px] text-white leading-relaxed mt-auto font-medium">
-            Teri opportunity window: <span className="text-red-500">3.5 weeks</span> baaki. Iske baad market saturate ho jayega. Jo aaj execute karega — woh market ka pehla mover hoga.
+            <span className="text-red-500 font-bold uppercase">{timing.urgency} Urgency:</span> {insight} Jo aaj execute karega — woh market ka pehla mover hoga.
           </p>
         </div>
 
         {/* Card 3 */}
         <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-6 md:p-8 flex flex-col hover:border-white/10 transition-colors">
           <div className="flex items-center gap-2 text-[10px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-8">
-            <Trophy className="size-3" /> Category Movers
+            <Trophy className="size-3" /> Local Market Gaps
           </div>
           
-          <p className="text-[13px] md:text-[14px] text-[#a1a1aa] mb-8 font-medium">Teri category mein is hafte:</p>
+          <p className="text-[13px] md:text-[14px] text-[#a1a1aa] mb-8 font-medium">Opportunities you can capture:</p>
 
           <div className="space-y-6 flex-1">
-            <div className="flex justify-between items-center pb-4 border-b border-white/5">
-              <span className="text-[13px] md:text-[14px] text-[#a1a1aa]">Top performer</span>
-              <span className="text-[11px] font-mono font-bold text-white tracking-widest uppercase">3 Clients</span>
-            </div>
-            <div className="flex justify-between items-center pb-4 border-b border-white/5">
-              <span className="text-[13px] md:text-[14px] text-[#a1a1aa]">Average executor</span>
-              <span className="text-[11px] font-mono font-bold text-white tracking-widest uppercase">0.4 Clients</span>
-            </div>
+            {gaps.length === 0 ? (
+              <div className="text-[#52525b] text-[13px]">Mapping local gaps...</div>
+            ) : (
+              gaps.map((gap: any, idx: number) => (
+                <div key={idx} className="flex flex-col pb-4 border-b border-white/5 gap-1">
+                  <span className="text-[13px] md:text-[14px] text-[#a1a1aa]">{gap.gapDescription}</span>
+                  <span className="text-[11px] font-mono font-bold text-white tracking-widest uppercase">Size: {gap.opportunitySize}</span>
+                </div>
+              ))
+            )}
             
-            <div className="pt-2">
+            <div className="pt-2 mt-auto">
               <div className="w-full bg-[#1A0B0B] border border-red-500/20 rounded-xl p-5 flex justify-between items-center">
-                <span className="text-[15px] font-medium text-white">Tu</span>
-                <span className="text-2xl font-bold text-red-500 tracking-tight">??</span>
+                <span className="text-[12px] font-mono uppercase text-[#a1a1aa] tracking-widest">Readiness</span>
+                <span className="text-2xl font-bold text-red-500 tracking-tight">LOW</span>
               </div>
             </div>
           </div>
