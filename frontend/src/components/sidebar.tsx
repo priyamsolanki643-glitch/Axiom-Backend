@@ -29,6 +29,16 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
 
   const deleteChat = async (threadId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Optimistic UI update for instant feedback
+    setHistoryData(prev => 
+      prev.map(group => ({
+        ...group,
+        chats: group.chats.filter((c: any) => c.id !== threadId)
+      })).filter(group => group.chats.length > 0)
+    );
+    setActiveChatMenu(null);
+
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       await fetch(`${baseUrl}/api/v1/threads/${threadId}`, {
@@ -36,17 +46,18 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
         headers: { "Authorization": "Bearer test-user" }
       });
       fetchThreads();
-      setActiveChatMenu(null);
     } catch (err) {
       console.error("Failed to delete thread", err);
+      fetchThreads(); // Revert on failure
     }
   };
 
   const fetchThreads = async () => {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${baseUrl}/api/v1/threads`, {
-        headers: { "Authorization": "Bearer test-user" }
+      const res = await fetch(`${baseUrl}/api/v1/threads?t=${Date.now()}`, {
+        headers: { "Authorization": "Bearer test-user" },
+        cache: 'no-store'
       });
       const data = await res.json();
       if (data?.data && Array.isArray(data.data)) {
