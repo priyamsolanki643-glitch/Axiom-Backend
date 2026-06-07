@@ -86,6 +86,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
       {/* Backdrop with enhanced blur */}
       <div
         onClick={onClose}
+        onTouchStart={onClose}
         className="absolute inset-0 cursor-pointer"
         style={{
           background: "rgba(0,0,0,0.82)",
@@ -131,7 +132,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="size-8 grid place-items-center rounded-lg text-[#52525b] hover:text-[#a1a1aa] transition-all cursor-pointer"
+            className="size-8 grid place-items-center rounded-lg text-white hover:text-white/80 transition-all cursor-pointer"
             style={{ background: "transparent" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
