@@ -211,18 +211,26 @@ function TabMissions({ missionData }: { missionData?: any }) {
     setTimeout(() => setIsDownloaded(false), 2000);
   };
 
+  const parseProtocol = (strategyText: string | undefined, lockedPath: string | undefined) => {
+    if (!strategyText) {
+      return [
+        "LOCKED PATH: " + (lockedPath || "Alpha"),
+        "- Follow the daily execution mandate generated for you.",
+        "- Missing a daily checkpoint incurs execution debt.",
+        "- Do not attempt to optimize the system. Submit to it."
+      ];
+    }
+    // Split the dynamic backend string into actionable protocol lines
+    return strategyText.split('\n').filter((line: string) => line.trim() !== '');
+  };
+
   const missions = missionData ? [
     {
       id: 1,
       title: missionData.missionName || "Active Mission",
       quote: missionData.mindsetBrief || "Tu average nahi hai. Execute kar.",
-      strategy: missionData.strategyContent || "Focus on the locked path. Execute daily targets without fail.",
-      protocol: [
-        "LOCKED PATH: " + (missionData.lockedPath || "Alpha"),
-        "- Follow the daily execution mandate generated for you.",
-        "- Missing a daily checkpoint incurs execution debt.",
-        "- Do not attempt to optimize the system. Submit to it."
-      ],
+      strategy: "Follow the locked path. Execute daily targets without fail.",
+      protocol: parseProtocol(missionData.strategyContent, missionData.lockedPath),
       day: missionData.dayNumber || 1,
       total: missionData.totalDays || 90,
       consistency: missionData.consistencyScore || 0
@@ -345,6 +353,11 @@ function TabMissions({ missionData }: { missionData?: any }) {
                 {activeMission.consistency}% Consistency maintained
               </div>
             </div>
+            
+            {/* Legal Disclaimer */}
+            <div className="text-[9px] font-mono text-[#52525b] uppercase tracking-widest leading-relaxed mt-8 border-t border-white/5 pt-4">
+              <span className="text-red-500 font-bold">LEGAL COMPLIANCE:</span> FP-OS is a strategic executor. All actions, especially related to finance or outreach, must comply with your local legalities. Proceed with responsibility.
+            </div>
           </div>
         </div>
       </div>
@@ -458,7 +471,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
           </div>
 
           {/* Y Axis Labels */}
-          <div className="absolute left-0 md:-left-4 top-0 bottom-0 flex flex-col justify-between text-[8px] md:text-[10px] text-[#52525b] font-mono pb-8 z-0">
+          <div className="absolute left-0 md:-left-4 top-0 bottom-0 flex flex-col justify-between text-[8px] md:text-[10px] text-white font-mono pb-8 z-0">
             <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
           </div>
 
@@ -488,7 +501,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
                   </div>
                   
                   {/* X Axis Label */}
-                  <div className="absolute -bottom-6 md:-bottom-8 text-[8px] md:text-[10px] text-[#52525b] font-mono mt-2 group-hover:text-white transition-colors">
+                  <div className="absolute -bottom-6 md:-bottom-8 text-[8px] md:text-[10px] text-white font-mono mt-2 transition-colors">
                     W{i + 1}
                   </div>
                 </div>
