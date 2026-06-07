@@ -231,7 +231,7 @@ function TabMissions({ missionData }: { missionData?: any }) {
 
   if (activeMission) {
     return (
-      <div className="w-full max-w-5xl mx-auto h-[600px] bg-[#0A0A0A] border border-white/10 rounded-2xl flex flex-col overflow-hidden animate-fade-in relative shadow-[0_0_80px_-15px_rgba(255,255,255,0.05)] group">
+      <div className="w-full max-w-5xl mx-auto h-full min-h-[500px] md:h-[600px] bg-[#0A0A0A] md:border border-white/10 rounded-2xl flex flex-col overflow-hidden animate-fade-in relative shadow-[0_0_80px_-15px_rgba(255,255,255,0.05)] group">
         {/* Animated Scanning Line */}
         <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none" style={{ animation: 'scan 3s ease-in-out infinite' }} />
         <style>{`@keyframes scan { 0% { transform: translateY(-10px); } 50% { transform: translateY(600px); } 100% { transform: translateY(-10px); } }`}</style>
@@ -352,50 +352,37 @@ function TabMissions({ missionData }: { missionData?: any }) {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in w-full max-w-6xl mx-auto">
-      <div>
+    <div className="space-y-6 md:space-y-8 animate-fade-in w-full max-w-6xl mx-auto">
+      <div className="hidden md:block">
         <div className="text-[11px] font-mono tracking-[0.2em] text-[#a1a1aa] mb-2 uppercase">Feature 01</div>
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">Mission Folders</h2>
         <p className="text-[#a1a1aa] text-sm md:text-[15px]">Locked paths. Personalised briefs. No fluff — just the next move.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex flex-col gap-2">
         {missions.map((m, idx) => (
-          <div key={idx} className="bg-[#0A0A0A] border border-white/5 rounded-2xl p-6 md:p-8 flex flex-col justify-between hover:border-white/10 transition-colors">
-            <div>
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold text-white tracking-tight">{m.title}</h3>
-                <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#a1a1aa] uppercase tracking-[0.2em]">
-                  <Target className="size-3" /> Mission
-                </div>
+          <div 
+            key={idx} 
+            onClick={() => setActiveMission(m)}
+            className="group flex items-center justify-between bg-[#0A0A0A] border border-white/5 rounded-2xl p-4 cursor-pointer hover:bg-white/5 hover:border-white/20 transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-4">
+              <div className="size-10 md:size-12 rounded-full bg-[#18181b] border border-white/10 flex items-center justify-center shrink-0">
+                <Target className="size-5 md:size-6 text-white/70 group-hover:text-white transition-colors" />
               </div>
-              <p className="text-[14px] md:text-[15px] text-white/90 leading-relaxed pl-4 border-l-[2px] border-white/40 mb-8 font-medium">
-                "{m.quote}"
-              </p>
-              <p className="text-[12px] md:text-[13px] text-[#a1a1aa] mb-8 leading-relaxed">
-                <span className="text-white font-bold uppercase tracking-wider text-[11px]">STRATEGY •</span> {m.strategy}
-              </p>
-            </div>
-
-            <div className="flex items-end justify-between mt-auto pt-6 border-t border-white/5">
               <div>
-                <div className="text-[11px] font-mono text-[#52525b] mb-2 uppercase tracking-widest">
-                  Day <span className="text-white">{m.day}</span> of {m.total}
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="size-3 text-[#a1a1aa]" />
-                  <span className="text-[12px] text-white font-medium">{m.consistency}% consistency</span>
-                </div>
-                <div className="h-1 w-32 md:w-40 bg-[#18181b] rounded-full overflow-hidden">
-                  <div className="h-full bg-white rounded-full transition-all duration-1000" style={{ width: `${m.consistency}%` }} />
+                <h3 className="text-base md:text-lg font-bold text-white tracking-tight leading-tight mb-1">{m.title}</h3>
+                <div className="flex items-center gap-3 text-[11px] md:text-xs font-mono text-[#a1a1aa] uppercase tracking-wider">
+                  <span>Day {m.day}/{m.total}</span>
+                  <span className="size-1 rounded-full bg-[#52525b]" />
+                  <span className={m.consistency >= 80 ? 'text-[#22c55e]' : m.consistency >= 50 ? 'text-yellow-500' : 'text-red-500'}>
+                    {m.consistency}%
+                  </span>
                 </div>
               </div>
-              <button 
-                onClick={() => setActiveMission(m)}
-                className="flex items-center gap-2 px-4 py-2 border border-white/20 rounded-full text-[11px] font-bold text-white uppercase tracking-[0.15em] hover:bg-white hover:text-black transition-all group cursor-pointer"
-              >
-                CONTINUE <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
-              </button>
+            </div>
+            <div className="shrink-0 text-[#52525b] group-hover:text-white transition-colors">
+              <ArrowRight className="size-5" />
             </div>
           </div>
         ))}
@@ -439,15 +426,15 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
         </button>
       </div>
 
-      <div className="bg-[#0A0A0A] border border-white/5 rounded-2xl p-6 md:p-10">
-        <div className="flex justify-between items-start mb-12">
+      <div className="bg-[#0A0A0A] border border-white/5 rounded-2xl p-4 md:p-10">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-10">
           <div>
-            <div className="text-[10px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-3">Consistency Score · 7 Weeks</div>
-            <div className="text-5xl md:text-6xl font-bold text-white flex items-baseline gap-2 tracking-tighter">
-              {score} <span className="text-xl md:text-2xl text-[#52525b] font-medium tracking-normal">/ 100</span>
+            <div className="text-[10px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-2">Consistency Score · 7 Weeks</div>
+            <div className="text-4xl md:text-6xl font-bold text-white flex items-baseline gap-2 tracking-tighter">
+              {score} <span className="text-lg md:text-2xl text-[#52525b] font-medium tracking-normal">/ 100</span>
             </div>
           </div>
-          <div className={`px-3 py-1.5 border rounded-md text-[10px] font-mono tracking-[0.1em] uppercase flex items-center gap-2 ${isTrendUp ? 'border-white/20 text-white' : 'border-red-500/20 text-red-500 bg-red-500/10'}`}>
+          <div className={`px-3 py-1.5 border rounded-md text-[9px] md:text-[10px] font-mono tracking-[0.1em] uppercase flex items-center gap-2 w-fit ${isTrendUp ? 'border-white/20 text-white' : 'border-red-500/20 text-red-500 bg-red-500/10'}`}>
             {isTrendUp ? (
               <><ArrowUpRight className="size-3 text-[#a1a1aa]" /> OPERATOR MODE ACTIVATED</>
             ) : (
@@ -457,7 +444,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
         </div>
 
         {/* Bar Graph */}
-        <div className="w-full h-[280px] relative mt-10 mb-6 flex items-end justify-between px-2 md:px-6">
+        <div className="w-full h-[240px] md:h-[280px] relative mt-10 mb-6 flex items-end justify-between px-6 md:px-6">
           
           {/* Horizontal Grid lines */}
           <div className="absolute inset-0 pointer-events-none">
@@ -471,7 +458,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
           </div>
 
           {/* Y Axis Labels */}
-          <div className="absolute -left-2 md:-left-4 top-0 bottom-0 flex flex-col justify-between text-[10px] text-[#52525b] font-mono pb-8 z-0">
+          <div className="absolute left-0 md:-left-4 top-0 bottom-0 flex flex-col justify-between text-[8px] md:text-[10px] text-[#52525b] font-mono pb-8 z-0">
             <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
           </div>
 
@@ -481,7 +468,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
             return graphData.reverse().map((val: number, i: number) => {
               const heightPercent = (val / maxVal) * 100;
               return (
-                <div key={i} className="relative flex flex-col items-center group w-8 md:w-12 h-full justify-end z-10">
+                <div key={i} className="relative flex flex-col items-center group w-6 md:w-12 h-full justify-end z-10">
                   {/* Tooltip on hover */}
                   <div className="absolute -top-8 bg-[#18181b] border border-white/10 text-white text-[10px] font-mono px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
                     Score: {val}
@@ -489,11 +476,11 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
                   
                   {/* The Bar */}
                   <div 
-                    className="w-full rounded-t-md relative overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:brightness-125"
+                    className="w-full rounded-t-sm md:rounded-t-md relative overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:brightness-125"
                     style={{ 
                       height: `${heightPercent}%`, 
                       background: isTrendUp ? 'linear-gradient(to top, rgba(250, 204, 21, 0.2), rgba(250, 204, 21, 0.8))' : 'linear-gradient(to top, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.8))',
-                      boxShadow: `0 0 20px ${isTrendUp ? 'rgba(250, 204, 21, 0.15)' : 'rgba(239, 68, 68, 0.15)'}`
+                      boxShadow: `0 0 10px ${isTrendUp ? 'rgba(250, 204, 21, 0.1)' : 'rgba(239, 68, 68, 0.1)'}`
                     }}
                   >
                     {/* Inner glowing top edge */}
@@ -501,7 +488,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
                   </div>
                   
                   {/* X Axis Label */}
-                  <div className="absolute -bottom-8 text-[10px] text-[#52525b] font-mono mt-2 group-hover:text-white transition-colors">
+                  <div className="absolute -bottom-6 md:-bottom-8 text-[8px] md:text-[10px] text-[#52525b] font-mono mt-2 group-hover:text-white transition-colors">
                     W{i + 1}
                   </div>
                 </div>
@@ -566,9 +553,9 @@ function TabDebt({ missionData }: { missionData?: any }) {
         <p className="text-[#a1a1aa] text-sm md:text-[15px]">The market doesn't pause. Your debt compounds — or your consistency does.</p>
       </div>
 
-      <div className="bg-[#0A0A0A] border border-white/5 rounded-[24px] p-10 mt-8 mb-6 relative overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 z-10 relative">
-          <Dial title="CONSISTENCY" value={consistencyScore.toString()} sub="/ 100" color="#facc15" strokeOffset={`${289 - (289 * consistencyScore) / 100}`} />
+      <div className="bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[24px] p-6 md:p-10 mt-8 mb-6 relative overflow-hidden">
+        <div className="flex flex-row justify-between items-center gap-2 md:grid md:grid-cols-3 md:gap-12 z-10 relative">
+          <Dial title="SCORE" value={consistencyScore.toString()} sub="/ 100" color="#facc15" strokeOffset={`${289 - (289 * consistencyScore) / 100}`} />
           <Dial title="DEBT" value={debtDays.toString()} sub="DAYS" color="#ef4444" strokeOffset={`${289 - (289 * Math.min(debtDays, 14)) / 14}`} />
           <Dial title="TO GOAL" value={daysToGoal.toString()} sub="DAYS" color="#0ea5e9" strokeOffset={`${289 - (289 * Math.max(0, 90 - daysToGoal)) / 90}`} />
         </div>
@@ -611,22 +598,22 @@ function TabDebt({ missionData }: { missionData?: any }) {
 }
 
 const Dial = ({ title, value, sub, color, strokeOffset }: { title: string, value: string, sub: string, color: string, strokeOffset: string }) => (
-  <div className="flex flex-col items-center justify-center">
-    <div className="relative size-40 md:size-48 mb-8">
+  <div className="flex flex-col items-center justify-center w-full">
+    <div className="relative size-20 md:size-48 mb-4 md:mb-8 mx-auto">
       <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-        <circle cx="50" cy="50" r="46" fill="none" stroke="#18181b" strokeWidth="2.5" />
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#18181b" strokeWidth="3" />
         <circle 
-          cx="50" cy="50" r="46" fill="none" stroke={color} strokeWidth="2.5" 
+          cx="50" cy="50" r="46" fill="none" stroke={color} strokeWidth="3" 
           strokeDasharray="289" strokeDashoffset={strokeOffset} strokeLinecap="round" 
-          style={{ filter: `drop-shadow(0 0 12px ${color}60)` }}
+          style={{ filter: `drop-shadow(0 0 8px ${color}60)` }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl md:text-5xl font-bold text-white mb-1 tracking-tighter">{value}</span>
-        <span className="text-[10px] font-mono text-[#a1a1aa] tracking-widest">{sub}</span>
+        <span className="text-xl md:text-5xl font-bold text-white mb-0 md:mb-1 tracking-tighter">{value}</span>
+        <span className="text-[8px] md:text-[10px] font-mono text-[#a1a1aa] tracking-widest">{sub}</span>
       </div>
     </div>
-    <div className="text-[10px] font-mono text-[#52525b] tracking-[0.2em] uppercase">{title}</div>
+    <div className="text-[9px] md:text-[10px] font-mono text-[#52525b] tracking-[0.1em] md:tracking-[0.2em] uppercase text-center">{title}</div>
   </div>
 );
 
