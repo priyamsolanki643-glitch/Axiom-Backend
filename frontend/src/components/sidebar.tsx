@@ -104,6 +104,17 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
 
   return (
     <>
+      {/* Mobile backdrop overlay */}
+      {isOpen && (
+        <div 
+          onClick={() => setIsOpen(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden animate-fade-in-up"
+          style={{ animationDuration: '200ms' }}
+        />
+      )}
+
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
