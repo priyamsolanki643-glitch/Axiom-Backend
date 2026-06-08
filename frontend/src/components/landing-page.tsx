@@ -6,9 +6,10 @@ import { AuthModal } from "@/components/auth-modal";
 
 interface LandingPageProps {
   onLock: () => void;
+  hasSession: boolean;
 }
 
-export function LandingPage({ onLock }: LandingPageProps) {
+export function LandingPage({ onLock, hasSession }: LandingPageProps) {
   const [shutter, setShutter] = useState(false);
   const [visible, setVisible] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -19,7 +20,14 @@ export function LandingPage({ onLock }: LandingPageProps) {
   }, []);
 
   const handleStart = () => {
-    setIsAuthOpen(true);
+    if (hasSession) {
+      if (!shutter) {
+        setShutter(true);
+        setTimeout(onLock, 560);
+      }
+    } else {
+      setIsAuthOpen(true);
+    }
   };
 
   const handleAuthSuccess = () => {

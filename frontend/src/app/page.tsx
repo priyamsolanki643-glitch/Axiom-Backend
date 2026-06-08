@@ -11,6 +11,7 @@ import { Archive } from "lucide-react";
 
 export default function EntryPoint() {
   const [isLocked, setIsLocked] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
   const [hasActiveMission, setHasActiveMission] = useState(false);
   const [isVaultOpen, setIsVaultOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -36,26 +37,22 @@ export default function EntryPoint() {
     const checkSession = async () => {
       // If there's an access token in the URL, wait a moment for Supabase to automatically process it
       if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
-        setIsLocked(true); // Optimistically lock immediately
-        // We do NOT manually parse or clear the hash here. Supabase's internal logic 
-        // needs the hash to be present to verify the session. It will clear it automatically.
+        setHasSession(true);
       }
 
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setIsLocked(true);
+        setHasSession(true);
       }
       
       const { data: authListener } = supabase.auth.onAuthStateChange(
         (event, session) => {
           console.log("Auth event:", event, session ? "Session exists" : "No session");
           if (session) {
-            setIsLocked(true);
+            setHasSession(true);
           } else {
-            // BYPASS FOR LOCAL TESTING: Don't lock the user out if they have no session
-            // if (typeof window !== 'undefined' && !window.location.hash.includes('access_token')) {
-            //   setIsLocked(false);
-            // }
+            setHasSession(false);
+            setIsLocked(false);
           }
         }
       );
@@ -67,8 +64,6 @@ export default function EntryPoint() {
 
     checkActiveMission();
     checkSession();
-    // FORCE UNLOCK FOR TESTING:
-    setIsLocked(true);
   }, []);
 
   useEffect(() => {
@@ -96,7 +91,7 @@ export default function EntryPoint() {
   }
 
   if (!isLocked) {
-    return <LandingPage onLock={() => setIsLocked(true)} />;
+    return <LandingPage onLock={() => setIsLocked(true)} hasSession={hasSession} />;
   }
 
   return (
