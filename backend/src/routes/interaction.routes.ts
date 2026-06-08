@@ -256,7 +256,7 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
     // Call LLM with the generated system prompt from the engine
     let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
     if (systemPrompt) {
-      const enrichedPrompt = systemPrompt + "\n\nINSTRUCTION: Maintain the brutal Sukuna-like Hinglish persona. " + 
+      const enrichedPrompt = systemPrompt + "\n\nINSTRUCTION: Maintain the professional, supportive, and highly analytical Hinglish persona (hybrid of ChatGPT, Claude, and Gemini style). " + 
         (activeMission ? "If user explicitly logs a task completion/failure, set task_classification to 'completed' or 'failed'." : "Extract any onboarding constraints to build context, or prompt user to lock either Option A (Alpha) or Option B (Beta).");
       
       const smartResponse = await LLMService.generateSmartResponse(
@@ -428,7 +428,7 @@ Debt Days (missed days): ${debtDays}
 
 Output ONLY valid JSON in this EXACT format:
 {
-  "mindsetBrief": "Short brutal Sukuna-style Hinglish motivational quote based on their streak or debt.",
+  "mindsetBrief": "Short professional yet highly encouraging Hinglish motivational quote based on their current streak or progress (hybrid of ChatGPT, Claude, and Gemini style).",
   "coreStrategy": "1-2 lines summarizing the aggressive strategy for today.",
   "strategyContent": "List of 3-4 actionable protocol steps for today. Prefix each with a hyphen. Example:\\n- Wake up at 5 AM\\n- Clear 2 backlog lectures"
 }

@@ -104,18 +104,18 @@ export async function runTacticalArchitect(input: ArchitectInput): Promise<Archi
     const timelineStr = `${contextMatrix.goalVector.timelineMonths} months`;
     const probPct = baseAmbitionAssessment.probabilityOfDeclaredGoal.toFixed(1);
 
-    const extremeReframe = `Bhai, look at the brutal mathematical reality. 
+    const extremeReframe = `Bhai, look at the mathematical reality of this goal. 
 You want to hit ${targetStr} in ${timelineStr}. 
 
-This requires elite sacrifice. The statistical probability is extremely low (${probPct}%). This will only happen seriously when your inner fire is lit ('teri aag jagegi').
+The statistical probability is relatively low (${probPct}%) under normal parameters. To achieve this, it requires exceptionally high focus and structured effort.
 
-I will NOT block or reject this goal. If you are serious, you have two clear choices:
+I will NOT block this path. If you are serious, you have two choices:
 
-[Option A] The Extreme Path: Lock this target. But you must promise me right now that you will not quit or run away when the tasks get tough, and you will stay persistent. We will generate high-risk direct outreach and rapid MVP execution tasks. No results guaranteed.
+[Option A] The Extreme Path: Lock this target. We will build high-frequency, direct execution tasks with rapid feedback loops. It requires strict discipline and persistence.
 
-[Option B] The Compounding Path: Choose a serious, highly possible compounding goal where you have a 40–60% chance of success to build your foundation first, making your original target Phase 3 of a compounding plan.
+[Option B] The Compounding Path: Choose a balanced compounding goal (with a 40–60% chance of success) to build your foundation first, making your original target the next phase of our plan.
 
-Choose, but choose with your eyes open. Promise me you won't back down.`;
+Let's make a calculated decision together.`;
 
     ambitionAssessment = {
       ...baseAmbitionAssessment,
