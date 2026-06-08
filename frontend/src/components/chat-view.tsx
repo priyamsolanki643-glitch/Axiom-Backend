@@ -512,17 +512,42 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 );
               })}
 
-              {/* Loader */}
+              {/* Premium Orbiting Dots Loader */}
               {isThinking && (
                 <div className="flex justify-start animate-message-reveal">
-                  <div className="flex items-center gap-3.5 p-3 w-fit">
-                    <div className="relative size-5 animate-[spin_1.5s_linear_infinite]">
-                      <span className="absolute top-0 left-1/2 -translate-x-1/2 size-[5px] rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 size-[5px] rounded-full bg-white/40" />
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 size-[5px] rounded-full bg-white/60" />
-                      <span className="absolute right-0 top-1/2 -translate-y-1/2 size-[5px] rounded-full bg-white/20" />
+                  <div className="flex items-center gap-4 px-1 py-2">
+                    {/* 4 orbiting dots */}
+                    <div className="relative size-6">
+                      <style>{`
+                        @keyframes orbit {
+                          0%   { transform: rotate(0deg)   translateX(10px) rotate(0deg); }
+                          100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+                        }
+                        .orbit-dot {
+                          position: absolute;
+                          top: 50%; left: 50%;
+                          width: 4px; height: 4px;
+                          margin: -2px 0 0 -2px;
+                          border-radius: 50%;
+                          animation: orbit 1s linear infinite;
+                        }
+                        .orbit-dot:nth-child(1) { animation-delay: 0s;     background: rgba(255,255,255,1);   box-shadow: 0 0 6px rgba(255,255,255,0.9); }
+                        .orbit-dot:nth-child(2) { animation-delay: -0.25s;  background: rgba(255,255,255,0.6); }
+                        .orbit-dot:nth-child(3) { animation-delay: -0.5s;   background: rgba(255,255,255,0.35); }
+                        .orbit-dot:nth-child(4) { animation-delay: -0.75s;  background: rgba(255,255,255,0.15); }
+                        @keyframes statusFade {
+                          0%,100% { opacity: 0; transform: translateY(3px); }
+                          15%,85% { opacity: 1; transform: translateY(0); }
+                        }
+                        .status-label { animation: statusFade 2.5s ease-in-out infinite; }
+                      `}</style>
+                      <span className="orbit-dot" />
+                      <span className="orbit-dot" />
+                      <span className="orbit-dot" />
+                      <span className="orbit-dot" />
                     </div>
-                    <span className="font-sans text-[12px] tracking-[0.05em] text-[#a1a1aa] animate-pulse">
+                    {/* Rotating status text */}
+                    <span key={loadingPhraseIndex} className="status-label font-mono text-[11px] tracking-[0.15em] text-[#71717a] uppercase">
                       {loadingPhrases[loadingPhraseIndex]}
                     </span>
                   </div>

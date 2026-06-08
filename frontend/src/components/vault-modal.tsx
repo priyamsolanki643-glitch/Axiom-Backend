@@ -445,9 +445,18 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
   while(data.length < 7) { data.unshift(data.length > 0 ? data[0] : 50); }
   const graphData = data.slice(-7);
 
-  const insight = mirrorData?.insight || "Tu active mode ke paas hai. Bhai rukna mat.";
-  const strengths = mirrorData?.strengths || ["Technical velocity is strong", "Goal intent is clear"];
-  const bottlenecks = mirrorData?.bottlenecks || ["Consistency decay on weekends", "Outreach loop delay"];
+  const insight = mirrorData?.insight || null;
+  const strengths = mirrorData?.strengths || [];
+  const bottlenecks = mirrorData?.bottlenecks || [];
+  
+  if (!mirrorData) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+        <div className="text-[#52525b] text-xs font-mono tracking-widest uppercase">No execution data recorded yet</div>
+        <div className="text-[#3f3f46] text-[11px] max-w-xs leading-relaxed">Start executing your daily targets. FP will build your consistency graph automatically.</div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6 animate-fade-in w-full">
@@ -531,22 +540,30 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
             <div className="text-[9px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-4 flex items-center gap-1.5">
               <span className="size-1 rounded-full bg-white" /> Strengths Detected
             </div>
-            <ul className="space-y-3 text-xs text-[#d4d4d8] leading-relaxed">
-              {strengths.map((s: string, idx: number) => (
-                <li key={idx} className="flex gap-2"><span className="text-[#71717a] shrink-0">·</span> {s}</li>
-              ))}
-            </ul>
+            {strengths.length === 0 ? (
+              <div className="text-[#52525b] text-xs font-mono">FP will map your strengths after consistent daily execution.</div>
+            ) : (
+              <ul className="space-y-3 text-xs text-[#d4d4d8] leading-relaxed">
+                {strengths.map((s: string, idx: number) => (
+                  <li key={idx} className="flex gap-2"><span className="text-[#71717a] shrink-0">·</span> {s}</li>
+                ))}
+              </ul>
+            )}
           </div>
           
           <div className="border border-red-500/10 bg-red-500/[0.01] rounded-xl p-4 sm:p-5">
             <div className="text-[9px] font-mono text-red-500 tracking-[0.2em] uppercase mb-4 flex items-center gap-1.5">
               <span className="size-1 rounded-full bg-red-500" /> Friction Point Matrix
             </div>
-            <ul className="space-y-3 text-xs text-[#d4d4d8] leading-relaxed">
-              {bottlenecks.map((b: string, idx: number) => (
-                <li key={idx} className="flex gap-2"><span className="text-red-500 shrink-0">·</span> {b}</li>
-              ))}
-            </ul>
+            {bottlenecks.length === 0 ? (
+              <div className="text-[#52525b] text-xs font-mono">No friction points logged yet. Keep executing.</div>
+            ) : (
+              <ul className="space-y-3 text-xs text-[#d4d4d8] leading-relaxed">
+                {bottlenecks.map((b: string, idx: number) => (
+                  <li key={idx} className="flex gap-2"><span className="text-red-500 shrink-0">·</span> {b}</li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
