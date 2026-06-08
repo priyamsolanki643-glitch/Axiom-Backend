@@ -1,70 +1,36 @@
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 import { ContextMatrix, CapabilityVector } from '../engine/types';
 
-let _aiClients: GoogleGenAI[] = [];
-let _currentClientIndex = 0;
+function getAIClientForModel(modelName?: string): { client: GoogleGenAI, actualModel: string } {
+  const keys = process.env.AI_KEYS 
+    ? process.env.AI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+    : process.env.AI_PROVIDER_KEY 
+    ? [process.env.AI_PROVIDER_KEY]
+    : [];
 
-function getAIClients(): GoogleGenAI[] {
-  if (_aiClients.length === 0) {
-    const keys = process.env.AI_KEYS 
-      ? process.env.AI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
-      : process.env.AI_PROVIDER_KEY 
-      ? [process.env.AI_PROVIDER_KEY]
-      : [];
-
-    if (keys.length === 0) {
-      throw new Error('No AI API Keys configured');
-    }
-    _aiClients = keys.map(k => new GoogleGenAI({ apiKey: k }));
+  if (keys.length === 0) {
+    throw new Error('No AI API Keys configured');
   }
-  return _aiClients;
-}
 
-function rotateClient() {
-  const clients = getAIClients();
-  if (clients.length > 1) {
-    _currentClientIndex = (_currentClientIndex + 1) % clients.length;
-    console.warn(`[LLM SERVICE] API Key rate limit hit. Rotated to key index: ${_currentClientIndex + 1}/${clients.length}`);
+  let keyIndex = 1; // Default to Pro (index 1)
+  let actualModel = 'gemini-1.5-flash';
+
+  if (modelName === 'FP Go') {
+    keyIndex = 0;
+    actualModel = 'gemini-2.0-flash-lite';
+  } else if (modelName === 'FP Pro') {
+    keyIndex = 1;
+    actualModel = 'gemini-1.5-flash';
+  } else if (modelName === 'FP Elite') {
+    keyIndex = 2;
+    actualModel = 'gemini-2.5-flash';
   }
+  
+  const key = keys[keyIndex] || keys[0];
+  return { client: new GoogleGenAI({ apiKey: key }), actualModel };
 }
 
 export class LLMService {
-  
-  /**
-   * Universal rotation execution wrapper
-   */
-  private static async executeWithRotation<T>(
-    operation: (client: GoogleGenAI) => Promise<T>,
-    retriesLeft?: number
-  ): Promise<T> {
-    const clients = getAIClients();
-    if (retriesLeft === undefined) {
-      retriesLeft = clients.length; // try each key exactly once
-    }
-
-    try {
-      if (clients.length === 0) {
-        throw new Error("No AI API Keys configured. Please set AI_KEYS environment variable with valid Gemini API keys.");
-      }
-      const client = clients[_currentClientIndex];
-      return await operation(client);
-    } catch (error: any) {
-      if (error.status === 429) {
-        if (retriesLeft > 1) {
-          rotateClient();
-          return this.executeWithRotation(operation, retriesLeft - 1);
-        } else {
-          // All keys exhausted
-          throw new Error(`Google API Quota Limit Hit: ${error.message}. Please check your Google Cloud quota limits.`);
-        }
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Exponential backoff helper for rate limits.
-   */
   private static async sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -73,7 +39,8 @@ export class LLMService {
     userId: string,
     systemPrompt: string,
     conversationHistory: { role: "user" | "model", parts: { text: string }[] }[] = [],
-    isModeOnboarding: boolean
+    isModeOnboarding: boolean,
+    modelName?: string
   ): Promise<{ 
     response_text: string; 
     task_classification: "completed" | "failed" | "none"; 
@@ -111,17 +78,18 @@ export class LLMService {
         };
       }
 
-      const response = await this.executeWithRotation(async (aiClient) => {
-        return await aiClient.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: conversationHistory as any,
-          config: {
-            systemInstruction: systemPrompt,
-            responseMimeType: 'application/json',
-            responseSchema: responseSchema,
-            temperature: 0.3, 
-          }
-        });
+      const { client, actualModel } = getAIClientForModel(modelName);
+      
+      const response = await client.models.generateContent({
+        model: actualModel,
+        contents: conversationHistory as any,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.3,
+          tools: [{ googleSearch: {} }], // Grounding active
+        }
       });
 
       const rawText = response.text;
@@ -134,9 +102,6 @@ export class LLMService {
     }
   }
 
-  /**
-   * Sends a constructed prompt to the LLM and guarantees output via responseSchema.
-   */
   static async generateValidatedResponse(
     userId: string,
     systemPrompt: string,
@@ -158,17 +123,17 @@ export class LLMService {
         required: ['response_text']
       };
 
-      const response = await this.executeWithRotation(async (aiClient) => {
-        return await aiClient.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: conversationHistory as any,
-          config: {
-            systemInstruction: systemPrompt,
-            responseMimeType: 'application/json',
-            responseSchema: responseSchema,
-            temperature: 0.3, 
-          }
-        });
+      const { client, actualModel } = getAIClientForModel('FP Pro'); // Use pro for backend logic by default
+      
+      const response = await client.models.generateContent({
+        model: actualModel,
+        contents: conversationHistory as any,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.3, 
+        }
       });
 
       const rawText = response.text;
@@ -176,24 +141,11 @@ export class LLMService {
 
       return JSON.parse(rawText);
     } catch (error: any) {
-      // 429 is now handled inside executeWithRotation, it throws a custom message if all keys fail
-      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
-        throw error; // Let the custom UI error bubble up
-      }
-      
-      if (retries > 0) {
-        console.warn(`LLM Generation failed. Retries left: ${retries - 1}`);
-        await this.sleep(delayMs);
-        return this.generateValidatedResponse(userId, systemPrompt, conversationHistory, bannedCategories, retries - 1, delayMs * 2, isBackground);
-      }
       console.error('LLM Generation Error:', error);
       throw error;
     }
   }
 
-  /**
-   * Generates a grounded intelligence report by searching the web using Gemini's Google Search tool.
-   */
   static async generateGroundedIntelligenceReport(
     researchMandate: string,
     retries = 2,
@@ -212,17 +164,17 @@ export class LLMService {
         required: ['marketSummary', 'localOpportunities', 'competitorLandscape', 'recommendedAction', 'confidenceScore']
       };
 
-      const response = await this.executeWithRotation(async (aiClient) => {
-        return await aiClient.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: [{ role: 'user', parts: [{ text: researchMandate }] }] as any,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: responseSchema,
-            temperature: 0.2,
-            tools: [{ googleSearch: {} }],
-          }
-        });
+      const { client, actualModel } = getAIClientForModel('FP Elite'); // High reasoning for reports
+      
+      const response = await client.models.generateContent({
+        model: actualModel,
+        contents: [{ role: 'user', parts: [{ text: researchMandate }] }] as any,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.2,
+          tools: [{ googleSearch: {} }],
+        }
       });
 
       const rawText = response.text;
@@ -230,31 +182,16 @@ export class LLMService {
 
       return JSON.parse(rawText);
     } catch (error: any) {
-      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
-        throw error;
-      }
-      if (retries > 0) {
-        console.warn(`LLM Grounding failed. Retries left: ${retries - 1}`);
-        await this.sleep(delayMs);
-        return this.generateGroundedIntelligenceReport(researchMandate, retries - 1, delayMs * 2);
-      }
       console.error('LLM Grounding Error:', error);
       throw error;
     }
   }
 
-  /**
-   * Removed LLM classification for task outcome to prevent gamification/spoofing.
-   * This is now handled deterministically by the backend.
-   */
   static async classifyMessageOutcome(message: string): Promise<'completed' | 'failed' | 'none'> {
     console.warn("LLMService.classifyMessageOutcome is deprecated for security reasons.");
     return 'none';
   }
 
-  /**
-   * Generates dynamic tasks leveraging Parkinson's Law and strict execution bounds.
-   */
   static async generateDynamicTaskSprint(
     strategyState: any,
     frictionProfile: any,
@@ -285,9 +222,7 @@ Calibrated Skills: ${capability.calibratedSkills.map((s: any) => `${s.skillName}
 YOU MUST IMPLEMENT THE FOLLOWING ADAPTIVE ENGINE RULES:
 1. Sprint 0: First-Rupee Velocity (Status: ${isSprintZeroActive ? 'ACTIVE' : 'INACTIVE'}): If ACTIVE, focus 100% of tasks on rapid, direct outreach or offering services for immediate revenue.
 2. Cognitive Load Balancer: If consistency score is low (< 40) OR consecutive failures >= 2, adjust tasks to be ultra-simple "micro-tasks".
-3. Parkinson's Law Compression: Estimate the standard hours needed for each task and apply Parkinson's Law compression (e.g., compress 4 hours to 2 hours of focused work).
-
-LEGAL SAFETY: You are strictly forbidden from generating any task that constitutes formal financial advice, medical advice, or illegal activities.`;
+3. Parkinson's Law Compression: Estimate the standard hours needed for each task and apply Parkinson's Law compression.`;
 
       const responseSchema: Schema = {
         type: Type.ARRAY,
@@ -303,16 +238,16 @@ LEGAL SAFETY: You are strictly forbidden from generating any task that constitut
         }
       };
 
-      const response = await this.executeWithRotation(async (aiClient) => {
-        return await aiClient.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: responseSchema,
-            temperature: 0.4,
-          }
-        });
+      const { client, actualModel } = getAIClientForModel('FP Pro');
+      
+      const response = await client.models.generateContent({
+        model: actualModel,
+        contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.4,
+        }
       });
 
       const rawText = response.text;
@@ -320,14 +255,6 @@ LEGAL SAFETY: You are strictly forbidden from generating any task that constitut
 
       return JSON.parse(rawText);
     } catch (error: any) {
-      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
-        throw error;
-      }
-      if (retries > 0) {
-        console.warn(`LLM Task Gen failed. Retries left: ${retries - 1}`);
-        await this.sleep(delayMs);
-        return this.generateDynamicTaskSprint(strategyState, frictionProfile, contextMatrix, capability, retries - 1, delayMs * 2);
-      }
       console.error('LLM Task Generator Error:', error);
       throw error;
     }
@@ -364,16 +291,17 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
         }
       };
 
-      const response = await this.executeWithRotation(async (aiClient) => {
-        return await aiClient.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: responseSchema,
-            temperature: 0.4,
-          }
-        });
+      const { client, actualModel } = getAIClientForModel('FP Elite');
+      
+      const response = await client.models.generateContent({
+        model: actualModel,
+        contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.4,
+          tools: [{ googleSearch: {} }],
+        }
       });
 
       const rawText = response.text;
@@ -381,29 +309,17 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
 
       return JSON.parse(rawText);
     } catch (error: any) {
-      if (error.message && error.message.includes("Google API Quota Limit Hit")) {
-        throw error;
-      }
-      if (retries > 0) {
-        console.warn(`LLM Opportunity Gen failed. Retries left: ${retries - 1}`);
-        await this.sleep(delayMs);
-        return this.generateDynamicOpportunities(matrix, capability, retries - 1, delayMs * 2);
-      }
       console.error('LLM Opportunity Generator Error:', error);
       throw error;
     }
   }
 
-  /**
-   * Generates text embedding vector using text-embedding-004.
-   */
   static async generateEmbedding(text: string): Promise<number[]> {
     try {
-      const response = await this.executeWithRotation(async (aiClient) => {
-        return await aiClient.models.embedContent({
-          model: 'text-embedding-004',
-          contents: text,
-        });
+      const { client } = getAIClientForModel('FP Pro');
+      const response = await client.models.embedContent({
+        model: 'text-embedding-004',
+        contents: text,
       });
       
       if (!response.embeddings || response.embeddings.length === 0 || !response.embeddings[0].values) {
@@ -417,9 +333,6 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
     }
   }
 
-  /**
-   * Conversation-based extractor to check if onboarding parameters are fully mapped.
-   */
   static async extractOnboardingData(
     conversationHistory: { role: "user" | "model", parts: { text: string }[] }[]
   ): Promise<{
@@ -435,11 +348,11 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
       const prompt = `You are a data extractor for a startup strategy engine.
 Analyze the conversation history between the User and the AI Buddy (FP) to extract the following circumstantial parameters.
 Only set isComplete to true if the user has clearly specified:
-1. What their goal is (e.g. build an app, crack JEE, make 20 crores, get clients)
-2. Their approximate financial resources/liquid capital (e.g. ₹10k, ₹0, less privileged, 1 lakh)
-3. Their current skills (e.g. coding, no-code, sales, none)
-4. Their available hours per day (e.g. 4 hours, full-time, 14 hours)
-5. Their approximate location/locality (needed to analyze local trends)
+1. What their goal is
+2. Their approximate financial resources/liquid capital
+3. Their current skills
+4. Their available hours per day
+5. Their approximate location/locality
 
 If any of these 5 core items are missing or unclear, set isComplete to false.
 
@@ -462,24 +375,22 @@ Extract the parameters and output ONLY a JSON object matching the requested sche
         required: ['isComplete', 'declaredGoal', 'liquidCapital', 'region', 'dailyUninterruptedHours', 'rawSkillStrings', 'pathPreference']
       };
 
-      const response = await this.executeWithRotation(async (aiClient) => {
-        return await aiClient.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: [{ role: 'user', parts: [{ text: prompt }] }] as any,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: responseSchema,
-            temperature: 0.3,
-          }
-        });
+      const { client, actualModel } = getAIClientForModel('FP Pro');
+      
+      const response = await client.models.generateContent({
+        model: actualModel,
+        contents: [{ role: 'user', parts: [{ text: prompt }] }] as any,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.3,
+        }
       });
 
       const rawText = response.text;
       if (!rawText) throw new Error("Empty response from Onboarding Extractor");
 
       const parsed = JSON.parse(rawText);
-      
-      // Map path preference values safely
       let pathPref: 'high_risk_upside' | 'safe_compounding' | 'undecided' = 'undecided';
       if (parsed.pathPreference === 'high_risk_upside' || parsed.pathPreference === 'safe_compounding') {
         pathPref = parsed.pathPreference;

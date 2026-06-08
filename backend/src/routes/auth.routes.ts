@@ -40,14 +40,7 @@ authRoutes.post('/otp/send', async (c) => {
     const normalizedTarget = target.trim().toLowerCase();
     const now = Date.now();
 
-    // Rate Limiting Check: Prevent spamming request
-    const existingSession = otpSessions.get(normalizedTarget);
-    if (existingSession && now - existingSession.lastSentAt < COOLDOWN_MS) {
-      const remainingSeconds = Math.ceil((COOLDOWN_MS - (now - existingSession.lastSentAt)) / 1000);
-      return c.json({
-        error: `Please wait ${remainingSeconds} seconds before requesting a new code.`
-      }, 429);
-    }
+    // Rate limiting removed completely per user request.
 
     // Generate secure 6-digit numeric OTP
     const code = crypto.randomInt(100000, 999999).toString();

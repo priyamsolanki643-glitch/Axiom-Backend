@@ -33,12 +33,13 @@ const messageSchema = z.object({
   })).optional().default([]),
   state_context: z.any().optional(),
   action: z.enum(['onboarding', 'task_update', 'critique', 'unlock']).default('onboarding'),
-  thread_id: z.string().nullable().optional()
+  thread_id: z.string().nullable().optional(),
+  model: z.string().optional()
 });
 
 // Primary chat/onboarding interaction message handler
 interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) => {
-  const { user_id, message, conversationHistory, state_context, action, thread_id } = c.req.valid('json');
+  const { user_id, message, conversationHistory, state_context, action, thread_id, model } = c.req.valid('json');
   const actualUserId = c.get('userId') || user_id || 'test-user';
 
   try {
@@ -99,7 +100,8 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
         actualUserId, 
         enrichedPrompt, 
         [...conversationHistory, { role: 'user', parts: [{ text: message }] }] as any,
-        !activeMission
+        !activeMission,
+        model
       );
 
       llmResponse.response_text = smartResponse.response_text;
@@ -302,10 +304,50 @@ interactionRoutes.get('/active-mission', async (c) => {
 
   const daysToGoal = Math.max(0, mission.totalDays - mission.dayNumber);
 
+  let dynamicMindset = mission.mindsetBrief;
+  let dynamicCoreStrategy = "Follow the locked path. Execute daily targets without fail.";
+  let dynamicProtocol = mission.strategyContent;
+
+  try {
+    const prompt = `Generate a dynamic, real-time daily execution brief for the user's current state. 
+Mission: ${mission.missionName}
+Day: ${mission.dayNumber}/${mission.totalDays}
+Consistency Score: ${mission.consistencyScore}%
+Streak: ${mission.streakDays} days
+Debt Days (missed days): ${debtDays}
+
+Output ONLY valid JSON in this EXACT format:
+{
+  "mindsetBrief": "Short brutal Sukuna-style Hinglish motivational quote based on their streak or debt.",
+  "coreStrategy": "1-2 lines summarizing the aggressive strategy for today.",
+  "strategyContent": "List of 3-4 actionable protocol steps for today. Prefix each with a hyphen. Example:\\n- Wake up at 5 AM\\n- Clear 2 backlog lectures"
+}
+Do not use markdown blocks.`;
+    
+    const response = await LLMService.generateValidatedResponse(userId, prompt, [], []);
+    if (response && response.response_text) {
+      try {
+        const parsed = JSON.parse(response.response_text);
+        if (parsed.mindsetBrief) dynamicMindset = parsed.mindsetBrief;
+        if (parsed.coreStrategy) dynamicCoreStrategy = parsed.coreStrategy;
+        if (parsed.strategyContent) dynamicProtocol = parsed.strategyContent;
+      } catch (e) { }
+    } else if (response && (response as any).mindsetBrief) {
+       dynamicMindset = (response as any).mindsetBrief;
+       if ((response as any).coreStrategy) dynamicCoreStrategy = (response as any).coreStrategy;
+       if ((response as any).strategyContent) dynamicProtocol = (response as any).strategyContent;
+    }
+  } catch (err) {
+    console.error('ACTIVE_MISSION: Failed to generate dynamic brief, using stale:', err);
+  }
+
   return c.json({
     status: 'success',
     data: {
       ...mission,
+      mindsetBrief: dynamicMindset,
+      coreStrategy: dynamicCoreStrategy,
+      strategyContent: dynamicProtocol,
       debtDays,
       daysToGoal
     }

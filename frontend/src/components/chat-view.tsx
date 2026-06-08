@@ -28,7 +28,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
   const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
   const [attachMenuState, setAttachMenuState] = useState<"main" | "models">("main");
-  const [selectedModel, setSelectedModel] = useState("FP Flash");
+  const [selectedModel, setSelectedModel] = useState("FP Pro");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
@@ -629,7 +629,6 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                       
                       <div className="flex flex-col gap-1 mt-1">
                         {[
-                          { name: "FP Flash", desc: "High-speed cognitive processing core." },
                           { name: "FP Go", desc: "Constraint scanning and runway calibration." },
                           { name: "FP Pro", desc: "Pathway planning and strategy simulation." },
                           { name: "FP Elite", desc: "Execution monitoring and streak retention." }
