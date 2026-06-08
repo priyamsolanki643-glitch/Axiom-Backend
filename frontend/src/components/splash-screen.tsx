@@ -36,6 +36,8 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
       />
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+        
         .track-in {
           animation: track-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -62,18 +64,11 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
       {/* Main Logo Reveal (Phase 1 & 2) */}
       <div className="relative z-10 flex flex-col items-center">
         <h1 
-          className={`text-6xl md:text-8xl lg:text-[120px] font-medium tracking-tighter text-white/90 ${phase >= 1 ? 'track-in' : 'opacity-0'}`}
-          style={{ fontFamily: 'var(--font-display, system-ui)' }}
+          className={`text-7xl md:text-9xl lg:text-[150px] font-medium tracking-tighter text-white/90 ${phase >= 1 ? 'track-in' : 'opacity-0'}`}
+          style={{ fontFamily: "'Playfair Display', serif" }}
         >
-          FP-OS
+          FP
         </h1>
-        
-        {/* Subtle subtext */}
-        <div 
-          className={`mt-6 text-[10px] md:text-xs tracking-[0.4em] uppercase text-[#a1a1aa] transition-all duration-1000 delay-500 ease-out ${phase >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-        >
-          Execution Intelligence
-        </div>
       </div>
       
     </div>
