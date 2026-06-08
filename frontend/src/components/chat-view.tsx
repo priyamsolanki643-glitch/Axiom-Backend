@@ -27,7 +27,6 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
   const [isThinking, setIsThinking] = useState(false);
   const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
-  const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
