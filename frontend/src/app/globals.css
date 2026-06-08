@@ -168,9 +168,9 @@
   animation: 3.5s linear infinite shimmer;
 }
 
-.shimmer-text-green {
+.shimmer-text-white {
   color: transparent;
-  background: linear-gradient(90deg, #16a34a, #22c55e, #bbf7d0, #22c55e, #16a34a) 0 0 / 200% 100%;
+  background: linear-gradient(90deg, #52525b, #ffffff, #ffffff, #ffffff, #52525b) 0 0 / 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   animation: 3.5s linear infinite shimmer;

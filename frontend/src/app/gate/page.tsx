@@ -140,7 +140,7 @@ export default function SurvivabilityGate() {
                 ? 'border-red-500/20 bg-red-500/[0.03] text-red-400 shadow-[0_0_24px_rgba(239,68,68,0.02)]' : 
               band === 'YELLOW' 
                 ? 'border-amber-500/20 bg-amber-500/[0.03] text-amber-400 shadow-[0_0_24px_rgba(245,158,11,0.02)]' : 
-              'border-green-500/20 bg-green-500/[0.03] text-green-400 shadow-[0_0_24px_rgba(34,197,94,0.02)]'
+              'border-white/20 bg-white/[0.03] text-white/80 shadow-[0_0_24px_rgba(255,255,255,0.02)]'
             }`}
           >
             {band === 'RED' ? (

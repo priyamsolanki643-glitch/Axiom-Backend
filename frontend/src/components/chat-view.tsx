@@ -411,7 +411,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         <div className="flex items-center -mr-1">
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
-            className="p-2 text-[#00ff66] hover:text-[#33ff85] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(0,255,102,0.6)]"
+            className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(255, 255, 255,0.6)]"
           >
             <Plus className="size-6" />
           </button>
@@ -433,8 +433,8 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                   {greeting.text}
                 </h2>
                 <h2 
-                  className={`text-[28px] md:text-[36px] font-medium tracking-tight text-center font-sans leading-none text-[#22c55e] ${greeting.animateAccent ? 'shimmer-text-green' : ''}`} 
-                  style={{ textShadow: "0 0 15px rgba(34,197,94,0.3)" }}
+                  className={`text-[28px] md:text-[36px] font-medium tracking-tight text-center font-sans leading-none text-[#ffffff] ${greeting.animateAccent ? 'shimmer-text-white' : ''}`} 
+                  style={{ textShadow: "0 0 15px rgba(255,255,255,0.3)" }}
                 >
                   {greeting.accent}
                 </h2>
@@ -512,8 +512,8 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 <div className="flex justify-start animate-message-reveal">
                   <div className="flex items-center gap-3 p-3 w-fit rounded-2xl text-[#888888] text-[14px]">
                     <div className="relative w-3 h-3 animate-[spin_1.5s_linear_infinite]">
-                      <span className="absolute top-0 left-0 size-1.5 rounded-full bg-[#00ff66]/60" />
-                      <span className="absolute bottom-0 right-0 size-1.5 rounded-full bg-[#00ff66]/60" />
+                      <span className="absolute top-0 left-0 size-1.5 rounded-full bg-[#ffffff]/60" />
+                      <span className="absolute bottom-0 right-0 size-1.5 rounded-full bg-[#ffffff]/60" />
                     </div>
                     <span className="font-mono text-xs text-[#a1a1aa] tracking-wide animate-pulse">
                       {loadingPhrases[loadingPhraseIndex]}
@@ -606,13 +606,13 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
                       <button 
                         onClick={(e) => { e.stopPropagation(); setAttachMenuState("models"); }}
-                        className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 text-[#00ff66] transition-colors text-[14px] text-left cursor-pointer group"
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-white/5 text-[#ffffff] transition-colors text-[14px] text-left cursor-pointer group"
                       >
                         <div className="flex items-center gap-3">
                           <Cpu className="size-[18px]" />
                           <span>AI Models</span>
                         </div>
-                        <ChevronRight className="size-[18px] text-[#00ff66]/50 group-hover:text-[#00ff66]" />
+                        <ChevronRight className="size-[18px] text-[#ffffff]/50 group-hover:text-[#ffffff]" />
                       </button>
                     </div>
                   ) : (
@@ -640,8 +640,8 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                             className="flex flex-col px-3 py-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer text-left group"
                           >
                             <div className="flex items-center justify-between w-full">
-                              <span className={`text-[14px] font-medium ${selectedModel === model.name ? 'text-[#00ff66]' : 'text-white'}`}>{model.name}</span>
-                              {selectedModel === model.name && <div className="size-1.5 rounded-full bg-[#00ff66] shadow-[0_0_8px_rgba(0,255,102,0.6)]" />}
+                              <span className={`text-[14px] font-medium ${selectedModel === model.name ? 'text-[#ffffff]' : 'text-white'}`}>{model.name}</span>
+                              {selectedModel === model.name && <div className="size-1.5 rounded-full bg-[#ffffff] shadow-[0_0_8px_rgba(255, 255, 255,0.6)]" />}
                             </div>
                             <span className="text-[12px] text-[#888888] leading-snug mt-1 group-hover:text-[#a1a1aa]">{model.desc}</span>
                           </button>

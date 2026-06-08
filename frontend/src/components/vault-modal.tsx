@@ -258,7 +258,7 @@ function TabMissions({ missionData }: { missionData?: any }) {
           <div className="flex items-center gap-2">
             <button 
               onClick={handleShare}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors text-[11px] font-mono tracking-widest uppercase ${isCopied ? 'bg-[#22c55e]/10 text-[#22c55e]' : 'text-[#a1a1aa] hover:text-white hover:bg-white/5'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors text-[11px] font-mono tracking-widest uppercase ${isCopied ? 'bg-[#ffffff]/10 text-[#ffffff]' : 'text-[#a1a1aa] hover:text-white hover:bg-white/5'}`}
             >
               {isCopied ? <CheckCircle className="size-3" /> : <Share2 className="size-3" />}
               {isCopied ? 'Copied' : 'Share'}
@@ -348,8 +348,8 @@ function TabMissions({ missionData }: { missionData?: any }) {
                 <div className="text-[10px] font-mono text-[#52525b] uppercase tracking-widest mb-1">Current Status</div>
                 <div className="text-white text-[14px]">Day {activeMission.day} of {activeMission.total}</div>
               </div>
-              <div className="px-4 py-2 bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20 rounded-lg text-[11px] font-mono uppercase tracking-[0.1em] flex items-center gap-2">
-                <div className="size-1.5 rounded-full bg-[#22c55e] animate-pulse" />
+              <div className="px-4 py-2 bg-[#ffffff]/10 text-[#ffffff] border border-[#ffffff]/20 rounded-lg text-[11px] font-mono uppercase tracking-[0.1em] flex items-center gap-2">
+                <div className="size-1.5 rounded-full bg-[#ffffff] animate-pulse" />
                 {activeMission.consistency}% Consistency maintained
               </div>
             </div>
@@ -388,7 +388,7 @@ function TabMissions({ missionData }: { missionData?: any }) {
                 <div className="flex items-center gap-3 text-[11px] md:text-xs font-mono text-[#a1a1aa] uppercase tracking-wider">
                   <span>Day {m.day}/{m.total}</span>
                   <span className="size-1 rounded-full bg-[#52525b]" />
-                  <span className={m.consistency >= 80 ? 'text-[#22c55e]' : m.consistency >= 50 ? 'text-yellow-500' : 'text-red-500'}>
+                  <span className={m.consistency >= 80 ? 'text-[#ffffff]' : m.consistency >= 50 ? 'text-yellow-500' : 'text-red-500'}>
                     {m.consistency}%
                   </span>
                 </div>
@@ -602,7 +602,7 @@ function TabDebt({ missionData }: { missionData?: any }) {
             Duniya nahi ruki bhai — tu ruka tha. Aaj se mat ruk.
           </p>
         ) : (
-          <p className="text-xl md:text-2xl font-semibold text-white leading-snug pl-6 border-l-[3px] border-[#22c55e] py-1 tracking-tight">
+          <p className="text-xl md:text-2xl font-semibold text-white leading-snug pl-6 border-l-[3px] border-[#ffffff] py-1 tracking-tight">
             Operator. No debt. Teri consistency compounding ho rahi hai.
           </p>
         )}
@@ -722,7 +722,7 @@ function TabMarket({ marketData }: { marketData?: any }) {
               signals.map((signal: any, idx: number) => (
                 <div key={idx} className="flex flex-col pb-4 border-b border-white/5 gap-1">
                   <span className="text-[13px] md:text-[14px] text-white capitalize">{signal.skillName || signal.name}</span>
-                  <span className="text-[16px] font-bold text-[#22c55e]">{signal.demandLevel || signal.trend}</span>
+                  <span className="text-[16px] font-bold text-[#ffffff]">{signal.demandLevel || signal.trend}</span>
                 </div>
               ))
             )}

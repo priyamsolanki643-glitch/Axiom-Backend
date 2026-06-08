@@ -315,8 +315,8 @@ export function ExecutionCockpit() {
 
   // Get color for runway band
   const bandColor = mission.lockedPath === "alpha" ? "amber" : "cyan";
-  const consistencyColorClass = mission.consistencyScore >= 75 ? "text-green-400" : mission.consistencyScore >= 50 ? "text-amber-400" : "text-red-400";
-  const consistencyProgressColor = mission.consistencyScore >= 75 ? "#22c55e" : mission.consistencyScore >= 50 ? "#f59e0b" : "#ef4444";
+  const consistencyColorClass = mission.consistencyScore >= 75 ? "text-white/80" : mission.consistencyScore >= 50 ? "text-amber-400" : "text-red-400";
+  const consistencyProgressColor = mission.consistencyScore >= 75 ? "#ffffff" : mission.consistencyScore >= 50 ? "#f59e0b" : "#ef4444";
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row h-screen bg-[#000000] text-white font-sans overflow-hidden relative">
@@ -407,11 +407,11 @@ export function ExecutionCockpit() {
                 <span className="font-mono text-[9px] text-[#71717a] uppercase tracking-wider block mb-2">Active Logic Runtimes</span>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-[#a1a1aa] text-xs">
-                    <div className="size-1.5 rounded-full bg-green-400" />
+                    <div className="size-1.5 rounded-full bg-white" />
                     <span>Parkinson's Compression</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#a1a1aa] text-xs">
-                    <div className="size-1.5 rounded-full bg-green-400" />
+                    <div className="size-1.5 rounded-full bg-white" />
                     <span>First-Principles Logic</span>
                   </div>
                 </div>
@@ -483,7 +483,7 @@ export function ExecutionCockpit() {
                             </button>
                           </>
                         ) : (
-                          <span className="text-[11px] font-mono text-green-400 flex items-center gap-1">
+                          <span className="text-[11px] font-mono text-white/80 flex items-center gap-1">
                             <Check className="size-3.5" /> Task sprint complete
                           </span>
                         )}
@@ -524,7 +524,7 @@ export function ExecutionCockpit() {
         {/* Terminal Header */}
         <div className="px-6 py-4 border-b border-[#151515] flex items-center justify-between shrink-0 bg-black/40 backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <div className="size-2 rounded-full bg-[#00ff66] animate-pulse" />
+            <div className="size-2 rounded-full bg-[#ffffff] animate-pulse" />
             <span className="font-mono text-[10px] text-[#71717a] uppercase tracking-wider">
               fp@operator:~$ critique --stream
             </span>
@@ -548,7 +548,7 @@ export function ExecutionCockpit() {
                 return (
                   <div key={m.id} className="space-y-1 select-text">
                     <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold ${isUser ? "text-cyan-400" : "text-[#00ff66]"}`}>
+                      <span className={`text-[10px] font-bold ${isUser ? "text-cyan-400" : "text-[#ffffff]"}`}>
                         {isUser ? "fp@user:~$" : "fp@operator:~$"}
                       </span>
                       <span className="text-[9px] text-[#52525b]">
@@ -563,7 +563,7 @@ export function ExecutionCockpit() {
               })}
               
               {isThinking && (
-                <div className="flex items-center gap-2 text-[#00ff66]">
+                <div className="flex items-center gap-2 text-[#ffffff]">
                   <span className="thinking-dot" />
                   <span className="thinking-dot" />
                   <span className="thinking-dot" />
@@ -585,7 +585,7 @@ export function ExecutionCockpit() {
             }}
             className="flex items-center gap-3 bg-black border border-white/5 rounded-xl px-4 py-3 focus-within:border-white/15 transition-all duration-200"
           >
-            <span className="font-mono text-[12px] text-[#00ff66] select-none">fp@operator:~$</span>
+            <span className="font-mono text-[12px] text-[#ffffff] select-none">fp@operator:~$</span>
             <input
               type="text"
               value={chatInput}

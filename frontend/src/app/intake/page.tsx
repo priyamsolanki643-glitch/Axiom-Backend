@@ -294,10 +294,10 @@ export default function IntakeTerminal() {
                 animate={{ opacity: 1, y: 0 }}
                 className="pl-9 pt-4 flex items-center gap-3"
               >
-                <div className="size-6 rounded-full border border-green-500/20 bg-green-500/10 flex items-center justify-center shrink-0">
-                  <Shield className="size-3.5 text-green-400 animate-pulse" />
+                <div className="size-6 rounded-full border border-white/20 bg-white/10 flex items-center justify-center shrink-0">
+                  <Shield className="size-3.5 text-white/80 animate-pulse" />
                 </div>
-                <span className="font-mono text-xs text-green-400 uppercase tracking-widest animate-pulse">
+                <span className="font-mono text-xs text-white/80 uppercase tracking-widest animate-pulse">
                   REALITY PROFILE LOCKED // COMPILING DEVIATION VECTOR...
                 </span>
               </motion.div>
@@ -344,8 +344,8 @@ export default function IntakeTerminal() {
                     <div className="flex items-center gap-2">
                       {isMapped ? (
                         <div className="flex items-center gap-1.5">
-                          <div className="size-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.4)]" />
-                          <span className="font-mono text-[9px] text-green-400 tracking-wider">MAPPED</span>
+                          <div className="size-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
+                          <span className="font-mono text-[9px] text-white/80 tracking-wider">MAPPED</span>
                         </div>
                       ) : isPending ? (
                         <div className="flex items-center gap-1.5">

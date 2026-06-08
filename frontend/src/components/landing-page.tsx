@@ -25,7 +25,7 @@ export function LandingPage({ onLock }: LandingPageProps) {
 
   return (
     <div className="lp-root relative min-h-screen bg-black text-white flex flex-col justify-between overflow-hidden select-none font-sans">
-      {shutter && <div className="fixed inset-0 z-50 bg-[#00ff66] animate-shutter" />}
+      {shutter && <div className="fixed inset-0 z-50 bg-[#ffffff] animate-shutter" />}
 
       {/* Standard React CSS Injector */}
       <style>{`
@@ -36,9 +36,9 @@ export function LandingPage({ onLock }: LandingPageProps) {
         }
         
         /* Shimmer text with electric green gradient */
-        .shimmer-text-green {
+        .shimmer-text-white {
           color: transparent;
-          background: linear-gradient(90deg, #00501a, #00ff66, #e8ffd9, #00ff66, #00501a) 0 0 / 200% 100%;
+          background: linear-gradient(90deg, #52525b, #ffffff, #ffffff, #ffffff, #52525b) 0 0 / 200% 100%;
           -webkit-background-clip: text;
           background-clip: text;
           animation: 4s linear infinite shimmer;
@@ -50,13 +50,13 @@ export function LandingPage({ onLock }: LandingPageProps) {
         }
 
         /* Premium Green Glowing Button */
-        .btn-neon-green {
+        .btn-neon-white {
           display: inline-flex;
           align-items: center;
           gap: 10px;
           padding: 15px 36px;
           border-radius: 9999px;
-          background: #00ff66;
+          background: #ffffff;
           color: #000000;
           font-family: var(--font-sans), sans-serif;
           font-weight: 600;
@@ -64,50 +64,50 @@ export function LandingPage({ onLock }: LandingPageProps) {
           border: none;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 0 20px rgba(0, 255, 102, 0.15), 0 0 40px rgba(0, 255, 102, 0.08);
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), 0 0 40px rgba(255, 255, 255, 0.08);
         }
 
-        .btn-neon-green:hover {
+        .btn-neon-white:hover {
           transform: translateY(-2px) scale(1.02);
-          background: #33ff85;
-          box-shadow: 0 0 30px rgba(0, 255, 102, 0.35), 0 0 60px rgba(0, 255, 102, 0.15);
+          background: #f4f4f5;
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.35), 0 0 60px rgba(255, 255, 255, 0.15);
         }
 
-        .btn-neon-green:active {
+        .btn-neon-white:active {
           transform: translateY(0) scale(0.98);
         }
 
         /* Arrow animation inside button */
-        .btn-neon-green .arrow-icon {
+        .btn-neon-white .arrow-icon {
           transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .btn-neon-green:hover .arrow-icon {
+        .btn-neon-white:hover .arrow-icon {
           transform: translateX(4px);
         }
 
         /* Beautiful Green Header Actions */
         .btn-signin-green {
           background: transparent;
-          border: 1px solid rgba(0, 255, 102, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 9999px;
           cursor: pointer;
           font-size: 13px;
           padding: 8px 20px;
-          color: #00ff66;
+          color: #ffffff;
           font-weight: 500;
           transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-signin-green:hover {
-          background: rgba(0, 255, 102, 0.04);
-          box-shadow: 0 0 15px rgba(0, 255, 102, 0.1);
-          border-color: rgba(0, 255, 102, 0.4);
+          background: rgba(255, 255, 255, 0.04);
+          box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.4);
         }
 
         .btn-login-green {
-          background: #00ff66;
-          border: 1px solid #00ff66;
+          background: #ffffff;
+          border: 1px solid #ffffff;
           border-radius: 9999px;
           cursor: pointer;
           font-size: 13px;
@@ -115,13 +115,13 @@ export function LandingPage({ onLock }: LandingPageProps) {
           color: #000000;
           font-weight: 600;
           transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 0 15px rgba(0, 255, 102, 0.15);
+          box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
         }
 
         .btn-login-green:hover {
-          background: #33ff85;
-          border-color: #33ff85;
-          box-shadow: 0 0 25px rgba(0, 255, 102, 0.3);
+          background: #f4f4f5;
+          border-color: #f4f4f5;
+          box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
           transform: translateY(-1px);
         }
 
@@ -178,7 +178,7 @@ export function LandingPage({ onLock }: LandingPageProps) {
             
             {/* Second Line - Start executing. */}
             <div 
-              className="shimmer-text-green mt-1 pb-3 tracking-[-0.02em]"
+              className="shimmer-text-white mt-1 pb-3 tracking-[-0.02em]"
               style={{ fontSize: "clamp(3.4rem, 8.0vw, 6.4rem)" }}
             >
               Start executing.
@@ -193,7 +193,7 @@ export function LandingPage({ onLock }: LandingPageProps) {
 
           {/* Centered CTA Row */}
           <div className="flex justify-center w-full">
-            <button onClick={handleStart} className="btn-neon-green">
+            <button onClick={handleStart} className="btn-neon-white">
               Get started
               <ArrowRight size={16} className="arrow-icon" />
             </button>

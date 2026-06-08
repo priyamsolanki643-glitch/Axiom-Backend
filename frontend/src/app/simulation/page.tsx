@@ -123,8 +123,8 @@ export default function SimulationSequence() {
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="size-3 text-green-400" />
-                  <span className="text-[9px] text-green-400 tracking-wider">COMPLETE</span>
+                  <CheckCircle2 className="size-3 text-white/80" />
+                  <span className="text-[9px] text-white/80 tracking-wider">COMPLETE</span>
                 </>
               )}
             </div>
@@ -184,14 +184,14 @@ export default function SimulationSequence() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="pt-6 border-t border-white/5 flex items-center gap-3 text-green-400 text-[14px] font-semibold"
+                className="pt-6 border-t border-white/5 flex items-center gap-3 text-white/80 text-[14px] font-semibold"
               >
-                <CheckCircle2 className="size-4.5 text-green-400 shrink-0" />
+                <CheckCircle2 className="size-4.5 text-white/80 shrink-0" />
                 <span>Simulation complete. 2 viable trajectories identified.</span>
                 <motion.span
                   animate={{ opacity: [1, 0, 1] }}
                   transition={{ repeat: Infinity, duration: 0.8 }}
-                  className="inline-block w-1.5 h-4 bg-green-400 align-middle"
+                  className="inline-block w-1.5 h-4 bg-white align-middle"
                 />
               </motion.div>
             )}
