@@ -4,8 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Activity, Cpu, Layers, Shield, Check, X, 
-  CornerDownLeft, AlertTriangle, Settings, RefreshCw 
+  Layers, Check, X, 
+  CornerDownLeft, AlertTriangle, RefreshCw 
 } from "lucide-react";
 
 interface Task {
@@ -65,7 +65,7 @@ export function ExecutionCockpit() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
 
-  const fetchActiveMission = async () => {
+  async function fetchActiveMission() {
     setLoading(true);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -87,7 +87,7 @@ export function ExecutionCockpit() {
     }
   };
 
-  const fetchCurrentTasks = async (activeMission: ActiveMission) => {
+  async function fetchCurrentTasks(activeMission: ActiveMission) {
     try {
       const cachedDiag = localStorage.getItem("diagnosticResult");
       if (!cachedDiag) {
@@ -408,7 +408,7 @@ export function ExecutionCockpit() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-[#a1a1aa] text-xs">
                     <div className="size-1.5 rounded-full bg-white" />
-                    <span>Parkinson's Compression</span>
+                    <span>Parkinson&apos;s Compression</span>
                   </div>
                   <div className="flex items-center gap-2 text-[#a1a1aa] text-xs">
                     <div className="size-1.5 rounded-full bg-white" />
@@ -506,14 +506,14 @@ export function ExecutionCockpit() {
             onClick={() => setMessages(prev => [...prev, { id: String(Date.now()), role: "fp", text: `Active trajectory target: ${mission.missionName}. Current metrics logged as day ${mission.dayNumber}. Continue execution.` }])}
             className="font-mono text-[10px] text-[#71717a] hover:text-white transition-colors cursor-pointer"
           >
-            // VERIFY LEDGER STATUS
+            {"// VERIFY LEDGER STATUS"}
           </button>
           
           <button
             onClick={handleRecalibrate}
             className="font-mono text-[10px] text-red-500/60 hover:text-red-400 transition-colors cursor-pointer"
           >
-            // END SESSION & FORCE RECALIBRATION
+            {"// END SESSION & FORCE RECALIBRATION"}
           </button>
         </div>
 
@@ -552,7 +552,7 @@ export function ExecutionCockpit() {
                         {isUser ? "fp@user:~$" : "fp@operator:~$"}
                       </span>
                       <span className="text-[9px] text-[#52525b]">
-                        {new Date(parseInt(m.id) || Date.now()).toLocaleTimeString()}
+                        {new Date(parseInt(m.id)).toLocaleTimeString()}
                       </span>
                     </div>
                     <div className={`pl-4 whitespace-pre-wrap ${isUser ? "text-white" : "text-[#a1a1aa] border-l border-white/5"}`}>

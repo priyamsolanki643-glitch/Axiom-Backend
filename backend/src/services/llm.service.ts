@@ -5,6 +5,8 @@ import { ContextMatrix, CapabilityVector } from '../engine/types';
 function getAIClientForModel(modelName?: string): { client: GoogleGenAI, actualModel: string } {
   const keys = process.env.AI_KEYS 
     ? process.env.AI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+    : process.env.GEMINI_KEYS
+    ? process.env.GEMINI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
     : process.env.AI_PROVIDER_KEY 
     ? [process.env.AI_PROVIDER_KEY]
     : process.env.AI_STRATEGIST_PROVIDER_KEY

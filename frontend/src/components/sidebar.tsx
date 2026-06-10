@@ -1,7 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Compass, Archive, HelpCircle, ChevronDown, LogOut, MoreVertical, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Search, Archive, LogOut, MoreVertical, Trash2 } from "lucide-react";
+
+interface ChatThread {
+  id: string;
+  title: string;
+  updated_at: string;
+}
+
+interface HistoryGroup {
+  group: string;
+  chats: ChatThread[];
+}
 
 interface SidebarProps {
   onOpenVault: () => void;
@@ -17,7 +28,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
   const [searchQuery, setSearchQuery] = useState("");
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [historyData, setHistoryData] = useState<HistoryGroup[]>([]);
   const [activeChatMenu, setActiveChatMenu] = useState<string | null>(null);
 
   // Close menu on click outside
@@ -34,7 +45,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
     setHistoryData(prev => 
       prev.map(group => ({
         ...group,
-        chats: group.chats.filter((c: any) => c.id !== threadId)
+        chats: group.chats.filter((c: ChatThread) => c.id !== threadId)
       })).filter(group => group.chats.length > 0)
     );
     setActiveChatMenu(null);
@@ -69,14 +80,14 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
         const last7Days = new Date(today);
         last7Days.setDate(last7Days.getDate() - 7);
 
-        const grouped = [
-          { group: "Today", chats: [] as any[] },
-          { group: "Yesterday", chats: [] as any[] },
-          { group: "Previous 7 Days", chats: [] as any[] },
-          { group: "Older", chats: [] as any[] }
+        const grouped: HistoryGroup[] = [
+          { group: "Today", chats: [] },
+          { group: "Yesterday", chats: [] },
+          { group: "Previous 7 Days", chats: [] },
+          { group: "Older", chats: [] }
         ];
 
-        data.data.forEach((t: any) => {
+        data.data.forEach((t: ChatThread) => {
           const tDate = new Date(t.updated_at);
           if (tDate >= today) grouped[0].chats.push(t);
           else if (tDate >= yesterday) grouped[1].chats.push(t);
@@ -234,7 +245,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
               {(() => {
                 const filteredHistory = historyData.map(g => ({
                   ...g,
-                  chats: g.chats.filter((c: any) => c?.title?.toLowerCase().includes(searchQuery.toLowerCase()))
+                  chats: g.chats.filter((c: ChatThread) => c?.title?.toLowerCase().includes(searchQuery.toLowerCase()))
                 })).filter(g => g.chats.length > 0);
 
                 if (filteredHistory.length === 0) {
@@ -250,7 +261,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
                     <div className="text-[10px] font-semibold text-[#666666] tracking-wider uppercase px-3 mb-1">
                       {group.group}
                     </div>
-                    {group.chats.map((chat: any, j: number) => (
+                    {group.chats.map((chat: ChatThread, j: number) => (
                       <div key={j} className="group relative">
                         <button 
                           onClick={() => {

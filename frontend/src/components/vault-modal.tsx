@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  Lock, X, TrendingUp, CheckCircle, Target, ArrowRight, ArrowUpRight, Trophy, AlertTriangle, Radio, ChevronLeft, FileText, Download, Share2, HelpCircle, Zap, Crosshair, Users
+  Lock, X, TrendingUp, CheckCircle, Target, ArrowRight, Trophy, AlertTriangle, Radio, ChevronLeft, FileText, Download, Share2, HelpCircle
 } from "lucide-react";
 
 type TabId = "missions" | "mirror" | "debt" | "rival" | "market";
@@ -11,7 +11,62 @@ interface VaultModalProps {
   onClose: () => void;
 }
 
-const TABS: { id: TabId; label: string; icon: any; desc: string }[] = [
+interface MissionData {
+  id?: number;
+  missionName?: string;
+  mindsetBrief?: string;
+  coreStrategy?: string;
+  strategyContent?: string;
+  lockedPath?: string;
+  dayNumber?: number;
+  totalDays?: number;
+  consistencyScore?: number;
+  debtDays?: number;
+  daysToGoal?: number;
+  streakDays?: number;
+}
+
+interface MirrorData {
+  trend?: string;
+  history?: number[];
+  insight?: string;
+  strengths?: string[];
+  bottlenecks?: string[];
+}
+
+interface RivalData {
+  totalUsers?: number;
+  milestonePassedUsers?: number;
+  category?: string;
+}
+
+interface MarketSignal {
+  skillName?: string;
+  demandLevel?: string;
+  name?: string;
+  trend?: string;
+}
+
+interface MarketGap {
+  gapDescription?: string;
+  opportunitySize?: string;
+}
+
+interface MarketData {
+  skillDemandSignals?: MarketSignal[];
+  localMarketGaps?: MarketGap[];
+  timingSignals?: { timeframe: string; urgency: string }[];
+  topInsight?: string;
+}
+
+interface VaultData {
+  mission?: MissionData;
+  mirror?: MirrorData;
+  market?: MarketData;
+  rival?: RivalData;
+}
+
+const TABS: { id: TabId; label: string; icon: React.ElementType; desc: string }[] = [
   { 
     id: "missions", 
     label: "Missions", 
@@ -48,7 +103,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>("missions");
   const [mounted, setMounted] = useState(false);
   const [tabTransition, setTabTransition] = useState(false);
-  const [vaultData, setVaultData] = useState<any>(null);
+  const [vaultData, setVaultData] = useState<VaultData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -233,8 +288,8 @@ export function VaultModal({ onClose }: VaultModalProps) {
   );
 }
 
-function TabMissions({ missionData }: { missionData?: any }) {
-  const [activeMission, setActiveMission] = useState<any>(null);
+function TabMissions({ missionData }: { missionData?: MissionData }) {
+  const [activeMission, setActiveMission] = useState<MissionData | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
 
@@ -391,7 +446,7 @@ function TabMissions({ missionData }: { missionData?: any }) {
             <div className="border-l-[2px] border-white/20 pl-4 py-1.5">
               <div className="text-[9px] font-mono text-[#71717a] tracking-[0.2em] uppercase mb-1">Mindset Prompt</div>
               <p className="text-[13px] sm:text-[15px] font-medium text-white/90 leading-relaxed italic">
-                "{activeMission.quote}"
+                &quot;{activeMission.quote}&quot;
               </p>
             </div>
 
@@ -481,7 +536,7 @@ function TabMissions({ missionData }: { missionData?: any }) {
   );
 }
 
-function TabMirror({ mirrorData }: { mirrorData?: any }) {
+function TabMirror({ mirrorData }: { mirrorData?: MirrorData }) {
   const isTrendUp = mirrorData ? mirrorData.trend !== 'down' : true;
   const score = mirrorData && mirrorData.history && mirrorData.history.length > 0 
     ? mirrorData.history[mirrorData.history.length - 1] 
@@ -577,7 +632,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
       <div className="space-y-4">
         <div className="text-[10px] font-mono text-[#71717a] tracking-[0.25em] uppercase">Diagnostic Signal</div>
         <p className="text-white text-sm sm:text-base leading-relaxed font-semibold">
-          "{insight}"
+          &quot;{insight}&quot;
         </p>
 
         {/* Strengths & Weaknesses Grid */}
@@ -617,7 +672,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
   );
 }
 
-function TabDebt({ missionData }: { missionData?: any }) {
+function TabDebt({ missionData }: { missionData?: MissionData }) {
   if (!missionData && false) {
     return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Syncing debt indices...</div>;
   }
@@ -700,7 +755,7 @@ const Dial = ({ title, value, sub, color, strokeOffset }: { title: string, value
   </div>
 );
 
-function TabRival({ rivalData }: { rivalData?: any }) {
+function TabRival({ rivalData }: { rivalData?: RivalData }) {
   if (!rivalData && false) {
     return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Connecting to Peer Node...</div>;
   }
@@ -752,7 +807,7 @@ function TabRival({ rivalData }: { rivalData?: any }) {
   );
 }
 
-function TabMarket({ marketData }: { marketData?: any }) {
+function TabMarket({ marketData }: { marketData?: MarketData }) {
   if (!marketData && false) {
     return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Connecting market indexes...</div>;
   }
@@ -787,7 +842,7 @@ function TabMarket({ marketData }: { marketData?: any }) {
             {signals.length === 0 ? (
               <div className="text-[#52525b] text-xs font-mono">Loading data feeds...</div>
             ) : (
-              signals.map((signal: any, idx: number) => (
+              signals.map((signal: MarketSignal, idx: number) => (
                 <div key={idx} className="flex flex-col pb-2.5 border-b border-white/5">
                   <span className="text-xs text-white capitalize font-medium">{signal.skillName || signal.name}</span>
                   <span className="text-sm font-bold text-[#ffffff]">{signal.demandLevel || signal.trend}</span>
@@ -825,7 +880,7 @@ function TabMarket({ marketData }: { marketData?: any }) {
             {gaps.length === 0 ? (
               <div className="text-[#52525b] text-xs font-mono">Loading chapters...</div>
             ) : (
-              gaps.map((gap: any, idx: number) => (
+              gaps.map((gap: MarketGap, idx: number) => (
                 <div key={idx} className="flex flex-col pb-2.5 border-b border-white/5">
                   <span className="text-xs text-[#d4d4d8]">{gap.gapDescription}</span>
                   <span className="text-[10px] font-mono font-bold text-white uppercase mt-0.5">Size: {gap.opportunitySize}</span>
