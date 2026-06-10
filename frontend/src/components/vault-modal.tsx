@@ -23,7 +23,7 @@ const TABS: { id: TabId; label: string; icon: any; desc: string }[] = [
     id: "missions", 
     label: "Missions", 
     icon: Target,
-    desc: "Your active strategy, day targets, and daily protocols locked by the engine."
+    desc: "Active directives issued by Lumensky AI."
   },
   { 
     id: "mirror",   
@@ -52,7 +52,7 @@ const TABS: { id: TabId; label: string; icon: any; desc: string }[] = [
 ];
 
 export function VaultModal({ onClose }: VaultModalProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("demo");
+  const [activeTab, setActiveTab] = useState<TabId>("missions");
   const [mounted, setMounted] = useState(false);
   const [tabTransition, setTabTransition] = useState(false);
   const [vaultData, setVaultData] = useState<any>(null);
@@ -164,12 +164,24 @@ export function VaultModal({ onClose }: VaultModalProps) {
               </div>
             </div>
             
-            <button 
-              onClick={onClose}
-              className="size-8 flex items-center justify-center rounded-full border border-white/5 bg-white/[0.02] hover:bg-white/10 transition-colors text-white/60 hover:text-white"
-            >
-              <X className="size-4" />
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveTab("demo")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-mono uppercase transition-colors ${
+                  activeTab === 'demo' 
+                    ? 'bg-red-500/20 text-red-500 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
+                    : 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20'
+                }`}
+              >
+                <Zap className="size-3" /> Demo Pitch
+              </button>
+              <button 
+                onClick={onClose}
+                className="size-8 flex items-center justify-center rounded-full border border-white/5 bg-white/[0.02] hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
 
           {/* Scrollable Tabs Wrapper with subtle indicator fade */}
@@ -287,7 +299,47 @@ function TabMissions({ missionData }: { missionData?: any }) {
       total: missionData.totalDays || 90,
       consistency: missionData.consistencyScore || 0
     }
-  ] : [];
+  ] : [
+    {
+      id: 1,
+      title: "The ₹0 Budget Protocol",
+      quote: "Premium coaching is a crutch. Your execution is the weapon.",
+      strategy: "We have mapped your entire syllabus to free YouTube resources and open-source PDFs. Specifically, PW Manzil Foundation lectures. Do not buy any test series yet.",
+      protocol: [
+        "LOCKED PATH: Free Access Protocol",
+        "- 09:00 AM: Watch PW Manzil Lecture (Physics)",
+        "- 12:00 PM: Solve NCERT back-exercises only.",
+        "- 03:00 PM: Free mock test on NTA Abhyas App."
+      ],
+      day: 4, total: 14, consistency: 85
+    },
+    {
+      id: 2,
+      title: "The 4.5 Hour Execution Plan",
+      quote: "You have 4.5 hours. Time deficit is a feature, not a bug.",
+      strategy: "We have disabled 65% of the heavy math chapters. You will focus exclusively on High-Yield/Low-Effort topics like Inorganic Chemistry and Modern Physics to maximize percentile per hour.",
+      protocol: [
+        "LOCKED PATH: Surgical Strike",
+        "- Focus Area 1: Modern Physics (Guaranteed 3 questions)",
+        "- Focus Area 2: Block Chemistry (Guaranteed 2 questions)",
+        "- Ignored: Integration, Conic Sections (Too time-consuming)"
+      ],
+      day: 1, total: 14, consistency: 42
+    },
+    {
+      id: 3,
+      title: "The 14-Day Micro-Sprint",
+      quote: "Long-term planning is dead. Win today.",
+      strategy: "You cannot maintain a 2-year vision right now. Your goal is simply to maintain a 3-day study streak. We have initiated 14-Day Micro-Sprints using 25-minute Pomodoros.",
+      protocol: [
+        "LOCKED PATH: Consistency Recovery",
+        "- Execute one 25-minute Pomodoro upon waking up.",
+        "- No 'catching up' if you miss a day. Just start the next Pomodoro.",
+        "- Complete 10 Pomodoros per day to hit 4.5 hours."
+      ],
+      day: 2, total: 14, consistency: 60
+    }
+  ];
 
   if (activeMission) {
     return (
@@ -453,11 +505,11 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
   while(data.length < 7) { data.unshift(data.length > 0 ? data[0] : 50); }
   const graphData = data.slice(-7);
 
-  const insight = mirrorData?.insight || null;
-  const strengths = mirrorData?.strengths || [];
-  const bottlenecks = mirrorData?.bottlenecks || [];
+  const insight = mirrorData?.insight || "Your weekend consistency drops by 45%. You are avoiding mock tests out of fear.";
+  const strengths = mirrorData?.strengths || ["High execution rate on Physics theory", "Good recovery speed after missed days"];
+  const bottlenecks = mirrorData?.bottlenecks || ["Avoids Math completely when time is low", "Weekend dopamine drain detected"];
   
-  if (!mirrorData) {
+  if (!mirrorData && false) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
         <div className="text-[#52525b] text-xs font-mono tracking-widest uppercase">No execution data recorded yet</div>
@@ -580,14 +632,14 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
 }
 
 function TabDebt({ missionData }: { missionData?: any }) {
-  if (!missionData) {
+  if (!missionData && false) {
     return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Syncing debt indices...</div>;
   }
   
-  const debtDays = missionData.debtDays || 0;
-  const consistencyScore = missionData.consistencyScore || 0;
-  const daysToGoal = missionData.daysToGoal || 0;
-  const streakDays = missionData.streakDays || 0;
+  const debtDays = missionData?.debtDays || 4;
+  const consistencyScore = missionData?.consistencyScore || 42;
+  const daysToGoal = missionData?.daysToGoal || 320;
+  const streakDays = missionData?.streakDays || 2;
   const hasDebt = debtDays > 0;
 
   return (
