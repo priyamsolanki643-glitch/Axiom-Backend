@@ -45,65 +45,117 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
       {/* Standard React CSS Injector */}
       <style>{`
-        /* Overriding global landing page styles for pure flat black background */
         .lp-root {
           background-color: #000000 !important;
           background-image: none !important;
         }
-        
-        /* Shimmer text with electric green gradient */
-        .shimmer-text-white {
-          color: transparent;
-          background: linear-gradient(90deg, #52525b, #ffffff, #ffffff, #ffffff, #52525b) 0 0 / 200% 100%;
-          -webkit-background-clip: text;
-          background-clip: text;
-          animation: 4s linear infinite shimmer;
+
+        .grid-floor {
+          position: absolute;
+          width: 200vw;
+          height: 100vh;
+          bottom: -30vh;
+          left: -50vw;
+          background-image: 
+            linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);
+          background-size: 60px 60px;
+          transform: perspective(400px) rotateX(70deg);
+          mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);
+          -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);
+          pointer-events: none;
         }
 
+        .eclipse-glow {
+          position: absolute;
+          top: -20vh;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100vw;
+          height: 100vw;
+          max-width: 1200px;
+          max-height: 1200px;
+          background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 60%);
+          border-radius: 50%;
+          pointer-events: none;
+          animation: eclipsePulse 6s ease-in-out infinite alternate;
+        }
+        @keyframes eclipsePulse {
+          0% { transform: translateX(-50%) scale(1); opacity: 0.6; }
+          100% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+        }
+
+        .shimmer-text-lumensky {
+          color: transparent;
+          background: linear-gradient(90deg, #444 0%, #fff 40%, #fff 60%, #444 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: shimmer 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
         @keyframes shimmer {
           0%  { background-position: -200% 0; }
           to  { background-position:  200% 0; }
         }
 
-        /* Premium Green Glowing Button */
-        .btn-neon-white {
+        .btn-lumensky-core {
+          position: relative;
           display: inline-flex;
           align-items: center;
-          gap: 10px;
-          padding: 15px 36px;
+          gap: 12px;
+          padding: 16px 42px;
           border-radius: 9999px;
-          background: #ffffff;
-          color: #000000;
-          font-family: var(--font-sans), sans-serif;
-          font-weight: 600;
-          font-size: 15px;
-          border: none;
+          background: rgba(255, 255, 255, 0.03);
+          color: #ffffff;
+          font-family: 'Inter', sans-serif;
+          font-weight: 500;
+          font-size: 16px;
+          letter-spacing: 0.05em;
+          border: 1px solid rgba(255, 255, 255, 0.15);
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), 0 0 40px rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(10px);
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          overflow: hidden;
+          z-index: 10;
         }
 
-        .btn-neon-white:hover {
+        .btn-lumensky-core::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 9999px;
+          padding: 1px;
+          background: linear-gradient(45deg, transparent, rgba(255,255,255,0.5), transparent);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          opacity: 0;
+          transition: opacity 0.4s ease;
+        }
+
+        .btn-lumensky-core:hover {
           transform: translateY(-2px) scale(1.02);
-          background: #f4f4f5;
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.35), 0 0 60px rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 10px 40px -10px rgba(255, 255, 255, 0.25);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .btn-lumensky-core:hover::before {
+          opacity: 1;
         }
 
-        .btn-neon-white:active {
-          transform: translateY(0) scale(0.98);
+        .btn-lumensky-core:active {
+          transform: translateY(1px) scale(0.98);
         }
 
-        /* Arrow animation inside button */
-        .btn-neon-white .arrow-icon {
-          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        .btn-lumensky-core .arrow-icon {
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .btn-neon-white:hover .arrow-icon {
+        .btn-lumensky-core:hover .arrow-icon {
           transform: translateX(4px);
         }
 
-        /* Beautiful Green Header Actions */
-        .btn-signin-green {
+        .btn-signin-lumensky {
           background: transparent;
           border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 9999px;
@@ -114,14 +166,12 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           font-weight: 500;
           transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .btn-signin-green:hover {
-          background: rgba(255, 255, 255, 0.04);
-          box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        .btn-signin-lumensky:hover {
+          background: rgba(255, 255, 255, 0.06);
           border-color: rgba(255, 255, 255, 0.4);
         }
 
-        .btn-login-green {
+        .btn-login-lumensky {
           background: #ffffff;
           border: 1px solid #ffffff;
           border-radius: 9999px;
@@ -133,32 +183,16 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
         }
-
-        .btn-login-green:hover {
+        .btn-login-lumensky:hover {
           background: #f4f4f5;
-          border-color: #f4f4f5;
-          box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
           transform: translateY(-1px);
-        }
-
-        /* Smooth Spring Reveal Transitions (Trajectory Forge replica) */
-        .lp-header-reveal {
-          transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .lp-hero-reveal {
-          transition: opacity 1000ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 1000ms cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
         }
       `}</style>
 
-      {/* Grid Overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.01]"
-        style={{
-          backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-        }}
-      />
+      {/* Lumensky 3D Abyss Environment */}
+      <div className="eclipse-glow z-0" />
+      <div className="grid-floor z-0" />
 
       {/* ── Header ── */}
       <header 
@@ -171,8 +205,8 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         }}
       >
         <div className="flex items-center gap-3">
-          <button onClick={() => { setAuthMode("signup"); setIsAuthOpen(true); }} className="btn-signin-green">Sign in</button>
-          <button onClick={() => { setAuthMode("login"); setIsAuthOpen(true); }} className="btn-login-green">Log in</button>
+          <button onClick={() => { setAuthMode("signup"); setIsAuthOpen(true); }} className="btn-signin-lumensky">Sign in</button>
+          <button onClick={() => { setAuthMode("login"); setIsAuthOpen(true); }} className="btn-login-lumensky">Log in</button>
         </div>
       </header>
 
@@ -191,32 +225,32 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           <h1 className="text-white leading-[1.05] font-medium font-display mb-8">
             {/* First Line - Stop planning. */}
             <div 
-              className="tracking-[-0.03em] pb-1.5"
-              style={{ fontSize: "clamp(3.0rem, 7.0vw, 5.6rem)" }}
+              className="tracking-tighter pb-1.5 text-white/95"
+              style={{ fontSize: "clamp(3.0rem, 7.0vw, 5.6rem)", fontWeight: 400 }}
             >
               Stop planning.
             </div>
             
             {/* Second Line - Start executing. */}
             <div 
-              className="shimmer-text-white mt-1 pb-3 tracking-[-0.02em]"
-              style={{ fontSize: "clamp(3.4rem, 8.0vw, 6.4rem)" }}
+              className="shimmer-text-lumensky tracking-tighter"
+              style={{ fontSize: "clamp(3.2rem, 7.5vw, 6.0rem)", fontWeight: 600, marginTop: "-0.1em" }}
             >
               Start executing.
             </div>
           </h1>
 
           {/* Subtext */}
-          <p className="text-[#a1a1aa] text-[16px] md:text-[18px] leading-relaxed max-w-xl mx-auto mb-12 font-sans font-normal">
+          <p className="text-[#a1a1aa] text-[16px] md:text-[18px] leading-relaxed max-w-xl mx-auto mb-12 font-sans font-normal tracking-wide">
             A strategist and executioner that converts your ambition into
             raw, immutable daily action. No fluff. No excuses. No mercy.
           </p>
 
           {/* Centered CTA Row */}
-          <div className="flex justify-center w-full">
-            <button onClick={handleStart} className="btn-neon-white">
-              Get started
-              <ArrowRight size={16} className="arrow-icon" />
+          <div className="flex justify-center w-full mt-4">
+            <button onClick={handleStart} className="btn-lumensky-core group">
+              <span>Initiate Sequence</span>
+              <ArrowRight size={18} className="arrow-icon opacity-80 group-hover:opacity-100" />
             </button>
           </div>
         </div>
