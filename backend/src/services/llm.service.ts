@@ -23,7 +23,7 @@ function getAIClientForModel(modelName?: string): { client: GoogleGenAI, actualM
 
   // Force single key and use latest eligible model
   const key = keys[0];
-  const actualModel = 'gemini-2.5-flash-lite-preview-06-17';
+  const actualModel = 'gemini-2.5-flash';
   
   return { client: new GoogleGenAI({ apiKey: key }), actualModel };
 }
