@@ -120,6 +120,8 @@ export class LLMService {
         contents: conversationHistory as any,
         config: {
           systemInstruction: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching the schema. Do not include any text before or after the JSON.",
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
           temperature: 0.3,
           tools: [{ googleSearch: {} }],
         }
@@ -203,6 +205,8 @@ export class LLMService {
         model: actualModel,
         contents: [{ role: 'user', parts: [{ text: researchMandate + "\n\nIMPORTANT: You must return the report in JSON format matching the schema: { marketSummary: string, localOpportunities: string[], competitorLandscape: string[], recommendedAction: string, confidenceScore: number }. Output ONLY valid JSON." }] }] as any,
         config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
           temperature: 0.2,
           tools: [{ googleSearch: {} }],
         }
@@ -328,6 +332,8 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
         model: actualModel,
         contents: [{ role: 'user', parts: [{ text: strictPrompt + "\n\nIMPORTANT: You must return the output in JSON format matching the schema: Array of objects with properties { id: string, title: string, category: string, opportunityScore: number, capitalRequired: number, timeToFirstRevenue: number, whyThisForThisUser: string }. Output ONLY valid JSON." }] }] as any,
         config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
           temperature: 0.4,
           tools: [{ googleSearch: {} }],
         }

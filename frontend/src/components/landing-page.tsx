@@ -13,6 +13,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
   const [isExiting, setIsExiting] = useState(false);
   const [visible, setVisible] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 60);
@@ -26,6 +27,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         setTimeout(onLock, 500);
       }
     } else {
+      setAuthMode("signup");
       setIsAuthOpen(true);
     }
   };
