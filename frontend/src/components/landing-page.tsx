@@ -101,6 +101,9 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
     const render = () => {
       ctx.clearRect(0, 0, width, height);
       
+      // Additive blending for a Trillion-Dollar Neon Glow
+      ctx.globalCompositeOperation = "lighter";
+      
       // Auto-rotation + Kinetic Mouse Interaction with fluid friction
       targetRotationY += 0.002; 
       rotationX += (targetRotationX - rotationX) * 0.05;
@@ -143,7 +146,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         const opacity = Math.max(0.05, 1 - Math.pow(depthRatio, 1.5));
         
         // Larger dots when close, drawing the eye inwards
-        const radius = Math.max(0.5, 2.5 * scale * opacity);
+        const radius = Math.max(0.6, 2.8 * scale * opacity);
 
         // Trillion Dollar Matrix: Painted Cyan to Purple gradient (Matches Boot Screen Gyro)
         // Using p.originalX so the colors dynamically spin with the 3D sphere!
@@ -152,10 +155,16 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         const g = Math.floor(240 * (1 - gradientRatio) + 0 * gradientRatio);
         const b = 255;
 
+        // Draw soft outer glow (bloom effect)
+        ctx.beginPath();
+        ctx.arc(projX, projY, radius * 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.15})`;
+        ctx.fill();
+
+        // Draw bright inner core
         ctx.beginPath();
         ctx.arc(projX, projY, radius, 0, Math.PI * 2);
-        // Max opacity 65% colored light, leaving white text perfectly legible with zero camouflage
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.65})`;
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.9})`;
         ctx.fill();
       }
 
