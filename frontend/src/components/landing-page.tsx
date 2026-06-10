@@ -145,10 +145,17 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         // Larger dots when close, drawing the eye inwards
         const radius = Math.max(0.5, 2.5 * scale * opacity);
 
+        // Trillion Dollar Matrix: Painted Cyan to Purple gradient (Matches Boot Screen Gyro)
+        // Using p.originalX so the colors dynamically spin with the 3D sphere!
+        const gradientRatio = (p.originalX + 1) / 2; 
+        const r = Math.floor(0 * (1 - gradientRatio) + 180 * gradientRatio);
+        const g = Math.floor(240 * (1 - gradientRatio) + 0 * gradientRatio);
+        const b = 255;
+
         ctx.beginPath();
         ctx.arc(projX, projY, radius, 0, Math.PI * 2);
-        // Brilliant white (100% opacity capability)
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        // Max opacity 65% colored light, leaving white text perfectly legible with zero camouflage
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.65})`;
         ctx.fill();
       }
 
