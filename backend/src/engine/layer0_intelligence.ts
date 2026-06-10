@@ -982,12 +982,16 @@ export async function runIntelligenceMatrix(
 
   try {
     const groundedReport = await LLMService.generateGroundedIntelligenceReport(intelligenceBrief.researchMandate);
-    // Add missing fields if the LLM missed them to prevent crashes
-    groundedReport.generatedAt = new Date().toISOString();
-    groundedReport.legalDisclaimer = ENGINE_AXIOMS.FINANCIAL_ADVICE_DISCLAIMER + ' All market intelligence figures are directional estimates based on live web search data, not certified market research data.';
-    if (!groundedReport.confidenceLevel) groundedReport.confidenceLevel = 'high';
     
-    return { intelligenceBrief, intelligenceReport: groundedReport };
+    // Merge grounded report safely with the structural report so required arrays (gaps, signals, etc.) are preserved
+    const mergedReport: MarketIntelligenceReport = {
+      ...intelligenceReport,
+      topInsight: `${groundedReport.marketSummary || intelligenceReport.topInsight}\n\nRecommended Action: ${groundedReport.recommendedAction || ''}`,
+      dataSourceNotes: `Web-grounded search data incorporated (Confidence: ${groundedReport.confidenceScore || 0.8}). ${intelligenceReport.dataSourceNotes}`,
+      generatedAt: new Date().toISOString()
+    };
+    
+    return { intelligenceBrief, intelligenceReport: mergedReport };
   } catch (error) {
     // Fall back to structural inference silently
     return { intelligenceBrief, intelligenceReport };
