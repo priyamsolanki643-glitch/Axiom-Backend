@@ -108,27 +108,15 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         onClick={onClose}
-        className="absolute inset-0 cursor-pointer overflow-hidden"
-        style={{
-          background: "radial-gradient(circle at 50% 50%, rgba(10,10,10,0.95) 0%, rgba(0,0,0,1) 100%)",
-        }}
-      >
-        {/* Subtle Aurora light leaks */}
-        <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-indigo-500/10 blur-[120px] opacity-60 mix-blend-screen pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-fuchsia-500/10 blur-[120px] opacity-60 mix-blend-screen pointer-events-none" />
-        
-        {/* Final glass frost overlay */}
-        <div className="absolute inset-0 backdrop-blur-[30px] pointer-events-none" />
-      </div>
+        className="absolute inset-0 cursor-pointer bg-black/90 backdrop-blur-md"
+      />
 
       <div
-        className={`relative w-full max-w-[420px] bg-black/60 border border-white/[0.08] rounded-[28px] overflow-hidden flex flex-col transition-all duration-[500ms] ${
+        className={`relative w-full max-w-[420px] bg-black border border-white/[0.08] rounded-[24px] overflow-hidden flex flex-col transition-all duration-[500ms] ${
           mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-[0.96]"
         }`}
         style={{
-          boxShadow: "0 40px 100px -20px rgba(0,0,0,1), inset 0 1px 0 rgba(255,255,255,0.1)",
-          backdropFilter: "blur(40px) saturate(150%)",
-          WebkitBackdropFilter: "blur(40px) saturate(150%)",
+          boxShadow: "0 40px 100px -20px rgba(0,0,0,1)",
           transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
       >

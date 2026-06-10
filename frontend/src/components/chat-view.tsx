@@ -410,16 +410,15 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
           border-color: rgba(255, 255, 255, 0.12) !important;
         }
 
-        /* Input area glow transitions */
+        /* Input area transitions */
         .input-console-transition {
-          transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
+          transition: border-color 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
         }
         
         .input-console-transition:focus-within {
           border-color: rgba(255, 255, 255, 0.25) !important;
-          box-shadow: 0 30px 80px -15px rgba(0,0,0,1), 0 0 30px rgba(255, 255, 255, 0.1) !important;
           transform: translateY(-2px);
-          background-color: rgba(15, 15, 15, 0.6) !important;
+          background-color: rgba(15, 15, 15, 0.9) !important;
         }
 
         /* Action triggers hover dynamics */
@@ -479,12 +478,12 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 className="reveal-chat-item flex flex-col items-center gap-2.5"
                 style={{ animationDelay: "50ms" }}
               >
-                <h2 className="text-[32px] md:text-[44px] font-medium tracking-tight text-white/90 text-center font-display leading-[1.1] mb-2">
+                <h2 className="text-[28px] md:text-[36px] font-medium tracking-tight text-white text-center font-sans leading-none">
                   {greeting.text}
                 </h2>
                 <h2 
-                  className={`text-[32px] md:text-[44px] font-medium tracking-tight text-center font-display leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/40 ${greeting.animateAccent ? 'shimmer-text-white' : ''}`} 
-                  style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
+                  className={`text-[28px] md:text-[36px] font-medium tracking-tight text-center font-sans leading-none text-[#ffffff] ${greeting.animateAccent ? 'shimmer-text-white' : ''}`} 
+                  style={{ textShadow: "0 0 15px rgba(255,255,255,0.3)" }}
                 >
                   {greeting.accent}
                 </h2>
@@ -702,8 +701,8 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
           style={{ animationDelay: "550ms" }}
         >
           
-          {/* Sleek Apple-inspired floating capsule (Gemini Size) */}
-          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 border border-white/[0.08] bg-black/40 backdrop-blur-[40px] rounded-[32px] px-3 py-2 md:py-2.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,1)] min-h-[64px]">
+          {/* Sleek Apple-inspired floating capsule without glow */}
+          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 border border-white/[0.08] bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px]">
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
@@ -791,17 +790,17 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                     </span>
                   </div>
                 )}
-                <textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onFocus={() => setIsInputFocused(true)}
-                  onBlur={() => setIsInputFocused(false)}
-                  onKeyDown={handleKeyDown}
-                  rows={1}
-                  className="w-full bg-transparent outline-none resize-none text-[16px] text-white py-1 px-1 no-scrollbar leading-[1.5] self-center my-auto"
-                  style={{ maxHeight: 120 }}
-                />
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onFocus={() => setIsInputFocused(true)}
+                    onBlur={() => setIsInputFocused(false)}
+                    onKeyDown={handleKeyDown}
+                    rows={1}
+                    className={`w-full bg-transparent outline-none resize-none text-[16px] py-1 px-1 no-scrollbar leading-[1.5] self-center my-auto transition-colors duration-200 ${input.length > 0 ? "text-white" : "text-[#71717a]"}`}
+                    style={{ maxHeight: 120 }}
+                  />
               </div>
 
               {/* Hidden file inputs */}
