@@ -35,11 +35,11 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
     const particles: { originalX: number, originalY: number, originalZ: number }[] = [];
     const isMobile = window.innerWidth < 768;
-    let sphereRadius = Math.min(width, height) * (isMobile ? 0.35 : 0.45); 
+    let sphereRadius = 100; // Will be set in handleResize
     
     // 1) Create 3 Intersecting Orbital Belts (The Gyro)
     const numOrbits = 3;
-    const particlesPerOrbit = isMobile ? 250 : 400; // 120FPS optimization
+    const particlesPerOrbit = isMobile ? 150 : 200; // Optimized density for small logo
     
     for (let orbit = 0; orbit < numOrbits; orbit++) {
       const orbitTiltY = (orbit * Math.PI * 2) / numOrbits; // 0, 120, 240 degrees
@@ -79,7 +79,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
     }
 
     // 2) Create a Dense Inner Quantum Core
-    const coreParticles = isMobile ? 100 : 250;
+    const coreParticles = isMobile ? 60 : 100;
     const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
     for (let i = 0; i < coreParticles; i++) {
       const y = 1 - (i / (coreParticles - 1)) * 2; 
@@ -101,35 +101,41 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
     let animationFrameId: number;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const mouseX = e.clientX - width / 2;
-      const mouseY = e.clientY - height / 2;
-      targetRotationY = mouseX * 0.001; // Increased sensitivity
-      targetRotationX = mouseY * 0.001;
+      // Track globally relative to window center
+      const mouseX = e.clientX - window.innerWidth / 2;
+      const mouseY = e.clientY - window.innerHeight / 2;
+      targetRotationY = mouseX * 0.002; // Enhanced sensitivity for logo
+      targetRotationX = mouseY * 0.002;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         const touch = e.touches[0];
-        const mouseX = touch.clientX - width / 2;
-        const mouseY = touch.clientY - height / 2;
-        targetRotationY = mouseX * 0.0015; // Higher sensitivity for mobile
-        targetRotationX = mouseY * 0.0015;
+        const mouseX = touch.clientX - window.innerWidth / 2;
+        const mouseY = touch.clientY - window.innerHeight / 2;
+        targetRotationY = mouseX * 0.0025; 
+        targetRotationX = mouseY * 0.0025;
       }
     };
 
     let currentWidth = window.innerWidth;
     const handleResize = () => {
       const newWidth = window.innerWidth;
-      // Mobile optimization: Only resize if width changes (ignores address bar scroll jitter)
       if (newWidth === currentWidth && canvas.width !== 0) return;
       currentWidth = newWidth;
       
-      width = window.innerWidth;
-      height = window.innerHeight;
+      const parent = canvas.parentElement;
+      if (parent) {
+        width = parent.clientWidth;
+        height = parent.clientHeight;
+      } else {
+        width = 250; height = 250;
+      }
+      
       canvas.width = width;
       canvas.height = height;
-      // Precision radius for mobile: expanded slightly to fit the hollow orbits
-      sphereRadius = Math.min(width, height) * (width < 768 ? 0.35 : 0.45);
+      // Fits beautifully inside the logo container
+      sphereRadius = width * 0.38;
     };
     handleResize(); // Initialize correct responsive size
 
@@ -174,7 +180,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         let z2 = z1 * cosX + py * sinX;
 
         // 3D to 2D Projection
-        const perspective = 1200; // Flatter, more massive perspective
+        const perspective = 800; // Tighter perspective for small logo
         const scale = perspective / (perspective + z2);
         
         const projX = width / 2 + x1 * scale;
@@ -185,8 +191,8 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         // Exponential fade: front particles are bright, back particles fade fast
         const opacity = Math.max(0.05, 1 - Math.pow(depthRatio, 1.5));
         
-        // Larger dots when close, drawing the eye inwards
-        const radius = Math.max(0.6, 2.8 * scale * opacity);
+        // Finer dots for the high-res logo feel
+        const radius = Math.max(0.4, 1.8 * scale * opacity);
 
         // Trillion Dollar Matrix: Painted Cyan to Purple gradient (Matches Boot Screen Gyro)
         // Using p.originalX so the colors dynamically spin with the 3D sphere!
@@ -385,14 +391,6 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         }
       `}</style>
 
-      {/* Lumensky 3D Abyss Environment */}
-      <div className="eclipse-glow z-0" />
-      <canvas 
-        ref={canvasRef} 
-        className="absolute inset-0 z-0 pointer-events-none"
-        style={{ opacity: isExiting ? 0 : 1, transition: 'opacity 1s ease' }}
-      />
-
       {/* ── Header ── */}
       <header 
         className="flex items-center justify-end px-6 py-5 md:px-12 relative z-10 w-full"
@@ -420,8 +418,13 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
             willChange: "transform, opacity",
           }}
         >
-          {/* Psychological halo: Deep radial fade instead of a murky blur */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200vw] h-[250px] md:w-[160%] md:h-[180%] bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0.85)_0%,_rgba(0,0,0,0.4)_45%,_rgba(0,0,0,0)_75%)] rounded-[100%] z-[-1] pointer-events-none" />
+          {/* 3D Quantum Gyro (Moved from background to a premium interactive logo above text) */}
+          <div className="relative w-[200px] h-[200px] md:w-[260px] md:h-[260px] mx-auto mb-2 flex items-center justify-center cursor-crosshair">
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full pointer-events-auto"
+            />
+          </div>
 
           {/* Headline */}
           <h1 className="text-white font-medium font-display mb-6 flex flex-col items-center">
