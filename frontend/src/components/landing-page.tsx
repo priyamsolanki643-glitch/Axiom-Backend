@@ -35,23 +35,62 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
     const particles: { originalX: number, originalY: number, originalZ: number }[] = [];
     const isMobile = window.innerWidth < 768;
-    const particleCount = isMobile ? 700 : 1200; // 120FPS optimization for mobile
-    let sphereRadius = Math.min(width, height) * (isMobile ? 0.32 : 0.45); 
+    let sphereRadius = Math.min(width, height) * (isMobile ? 0.35 : 0.45); 
     
-    // Fibonacci sphere algorithm for perfect even distribution
-    const phi = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < particleCount; i++) {
-      const y = 1 - (i / (particleCount - 1)) * 2;
-      const radiusAtY = Math.sqrt(1 - y * y);
-      const theta = phi * i;
+    // 1) Create 3 Intersecting Orbital Belts (The Gyro)
+    const numOrbits = 3;
+    const particlesPerOrbit = isMobile ? 250 : 400; // 120FPS optimization
+    
+    for (let orbit = 0; orbit < numOrbits; orbit++) {
+      const orbitTiltY = (orbit * Math.PI * 2) / numOrbits; // 0, 120, 240 degrees
+      const orbitTiltX = Math.PI / 4; // 45 degree tilt for a 3D aesthetic
 
-      const x = Math.cos(theta) * radiusAtY;
-      const z = Math.sin(theta) * radiusAtY;
+      for (let i = 0; i < particlesPerOrbit; i++) {
+        const angle = (i / particlesPerOrbit) * Math.PI * 2;
+        
+        // Add subtle noise for "particle belt" thickness
+        const radiusNoise = 1 + (Math.random() - 0.5) * 0.08;
+        
+        // Base circle in X-Y plane
+        const x = Math.cos(angle) * radiusNoise;
+        const y = Math.sin(angle) * radiusNoise;
+        const z = (Math.random() - 0.5) * 0.08; // Thickness
 
+        // Apply tilt X
+        const cosTiltX = Math.cos(orbitTiltX);
+        const sinTiltX = Math.sin(orbitTiltX);
+        const x1 = x;
+        const y1 = y * cosTiltX - z * sinTiltX;
+        const z1 = z * cosTiltX + y * sinTiltX;
+
+        // Apply tilt Y
+        const cosTiltY = Math.cos(orbitTiltY);
+        const sinTiltY = Math.sin(orbitTiltY);
+        const finalX = x1 * cosTiltY - z1 * sinTiltY;
+        const finalY = y1;
+        const finalZ = z1 * cosTiltY + x1 * sinTiltY;
+
+        particles.push({
+          originalX: finalX,
+          originalY: finalY,
+          originalZ: finalZ
+        });
+      }
+    }
+
+    // 2) Create a Dense Inner Quantum Core
+    const coreParticles = isMobile ? 100 : 250;
+    const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
+    for (let i = 0; i < coreParticles; i++) {
+      const y = 1 - (i / (coreParticles - 1)) * 2; 
+      const radiusAtY = Math.sqrt(1 - y * y); 
+      const theta = phi * i; 
+
+      const coreScale = 0.25; // Core is 25% the size of orbits
       particles.push({
-        originalX: x,
-        originalY: y,
-        originalZ: z,
+        originalX: Math.cos(theta) * radiusAtY * coreScale,
+        originalY: y * coreScale,
+        originalZ: Math.sin(theta) * radiusAtY * coreScale,
       });
     }
 
@@ -89,8 +128,8 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
-      // Precision radius for mobile: smaller circle so text explicitly overhangs the edges
-      sphereRadius = Math.min(width, height) * (width < 768 ? 0.32 : 0.45);
+      // Precision radius for mobile: expanded slightly to fit the hollow orbits
+      sphereRadius = Math.min(width, height) * (width < 768 ? 0.35 : 0.45);
     };
     handleResize(); // Initialize correct responsive size
 
