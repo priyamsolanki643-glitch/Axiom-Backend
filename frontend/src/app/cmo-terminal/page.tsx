@@ -208,8 +208,9 @@ export default function CMOTerminal() {
             {/* Flow Diagram */}
             <div className="flex items-center justify-between p-4 bg-black border border-white/5 rounded-lg mb-6 text-sm">
               <div className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/50 flex items-center justify-center text-blue-400">
-                  PW App
+                <div className="w-12 h-12 rounded-full bg-blue-500/20 border border-blue-500/50 flex flex-col items-center justify-center text-blue-400 text-[10px] font-bold leading-tight">
+                  <span>PW</span>
+                  <span>App</span>
                 </div>
               </div>
               <ArrowRight className="text-zinc-600" />
