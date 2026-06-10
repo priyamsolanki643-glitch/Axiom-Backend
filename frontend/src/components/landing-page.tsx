@@ -77,13 +77,19 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
       }
     };
 
+    let currentWidth = window.innerWidth;
     const handleResize = () => {
+      const newWidth = window.innerWidth;
+      // Mobile optimization: Only resize if width changes (ignores address bar scroll jitter)
+      if (newWidth === currentWidth && canvas.width !== 0) return;
+      currentWidth = newWidth;
+      
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
-      // Slightly smaller radius on mobile to prevent clipping
-      sphereRadius = Math.min(width, height) * (width < 768 ? 0.38 : 0.45);
+      // Precision radius for mobile
+      sphereRadius = Math.min(width, height) * (width < 768 ? 0.42 : 0.45);
     };
     handleResize(); // Initialize correct responsive size
 
@@ -357,29 +363,29 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           }}
         >
           {/* Psychological halo: Deep radial fade instead of a murky blur */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[180%] bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0.85)_0%,_rgba(0,0,0,0.4)_45%,_rgba(0,0,0,0)_75%)] rounded-[100%] z-[-1] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200vw] h-[250px] md:w-[160%] md:h-[180%] bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0.85)_0%,_rgba(0,0,0,0.4)_45%,_rgba(0,0,0,0)_75%)] rounded-[100%] z-[-1] pointer-events-none" />
 
           {/* Headline */}
-          <h1 className="text-white font-medium font-display mb-6">
+          <h1 className="text-white font-medium font-display mb-6 flex flex-col items-center">
             {/* First Line - Stop planning. */}
             <div 
-              className="tracking-tighter pb-1 text-white/95 leading-[1.1]"
-              style={{ fontSize: "clamp(2.0rem, 9vw, 5.6rem)", fontWeight: 400 }}
+              className="tracking-tighter pb-1 text-white/95 leading-[1.1] whitespace-nowrap"
+              style={{ fontSize: "clamp(1.5rem, 8.5vw, 5.0rem)", fontWeight: 400 }}
             >
               Stop planning.
             </div>
             
             {/* Second Line - Start executing. */}
             <div 
-              className="shimmer-text-lumensky tracking-tighter pb-4 leading-[1.15]"
-              style={{ fontSize: "clamp(2.5rem, 11.5vw, 6.5rem)", fontWeight: 600, marginTop: "-0.05em" }}
+              className="shimmer-text-lumensky tracking-tighter pb-2 md:pb-4 leading-[1.15] whitespace-nowrap"
+              style={{ fontSize: "clamp(2.0rem, 11.5vw, 6.5rem)", fontWeight: 600, marginTop: "-0.05em" }}
             >
               Start executing.
             </div>
           </h1>
 
           {/* Subtext */}
-          <p className="text-[#a1a1aa] text-[16px] md:text-[19px] leading-relaxed max-w-xl mx-auto mb-12 font-sans font-normal tracking-wide">
+          <p className="text-[#a1a1aa] text-[14px] sm:text-[16px] md:text-[19px] leading-relaxed max-w-xl mx-auto mb-10 px-2 font-sans font-normal tracking-wide">
             A strategist and executioner that converts your ambition into
             raw, immutable daily action. No fluff. No excuses. No mercy.
           </p>
