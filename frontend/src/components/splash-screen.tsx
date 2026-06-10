@@ -67,7 +67,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           className={`text-7xl md:text-9xl lg:text-[150px] font-medium tracking-tighter text-white/90 ${phase >= 1 ? 'track-in' : 'opacity-0'}`}
           style={{ fontFamily: "'Playfair Display', serif" }}
         >
-          FP
+          Lumensky
         </h1>
       </div>
       

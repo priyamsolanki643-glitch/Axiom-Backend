@@ -43,6 +43,7 @@ export default function EntryPoint() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setHasSession(true);
+        setIsLocked(true);
       }
       
       const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -50,6 +51,7 @@ export default function EntryPoint() {
           console.log("Auth event:", event, session ? "Session exists" : "No session");
           if (session) {
             setHasSession(true);
+            setIsLocked(true);
           } else {
             setHasSession(false);
             setIsLocked(false);
