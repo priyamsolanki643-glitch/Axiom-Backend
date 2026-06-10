@@ -194,12 +194,8 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         // Finer dots for the high-res logo feel
         const radius = Math.max(0.4, 1.8 * scale * opacity);
 
-        // Trillion Dollar Matrix: Painted Cyan to Purple gradient (Matches Boot Screen Gyro)
-        // Using p.originalX so the colors dynamically spin with the 3D sphere!
-        const gradientRatio = (p.originalX + 1) / 2; 
-        const r = Math.floor(0 * (1 - gradientRatio) + 180 * gradientRatio);
-        const g = Math.floor(240 * (1 - gradientRatio) + 0 * gradientRatio);
-        const b = 255;
+        // Pure White / Titanium Aesthetics (Ultimate Trillion-Dollar Minimalism)
+        const r = 255, g = 255, b = 255;
 
         // 120FPS Optimization: Only draw the expensive bloom aura for front-facing particles
         if (opacity > 0.4) {
