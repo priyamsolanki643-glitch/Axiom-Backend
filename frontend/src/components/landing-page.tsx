@@ -360,19 +360,19 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[180%] bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0.85)_0%,_rgba(0,0,0,0.4)_45%,_rgba(0,0,0,0)_75%)] rounded-[100%] z-[-1] pointer-events-none" />
 
           {/* Headline */}
-          <h1 className="leading-[1.0] font-display mb-8 flex flex-col items-center">
-            {/* First Line - Stop planning. (Diminished to create problem focus) */}
+          <h1 className="text-white leading-[1.05] font-medium font-display mb-8">
+            {/* First Line - Stop planning. */}
             <div 
-              className="tracking-tight text-zinc-400 pb-2"
-              style={{ fontSize: "clamp(2.2rem, 5.0vw, 4.0rem)", fontWeight: 400 }}
+              className="tracking-tighter pb-1.5 text-white/95"
+              style={{ fontSize: "clamp(3.0rem, 7.0vw, 5.6rem)", fontWeight: 400 }}
             >
               Stop planning.
             </div>
             
-            {/* Second Line - Start executing. (Absolute dominance) */}
+            {/* Second Line - Start executing. */}
             <div 
-              className="text-white tracking-tighter"
-              style={{ fontSize: "clamp(3.6rem, 9.0vw, 7.2rem)", fontWeight: 700, letterSpacing: "-0.04em", textShadow: "0 0 40px rgba(255,255,255,0.3)" }}
+              className="shimmer-text-lumensky tracking-tighter"
+              style={{ fontSize: "clamp(3.2rem, 7.5vw, 6.0rem)", fontWeight: 600, marginTop: "-0.1em" }}
             >
               Start executing.
             </div>
