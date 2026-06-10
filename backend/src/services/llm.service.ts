@@ -1,3 +1,4 @@
+import '../utils/env';
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 import { ContextMatrix, CapabilityVector } from '../engine/types';
 
@@ -6,6 +7,12 @@ function getAIClientForModel(modelName?: string): { client: GoogleGenAI, actualM
     ? process.env.AI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
     : process.env.AI_PROVIDER_KEY 
     ? [process.env.AI_PROVIDER_KEY]
+    : process.env.AI_STRATEGIST_PROVIDER_KEY
+    ? [process.env.AI_STRATEGIST_PROVIDER_KEY]
+    : process.env.GEMINI_API_KEY
+    ? [process.env.GEMINI_API_KEY]
+    : process.env.GOOGLE_API_KEY
+    ? [process.env.GOOGLE_API_KEY]
     : [];
 
   if (keys.length === 0) {
