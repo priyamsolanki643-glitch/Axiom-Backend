@@ -41,28 +41,27 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
       <style>{`
         .gyro-container {
           position: relative;
-          width: 55px;
-          height: 55px;
-          perspective: 250px;
+          width: 22px;
+          height: 22px;
+          perspective: 120px;
           display: flex;
           align-items: center;
           justify-content: center;
           transition: opacity 1.2s ease, transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
           opacity: 0;
-          transform: scale(0.7) translateY(10px);
+          transform: scale(1.2) translateY(10px);
         }
         .gyro-container.phase-1 {
           opacity: 1;
-          transform: scale(1) translateY(0);
+          transform: scale(2) translateY(0);
         }
 
         .gyro-core {
           position: absolute;
-          width: 8px;
-          height: 8px;
+          width: 4px;
+          height: 4px;
           background: #fff;
           border-radius: 50%;
-          box-shadow: 0 0 10px 2px rgba(255,255,255,0.8);
           animation: corePulse 1.5s ease-in-out infinite alternate;
         }
         .gyro-ring {
@@ -75,18 +74,27 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           border-right: 1.5px solid rgba(255,255,255,0.4);
           border-left: 1px solid rgba(255,255,255,0.1);
         }
-        /* Slow, majestic 3D spin */
+        /* Exact timings from chat-view */
         .ring-1 { animation: spin1 1.8s linear infinite; }
         .ring-2 { animation: spin2 2.4s linear infinite; }
         .ring-3 { animation: spin3 3s linear infinite; }
 
-        @keyframes spin1 { 100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } }
-        @keyframes spin2 { 100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } }
-        @keyframes spin3 { 100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } }
+        @keyframes spin1 { 
+          0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
+          100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } 
+        }
+        @keyframes spin2 { 
+          0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); }
+          100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } 
+        }
+        @keyframes spin3 { 
+          0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
+          100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } 
+        }
         
         @keyframes corePulse {
-          0% { transform: scale(0.8); opacity: 0.6; box-shadow: 0 0 6px rgba(255,255,255,0.4); }
-          100% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 16px rgba(255,255,255,1); }
+          0% { transform: scale(0.8); opacity: 0.6; box-shadow: 0 0 2px rgba(255,255,255,0.4); }
+          100% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 6px rgba(255,255,255,0.8); }
         }
 
         .lumensky-text {
