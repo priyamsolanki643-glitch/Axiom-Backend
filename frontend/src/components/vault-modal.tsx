@@ -825,74 +825,111 @@ function TabMarket({ marketData }: { marketData?: MarketData }) {
   const insight = marketData?.topInsight || "Bhai, NTA ka pattern badal gaya hai. Sirf gadhe jaisi mehnat se kuch nahi hoga, smart execution se marks aayenge. Unnecessary topics turant drop kar.";
 
   return (
-    <div className="space-y-6 animate-fade-in w-full">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card 1 */}
-        <div className="glass-card rounded-2xl p-4 sm:p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-1.5 text-[8px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase">
-              <span className="size-1 rounded-full bg-white animate-pulse" /> Subject Weight
+  return (
+    <div className="flex flex-col gap-4 animate-fade-in w-full">
+      {/* Hero Banner: Urgent Insight */}
+      <div className="relative overflow-hidden rounded-2xl border border-red-500/20 bg-gradient-to-br from-[#1a0505] to-black p-5 sm:p-8 shadow-[0_0_40px_rgba(239,68,68,0.05)]">
+        <div className="absolute top-[-20%] right-[-5%] p-4 opacity-10 pointer-events-none">
+          <Radio className="size-32 text-red-500" />
+        </div>
+        
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex size-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-[10px] font-mono text-red-500 tracking-[0.2em] uppercase">
+            Global Market Alert • {timing.timeframe}
+          </span>
+        </div>
+        
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight mb-3 leading-tight max-w-2xl relative z-10">
+          <span className="text-red-500">{timing.urgency} OVERRIDE:</span> Adapt or Perish.
+        </h3>
+        <p className="text-sm sm:text-base text-[#d4d4d8] font-medium leading-relaxed max-w-3xl relative z-10">
+          {insight}
+        </p>
+      </div>
+
+      {/* Data Grid: 2 Columns on desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Left: Signals */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6 border-t-[3px] border-t-cyan-500/50 relative overflow-hidden group hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-[40px] pointer-events-none" />
+          <div className="flex justify-between items-end mb-6 relative z-10">
+            <div>
+              <div className="text-[9px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-1">Subject Weightage</div>
+              <h4 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">Exam Focus Signals</h4>
             </div>
-            <Radio className="size-3 text-[#52525b]" />
+            <TrendingUp className="size-5 text-cyan-400 opacity-80" />
           </div>
           
-          <p className="text-[11px] text-[#a1a1aa] mb-4 font-semibold uppercase font-mono">Exam Focus Signals:</p>
-
-          <div className="space-y-4 flex-1">
+          <div className="space-y-3 relative z-10">
             {signals.length === 0 ? (
               <div className="text-[#52525b] text-xs font-mono">Loading data feeds...</div>
             ) : (
-              signals.map((signal: MarketSignal, idx: number) => (
-                <div key={idx} className="flex flex-col pb-2.5 border-b border-white/5">
-                  <span className="text-xs text-white capitalize font-medium">{signal.skillName || signal.name}</span>
-                  <span className="text-sm font-bold text-[#ffffff]">{signal.demandLevel || signal.trend}</span>
-                </div>
-              ))
+              signals.map((signal: MarketSignal, idx: number) => {
+                const isHigh = (signal.demandLevel || signal.trend || '').toLowerCase().includes('high') || (signal.demandLevel || signal.trend || '').toLowerCase().includes('fav');
+                return (
+                  <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl bg-[#09090b] border border-white/5 hover:border-white/15 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 font-mono text-[10px] font-bold text-[#71717a]">
+                        0{idx + 1}
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-[13px] font-bold text-white mb-0.5">{signal.skillName || signal.name}</div>
+                        <div className="text-[9px] font-mono text-[#a1a1aa] uppercase tracking-wider">Trend Vector</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`text-[10px] sm:text-xs font-bold uppercase px-2 py-1 rounded bg-white/[0.03] border ${
+                        isHigh ? 'text-cyan-400 border-cyan-500/20' : 'text-amber-500 border-amber-500/20'
+                      }`}>
+                        {signal.demandLevel || signal.trend}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* Card 2 */}
-        <div className="bg-red-500/[0.02] border border-red-500/10 rounded-2xl p-4 sm:p-6 flex flex-col justify-between min-h-[180px]">
-          <div className="flex items-center gap-1.5 text-[8px] font-mono text-red-500 tracking-[0.2em] uppercase mb-4">
-            <AlertTriangle className="size-3" /> Time-Window Alert
-          </div>
-
-          <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-red-500 tracking-tight mb-1">{timing.timeframe}</div>
-            <div className="text-[8px] font-mono text-[#71717a] tracking-[0.2em] uppercase">Time remaining</div>
-          </div>
-
-          <p className="text-xs text-[#d4d4d8] leading-relaxed mt-4 font-medium">
-            <strong className="text-red-500 font-bold">{timing.urgency} Action:</strong> {insight}
-          </p>
-        </div>
-
-        {/* Card 3 */}
-        <div className="glass-card rounded-2xl p-4 sm:p-6 flex flex-col">
-          <div className="flex items-center gap-1.5 text-[8px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-6">
-            <Trophy className="size-3" /> Practice Gaps
+        {/* Right: Gaps */}
+        <div className="glass-card rounded-2xl p-5 sm:p-6 border-t-[3px] border-t-amber-500/50 relative overflow-hidden group hover:bg-white/[0.04] transition-all">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-[40px] pointer-events-none" />
+          <div className="flex justify-between items-end mb-6 relative z-10">
+            <div>
+              <div className="text-[9px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-1">Blind Spots</div>
+              <h4 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">Peer Practice Gaps</h4>
+            </div>
+            <Trophy className="size-5 text-amber-500 opacity-80" />
           </div>
           
-          <p className="text-[11px] text-[#a1a1aa] mb-4 font-semibold uppercase font-mono font-medium">High Margin Chapters:</p>
-
-          <div className="space-y-4 flex-1">
+          <div className="space-y-3 relative z-10">
             {gaps.length === 0 ? (
               <div className="text-[#52525b] text-xs font-mono">Loading chapters...</div>
             ) : (
               gaps.map((gap: MarketGap, idx: number) => (
-                <div key={idx} className="flex flex-col pb-2.5 border-b border-white/5">
-                  <span className="text-xs text-[#d4d4d8]">{gap.gapDescription}</span>
-                  <span className="text-[10px] font-mono font-bold text-white uppercase mt-0.5">Size: {gap.opportunitySize}</span>
+                <div key={idx} className="p-4 rounded-xl bg-[#09090b] border border-white/5 relative overflow-hidden group/item hover:border-amber-500/30 transition-colors">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500/20 group-hover/item:bg-amber-500 transition-colors" />
+                  <div className="pl-2">
+                    <div className="text-xs sm:text-[13px] text-white font-medium mb-2.5 leading-snug">
+                      {gap.gapDescription}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-mono text-[#71717a] uppercase">Advantage Size:</span>
+                      <span className="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                        {gap.opportunitySize}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))
             )}
             
-            <div className="pt-2">
-              <div className="w-full bg-[#170909] border border-red-500/10 rounded-xl p-3 flex justify-between items-center">
-                <span className="text-[10px] font-mono uppercase text-[#71717a]">Your Readiness</span>
-                <span className="text-base font-extrabold text-red-500">LOW</span>
-              </div>
+            <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+              <span className="text-[10px] font-mono text-[#71717a] uppercase">Aggregated Readiness</span>
+              <span className="text-xs font-black text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-md uppercase tracking-wider animate-pulse">
+                Critical Danger
+              </span>
             </div>
           </div>
         </div>
