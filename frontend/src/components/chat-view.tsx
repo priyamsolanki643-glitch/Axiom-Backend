@@ -603,17 +603,50 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
               {isThinking && (
                 <div className="flex justify-start animate-message-reveal">
                   <div className="flex items-center gap-3 px-1 py-3">
-                    {/* 4 orbiting dots rotating in a circle */}
-                    <div className="relative size-4 animate-[spin_1.5s_linear_infinite]">
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 size-[4.5px] bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 size-[4.5px] bg-white/70 rounded-full"></div>
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 size-[4.5px] bg-white/40 rounded-full"></div>
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 size-[4.5px] bg-white/20 rounded-full"></div>
+                    <style>{`
+                      @keyframes circularSpin {
+                        100% { transform: rotate(360deg); }
+                      }
+                      .spinner-ring {
+                        position: relative;
+                        width: 16px;
+                        height: 16px;
+                        animation: circularSpin 1.2s linear infinite;
+                      }
+                      .spinner-dot {
+                        position: absolute;
+                        width: 4.5px;
+                        height: 4.5px;
+                        border-radius: 50%;
+                        background-color: white;
+                      }
+                      .spinner-dot:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); box-shadow: 0 0 8px rgba(255,255,255,0.8); opacity: 1; }
+                      .spinner-dot:nth-child(2) { right: 0; top: 50%; transform: translateY(-50%); opacity: 0.7; }
+                      .spinner-dot:nth-child(3) { bottom: 0; left: 50%; transform: translateX(-50%); opacity: 0.4; }
+                      .spinner-dot:nth-child(4) { left: 0; top: 50%; transform: translateY(-50%); opacity: 0.2; }
+                      @keyframes textPulse {
+                        0%, 100% { opacity: 1; }
+                        50% { opacity: 0.6; }
+                      }
+                      .loading-text-prof {
+                        font-family: sans-serif;
+                        font-weight: 500;
+                        font-size: 13px;
+                        color: white;
+                        letter-spacing: 0.05em;
+                        animation: textPulse 1.5s ease-in-out infinite;
+                      }
+                    `}</style>
+                    <div className="spinner-ring">
+                      <div className="spinner-dot"></div>
+                      <div className="spinner-dot"></div>
+                      <div className="spinner-dot"></div>
+                      <div className="spinner-dot"></div>
                     </div>
-                    {/* Rotating status text in bright white industry font */}
+                    {/* Rotating status text */}
                     <span 
                       key={loadingPhraseIndex} 
-                      className="font-sans font-medium text-[13px] text-white tracking-wide animate-[pulse_1.5s_ease-in-out_infinite]"
+                      className="loading-text-prof"
                     >
                       {loadingPhrases[loadingPhraseIndex]}...
                     </span>
