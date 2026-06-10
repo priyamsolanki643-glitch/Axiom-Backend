@@ -173,21 +173,29 @@ export function VaultModal({ onClose }: VaultModalProps) {
       {/* Backdrop with click-to-close */}
       <div
         onClick={onClose}
-        className="absolute inset-0 cursor-pointer"
+        className="absolute inset-0 cursor-pointer overflow-hidden"
         style={{
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          background: "radial-gradient(circle at 50% 50%, rgba(10,10,10,0.95) 0%, rgba(0,0,0,1) 100%)",
         }}
-      />
+      >
+        {/* Subtle Aurora light leaks */}
+        <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-indigo-500/10 blur-[120px] opacity-60 mix-blend-screen pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-fuchsia-500/10 blur-[120px] opacity-60 mix-blend-screen pointer-events-none" />
+        
+        {/* Final glass frost overlay */}
+        <div className="absolute inset-0 backdrop-blur-[30px] pointer-events-none" />
+      </div>
 
       {/* Modal Container */}
       <div
-        className={`relative w-full max-w-[1100px] h-[92vh] sm:h-[88vh] flex flex-col rounded-2xl md:rounded-[24px] overflow-hidden transition-all duration-[400ms] glass-vault ${
-          mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-[0.98]"
+        className={`relative w-full max-w-[1100px] h-[92vh] sm:h-[88vh] flex flex-col rounded-2xl md:rounded-[32px] overflow-hidden transition-all duration-[500ms] bg-black/40 border border-white/[0.08] ${
+          mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-12 scale-[0.96]"
         }`}
         style={{
-          transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+          boxShadow: "0 40px 100px -20px rgba(0,0,0,1), inset 0 1px 0 rgba(255,255,255,0.1)",
+          backdropFilter: "blur(40px) saturate(150%)",
+          WebkitBackdropFilter: "blur(40px) saturate(150%)",
+          transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
       >
         {/* Futuristic grid overlay background */}
@@ -203,15 +211,15 @@ export function VaultModal({ onClose }: VaultModalProps) {
         <div className="relative z-20 px-4 sm:px-6 md:px-10 pt-5 sm:pt-6 md:pt-8 pb-4 border-b border-white/5 flex flex-col bg-transparent">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="size-8 sm:size-9 rounded-[8px] border border-red-500/30 flex items-center justify-center bg-red-500/10 shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
-                <Lock className="size-3.5 text-red-500" />
+              <div className="size-8 sm:size-10 rounded-[12px] border border-white/10 flex items-center justify-center bg-white/5 shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                <Lock className="size-4 sm:size-5 text-white/90" />
               </div>
               <div>
-                <div className="text-[9px] font-mono text-red-500 tracking-[0.22em] uppercase mb-0.5 flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-red-500 animate-pulse" /> LIVE DEMO PROJECTION
+                <div className="text-[10px] font-mono text-white/50 tracking-[0.22em] uppercase mb-0.5 flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-white animate-pulse" /> LIVE DEMO PROJECTION
                 </div>
-                <h1 className="text-base sm:text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                  THE VAULT <span className="text-[10px] bg-white/10 text-white/70 px-2 py-0.5 rounded font-mono font-medium uppercase tracking-wider">Rahul M.</span>
+                <h1 className="text-base sm:text-lg md:text-2xl font-semibold text-white tracking-tight flex items-center gap-2 font-display">
+                  THE VAULT <span className="text-[10px] bg-white/[0.05] border border-white/[0.08] text-white/80 px-2 py-0.5 rounded-full font-mono font-medium uppercase tracking-wider">Rahul M.</span>
                 </h1>
               </div>
             </div>
@@ -235,13 +243,13 @@ export function VaultModal({ onClose }: VaultModalProps) {
                   <button 
                     key={tab.id}
                     onClick={() => switchTab(tab.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap active:scale-[0.97] ${
+                    className={`px-4 py-2 rounded-xl text-[13px] font-medium flex items-center gap-2 transition-all duration-300 whitespace-nowrap active:scale-[0.97] ${
                       activeTab === tab.id 
-                        ? 'bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
-                        : 'text-[#a1a1aa] hover:text-white hover:bg-white/5 border border-transparent'
+                        ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.15)]' 
+                        : 'text-[#a1a1aa] hover:text-white hover:bg-white/[0.05] border border-transparent'
                     }`}
                   >
-                    <TabIcon className="size-3.5 shrink-0" />
+                    <TabIcon className={`size-4 shrink-0 transition-colors ${activeTab === tab.id ? 'text-black' : 'text-[#a1a1aa]'}`} />
                     {tab.label}
                   </button>
                 );

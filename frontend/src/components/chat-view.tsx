@@ -412,12 +412,14 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
         /* Input area glow transitions */
         .input-console-transition {
-          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
         }
         
         .input-console-transition:focus-within {
-          border-color: #ffffff !important;
-          box-shadow: 0 0 10px rgba(255, 255, 255, 0.12), 0 0 2px rgba(255, 255, 255, 0.25) !important;
+          border-color: rgba(255, 255, 255, 0.25) !important;
+          box-shadow: 0 30px 80px -15px rgba(0,0,0,1), 0 0 30px rgba(255, 255, 255, 0.1) !important;
+          transform: translateY(-2px);
+          background-color: rgba(15, 15, 15, 0.6) !important;
         }
 
         /* Action triggers hover dynamics */
@@ -477,12 +479,12 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 className="reveal-chat-item flex flex-col items-center gap-2.5"
                 style={{ animationDelay: "50ms" }}
               >
-                <h2 className="text-[28px] md:text-[36px] font-medium tracking-tight text-white text-center font-sans leading-none">
+                <h2 className="text-[32px] md:text-[44px] font-medium tracking-tight text-white/90 text-center font-display leading-[1.1] mb-2">
                   {greeting.text}
                 </h2>
                 <h2 
-                  className={`text-[28px] md:text-[36px] font-medium tracking-tight text-center font-sans leading-none text-[#ffffff] ${greeting.animateAccent ? 'shimmer-text-white' : ''}`} 
-                  style={{ textShadow: "0 0 15px rgba(255,255,255,0.3)" }}
+                  className={`text-[32px] md:text-[44px] font-medium tracking-tight text-center font-display leading-[1.1] text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/40 ${greeting.animateAccent ? 'shimmer-text-white' : ''}`} 
+                  style={{ textShadow: "0 0 30px rgba(255,255,255,0.15)" }}
                 >
                   {greeting.accent}
                 </h2>
@@ -505,7 +507,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                           onTouchStart={() => handleTouchStart(m.id)}
                           onTouchEnd={handleTouchEnd}
                         >
-                          <div className="bg-[#1e1f20] text-[#e3e3e3] text-[14.5px] leading-relaxed px-5 py-3 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
+                          <div className="bg-white/[0.04] border border-white/[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
                             {m.text && <div>{m.text}</div>}
                             {m.files && m.files.length > 0 && (
                               <div className="flex flex-wrap gap-2 pt-1 border-t border-white/5">
@@ -562,7 +564,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                           onTouchStart={() => handleTouchStart(m.id)}
                           onTouchEnd={handleTouchEnd}
                         >
-                          <div className="font-sans text-[14.5px] leading-relaxed text-[#d4d4d8] whitespace-pre-wrap break-words overflow-x-auto">
+                          <div className="font-sans text-[15.5px] leading-[1.7] text-white/90 whitespace-pre-wrap break-words overflow-x-auto tracking-wide drop-shadow-sm">
                             {m.text}
                           </div>
 
@@ -701,7 +703,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
         >
           
           {/* Sleek Apple-inspired floating capsule (Gemini Size) */}
-          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 border border-[#27272a] bg-[#1a1a1c] rounded-[48px] px-3 py-2 md:py-2.5 shadow-xl transition-all duration-300 min-h-[64px]">
+          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 border border-white/[0.08] bg-black/40 backdrop-blur-[40px] rounded-[32px] px-3 py-2 md:py-2.5 shadow-[0_20px_60px_-15px_rgba(0,0,0,1)] min-h-[64px]">
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
@@ -824,7 +826,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() && selectedFiles.length === 0}
-                className="action-icon-btn size-10 rounded-full grid place-items-center bg-[#29292c] text-[#e4e4e7] hover:bg-white hover:text-black active:scale-90 active:bg-white active:text-black disabled:bg-[#1f1f22] disabled:text-[#52525b] transition-all cursor-pointer"
+                className="action-icon-btn size-10 rounded-full grid place-items-center bg-white text-black hover:scale-[1.05] active:scale-90 disabled:bg-white/10 disabled:text-white/30 transition-all cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.2)]"
               >
                 <ArrowUp className="size-[20px] stroke-[2.5]" />
               </button>

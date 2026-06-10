@@ -108,21 +108,28 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         onClick={onClose}
-        className="absolute inset-0 cursor-pointer"
+        className="absolute inset-0 cursor-pointer overflow-hidden"
         style={{
-          background: "rgba(0,0,0,0.85)",
-          backdropFilter: "blur(24px) saturate(120%)",
-          WebkitBackdropFilter: "blur(24px) saturate(120%)",
+          background: "radial-gradient(circle at 50% 50%, rgba(10,10,10,0.95) 0%, rgba(0,0,0,1) 100%)",
         }}
-      />
+      >
+        {/* Subtle Aurora light leaks */}
+        <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-indigo-500/10 blur-[120px] opacity-60 mix-blend-screen pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-fuchsia-500/10 blur-[120px] opacity-60 mix-blend-screen pointer-events-none" />
+        
+        {/* Final glass frost overlay */}
+        <div className="absolute inset-0 backdrop-blur-[30px] pointer-events-none" />
+      </div>
 
       <div
-        className={`relative w-full max-w-[420px] bg-[#000000] border border-[#18181b] rounded-[24px] overflow-hidden flex flex-col transition-all duration-[400ms] ${
+        className={`relative w-full max-w-[420px] bg-black/60 border border-white/[0.08] rounded-[28px] overflow-hidden flex flex-col transition-all duration-[500ms] ${
           mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-[0.96]"
         }`}
         style={{
-          boxShadow: "0 30px 80px -20px rgba(0,0,0,1)",
-          transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+          boxShadow: "0 40px 100px -20px rgba(0,0,0,1), inset 0 1px 0 rgba(255,255,255,0.1)",
+          backdropFilter: "blur(40px) saturate(150%)",
+          WebkitBackdropFilter: "blur(40px) saturate(150%)",
+          transitionTimingFunction: "cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
       >
         <div className="flex justify-between items-center px-6 pt-6 pb-2">
@@ -137,12 +144,12 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
           </button>
         </div>
 
-        <div className="px-6 py-4 md:pb-8">
+        <div className="px-6 py-4 md:px-8 md:pb-8">
           <div className="mb-8 mt-2">
-            <h2 className="text-2xl font-semibold text-white tracking-tight mb-2">
+            <h2 className="text-[26px] font-semibold text-white tracking-tight mb-2 font-display">
               {step === "otp" ? "Verify your identity." : (mode === "signup" ? "Create an account." : "Welcome back.")}
             </h2>
-            <p className="text-[14px] text-[#a1a1aa] leading-relaxed">
+            <p className="text-[15px] text-[#a1a1aa] leading-relaxed">
               {step === "otp" 
                 ? `We sent a 6-digit code to ${email}`
                 : (mode === "signup" ? "Enter your details to start executing." : "Enter your email to log in.")}
@@ -151,38 +158,38 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
 
           <div className="animate-message-reveal">
             {step === "email" && (
-              <form onSubmit={handleEmailSubmit} className="flex flex-col gap-5">
+              <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
                 {mode === "signup" && (
-                  <div className="relative flex items-center bg-transparent border-b border-[#27272a] focus-within:border-[#ffffff] transition-colors pb-3">
-                    <User className="size-4 text-[#52525b] absolute left-1" />
+                  <div className="relative flex items-center bg-white/[0.03] border border-white/[0.05] focus-within:bg-white/[0.06] focus-within:border-white/[0.15] focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)] rounded-2xl transition-all duration-300">
+                    <User className="size-5 text-[#71717a] absolute left-4" />
                     <input 
                       type="text" 
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Full name"
-                      className="w-full bg-transparent border-none outline-none text-white text-[15px] pl-8 placeholder:text-[#52525b]"
+                      className="w-full bg-transparent border-none outline-none text-white text-[15px] pl-12 pr-4 py-4 placeholder:text-[#71717a]"
                       required
                       autoFocus
                     />
                   </div>
                 )}
-                <div className="relative flex items-center bg-transparent border-b border-[#27272a] focus-within:border-[#ffffff] transition-colors pb-3">
-                  <Mail className="size-4 text-[#52525b] absolute left-1" />
+                <div className="relative flex items-center bg-white/[0.03] border border-white/[0.05] focus-within:bg-white/[0.06] focus-within:border-white/[0.15] focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)] rounded-2xl transition-all duration-300">
+                  <Mail className="size-5 text-[#71717a] absolute left-4" />
                   <input 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email address"
-                    className="w-full bg-transparent border-none outline-none text-white text-[15px] pl-8 placeholder:text-[#52525b]"
+                    className="w-full bg-transparent border-none outline-none text-white text-[15px] pl-12 pr-4 py-4 placeholder:text-[#71717a]"
                     required
                     autoFocus={mode === "login"}
                   />
                 </div>
-                {error && <div className="text-[#ff3333] text-[13px] font-mono">{error}</div>}
+                {error && <div className="text-[#ff3333] text-[13px] font-mono px-2">{error}</div>}
                 <button 
                   type="submit"
                   disabled={isLoading}
-                  className="mt-2 flex items-center justify-center gap-2 w-full bg-[#ffffff] text-black font-semibold py-3.5 rounded-xl hover:bg-[#f4f4f5] transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                  className="mt-2 flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-4 rounded-2xl hover:scale-[0.98] transition-transform duration-300 disabled:opacity-50 disabled:hover:scale-100 shadow-[0_0_30px_rgba(255,255,255,0.15)]"
                 >
                   {isLoading ? <Loader2 className="size-5 animate-spin" /> : "Continue"}
                   {!isLoading && <ArrowRight className="size-4" />}
@@ -203,17 +210,17 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
                       value={digit}
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                      className="w-12 h-14 bg-[#111111] border border-[#27272a] focus:border-white rounded-lg text-center text-xl font-mono text-white outline-none transition-colors"
+                      className="w-12 h-14 bg-white/[0.03] border border-white/[0.05] focus:bg-white/[0.08] focus:border-white/[0.2] focus:shadow-[0_0_15px_rgba(255,255,255,0.1)] rounded-xl text-center text-xl font-mono text-white outline-none transition-all duration-300"
                       autoFocus={idx === 0}
                       required
                     />
                   ))}
                 </div>
-                {error && <div className="text-[#ff3333] text-[13px] font-mono">{error}</div>}
+                {error && <div className="text-[#ff3333] text-[13px] font-mono px-2">{error}</div>}
                 <button 
                   type="submit"
                   disabled={isLoading || otp.join("").length !== 6}
-                  className="mt-2 flex items-center justify-center gap-2 w-full bg-[#ffffff] text-black font-semibold py-3.5 rounded-xl hover:bg-[#f4f4f5] transition-all disabled:opacity-50"
+                  className="mt-2 flex items-center justify-center gap-2 w-full bg-white text-black font-semibold py-4 rounded-2xl hover:scale-[0.98] transition-transform duration-300 disabled:opacity-50 disabled:hover:scale-100 shadow-[0_0_30px_rgba(255,255,255,0.15)]"
                 >
                   {isLoading ? <Loader2 className="size-5 animate-spin" /> : "Verify Code"}
                   {!isLoading && <ArrowRight className="size-4" />}
@@ -239,7 +246,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
                   <button 
                     onClick={() => handleOAuthLogin('google')}
                     disabled={isLoading}
-                    className="flex items-center justify-center gap-3 w-full bg-white text-black hover:bg-[#f4f4f5] font-semibold py-3 transition-all cursor-pointer disabled:opacity-50 rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.15)] group"
+                    className="flex items-center justify-center gap-3 w-full bg-white/[0.03] border border-white/[0.05] text-white hover:bg-white/[0.08] hover:border-white/[0.15] font-medium py-3.5 transition-all cursor-pointer disabled:opacity-50 rounded-2xl group"
                   >
                     <svg className="size-4" viewBox="0 0 24 24">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -252,7 +259,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
                   <button 
                     onClick={() => handleOAuthLogin('github')}
                     disabled={isLoading}
-                    className="flex items-center justify-center gap-3 w-full bg-white text-black hover:bg-[#f4f4f5] font-semibold py-3 transition-all cursor-pointer disabled:opacity-50 rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.15)] group"
+                    className="flex items-center justify-center gap-3 w-full bg-white/[0.03] border border-white/[0.05] text-white hover:bg-white/[0.08] hover:border-white/[0.15] font-medium py-3.5 transition-all cursor-pointer disabled:opacity-50 rounded-2xl group"
                   >
                     <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.268 2.75 1.022A9.606 9.606 0 0112 6.82c.85.004 1.705.114 2.504.336 1.909-1.29 2.747-1.022 2.747-1.022.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
