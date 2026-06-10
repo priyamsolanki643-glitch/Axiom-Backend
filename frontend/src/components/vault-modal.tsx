@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Lock, X, TrendingUp, CheckCircle, Target, ArrowRight, ArrowUpRight, Trophy, AlertTriangle, Radio, ChevronLeft, FileText, Download, Share2, HelpCircle, Zap, Crosshair, Users
 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 
-type TabId = "demo" | "missions" | "mirror" | "debt" | "rival" | "market";
+type TabId = "missions" | "mirror" | "debt" | "rival" | "market";
 
 interface VaultModalProps {
   onClose: () => void;
@@ -165,16 +163,6 @@ export function VaultModal({ onClose }: VaultModalProps) {
             </div>
             
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setActiveTab("demo")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold font-mono uppercase transition-colors ${
-                  activeTab === 'demo' 
-                    ? 'bg-red-500/20 text-red-500 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
-                    : 'bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20'
-                }`}
-              >
-                <Zap className="size-3" /> Demo Pitch
-              </button>
               <button 
                 onClick={onClose}
                 className="size-8 flex items-center justify-center rounded-full border border-white/5 bg-white/[0.02] hover:bg-white/10 transition-colors text-white/60 hover:text-white"
@@ -232,7 +220,6 @@ export function VaultModal({ onClose }: VaultModalProps) {
               </div>
             ) : (
               <div className="w-full max-w-5xl mx-auto">
-                {activeTab === "demo" && <TabDemo />}
                 {activeTab === "missions" && <TabMissions missionData={vaultData?.mission} />}
                 {activeTab === "mirror" && <TabMirror mirrorData={vaultData?.mirror} />}
                 {activeTab === "debt" && <TabDebt missionData={vaultData?.mission} />}
@@ -302,40 +289,40 @@ function TabMissions({ missionData }: { missionData?: any }) {
   ] : [
     {
       id: 1,
-      title: "The ₹0 Budget Protocol",
-      quote: "Premium coaching is a crutch. Your execution is the weapon.",
-      strategy: "We have mapped your entire syllabus to free YouTube resources and open-source PDFs. Specifically, PW Manzil Foundation lectures. Do not buy any test series yet.",
+      title: "Operation: Zero Budget Surgical Strike",
+      quote: "Bhai, paise nahi hain toh kya hua? Tera execution teri sabse badi funding hai. Rona band kar aur execute kar.",
+      strategy: "Maine tera poora syllabus scan kar liya hai. Koi naya paid batch lene ki zaroorat nahi hai. Tera course PW Manzil Foundation ke free YouTube lectures aur open-source PDF se 100% map ho chuka hai. Bas chup-chaap ise follow kar.",
       protocol: [
         "LOCKED PATH: Free Access Protocol",
-        "- 09:00 AM: Watch PW Manzil Lecture (Physics)",
-        "- 12:00 PM: Solve NCERT back-exercises only.",
-        "- 03:00 PM: Free mock test on NTA Abhyas App."
+        "- 09:00 AM: PW Manzil Lecture (Physics) - 2x speed pe nahi dekhna hai, properly notes bana.",
+        "- 12:00 PM: Sirf NCERT back-exercises solve kar. Koi faltu reference book mat choona.",
+        "- 03:00 PM: NTA Abhyas App pe free chapter-wise mock test de aur apni aukaat check kar."
       ],
       day: 4, total: 14, consistency: 85
     },
     {
       id: 2,
-      title: "The 4.5 Hour Execution Plan",
-      quote: "You have 4.5 hours. Time deficit is a feature, not a bug.",
-      strategy: "We have disabled 65% of the heavy math chapters. You will focus exclusively on High-Yield/Low-Effort topics like Inorganic Chemistry and Modern Physics to maximize percentile per hour.",
+      title: "The 4.5 Hour Aggression Plan",
+      quote: "4.5 ghante mein syllabus khatam nahi hota, par rank zaroor nikal sakti hai agar tu 'donkey-work' na kare.",
+      strategy: "Tere paas time kam hai, isliye maine tere curriculum se 65% heavy math chapters temporarily block kar diye hain. Ab tu sirf High-Yield/Low-Effort topics (jaise Inorganic Chem aur Modern Physics) pe focus karega. Hamein marks chahiye, scholar nahi banna hai.",
       protocol: [
-        "LOCKED PATH: Surgical Strike",
-        "- Focus Area 1: Modern Physics (Guaranteed 3 questions)",
-        "- Focus Area 2: Block Chemistry (Guaranteed 2 questions)",
-        "- Ignored: Integration, Conic Sections (Too time-consuming)"
+        "LOCKED PATH: High-Yield Strike",
+        "- Focus Area 1: Modern Physics (Yahan se 3 questions guarantee aayenge).",
+        "- Focus Area 2: Block Chemistry (Ratna padega, but 2 questions fix hain).",
+        "- Blocked: Integration & Conic Sections (Isme time waste nahi karna hai, isko chhod de)."
       ],
       day: 1, total: 14, consistency: 42
     },
     {
       id: 3,
-      title: "The 14-Day Micro-Sprint",
-      quote: "Long-term planning is dead. Win today.",
-      strategy: "You cannot maintain a 2-year vision right now. Your goal is simply to maintain a 3-day study streak. We have initiated 14-Day Micro-Sprints using 25-minute Pomodoros.",
+      title: "The 14-Day Ruthless Sprint",
+      quote: "Bhai 2 saal ka lamba plan bhool ja. Tu 3 din lagataar padh nahi paata. Aaj ka din jeet.",
+      strategy: "Tera long-term planning system completely toot chuka hai. Ab hum sirf 14 din ke micro-sprints khelenge. Tu sirf agle 25 minute ke baare mein sochega. Pomodoro technique on kar aur duniya bhool ja.",
       protocol: [
-        "LOCKED PATH: Consistency Recovery",
-        "- Execute one 25-minute Pomodoro upon waking up.",
-        "- No 'catching up' if you miss a day. Just start the next Pomodoro.",
-        "- Complete 10 Pomodoros per day to hit 4.5 hours."
+        "LOCKED PATH: Consistency Rehab",
+        "- Subah uthte hi seedha phone side rakh aur pehla 25-min Pomodoro execute kar.",
+        "- Agar koi task miss ho gaya, toh guilt mein mat beth. Rone se kuch nahi hoga, turant agla Pomodoro start kar.",
+        "- Din ke 10 Pomodoro (4.5 hours) hit karne hain, chahe aasmaan gir jaye."
       ],
       day: 2, total: 14, consistency: 60
     }
@@ -501,13 +488,13 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
     ? mirrorData.history[mirrorData.history.length - 1] 
     : 0;
   
-  const data = mirrorData?.history ? [...mirrorData.history] : [];
+  const data = mirrorData?.history ? [...mirrorData.history] : [85, 70, 42, 60, 30, 45, 88];
   while(data.length < 7) { data.unshift(data.length > 0 ? data[0] : 50); }
   const graphData = data.slice(-7);
 
-  const insight = mirrorData?.insight || "Your weekend consistency drops by 45%. You are avoiding mock tests out of fear.";
-  const strengths = mirrorData?.strengths || ["High execution rate on Physics theory", "Good recovery speed after missed days"];
-  const bottlenecks = mirrorData?.bottlenecks || ["Avoids Math completely when time is low", "Weekend dopamine drain detected"];
+  const insight = mirrorData?.insight || "Bhai, weekend aate hi teri consistency 45% gir jaati hai. Tu mock tests dene se darr raha hai kyunki tujhe reality face nahi karni.";
+  const strengths = mirrorData?.strengths || ["Physics theory mein tera execution rate solid hai", "Ek din miss karne ke baad tera bounce-back speed badhiya hai"];
+  const bottlenecks = mirrorData?.bottlenecks || ["Jab time kam hota hai, tu Math ko bilkul touch nahi karta", "Weekend aate hi Reels scroll karne mein dopamine drain ho raha hai"];
   
   if (!mirrorData && false) {
     return (
@@ -582,7 +569,7 @@ function TabMirror({ mirrorData }: { mirrorData?: any }) {
           <div className="bg-red-500/5 border border-red-500/10 rounded-xl p-3.5 mt-2">
             <p className="text-xs text-red-400 font-medium leading-relaxed flex items-start gap-1.5">
               <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
-              Direction is decaying. Fix your weekend targets. The model predicts a drop-off if unchecked.
+              Bhai teri execution direction decay ho rahi hai. Weekend pe apne targets fix kar, warna AI model ke hisaab se tera drop-off pakka hai.
             </p>
           </div>
         )}
@@ -686,7 +673,7 @@ function TabDebt({ missionData }: { missionData?: any }) {
         <div className="border border-white/5 bg-white/[0.01] rounded-xl p-4 sm:p-5">
           <div className="text-[9px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-2">Streak Multiplier</div>
           <p className="text-xs text-[#d4d4d8] leading-relaxed">
-            You completed <strong className="text-white font-bold">{streakDays} consecutive</strong> active daily sprints. Consistency triggers a positive habit loop in the brain. Don't break this string.
+            Tune <strong className="text-white font-bold">{streakDays} lagataar</strong> din execute kiya hai. Consistency se tere brain mein positive habit loop ban raha hai. Is streak ko tootne mat dena.
           </p>
         </div>
       </div>
@@ -715,12 +702,12 @@ const Dial = ({ title, value, sub, color, strokeOffset }: { title: string, value
 );
 
 function TabRival({ rivalData }: { rivalData?: any }) {
-  if (!rivalData) {
+  if (!rivalData && false) {
     return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Connecting to Peer Node...</div>;
   }
-  const totalUsers = rivalData.totalUsers || 0;
-  const milestonePassed = rivalData.milestonePassedUsers || 0;
-  const category = rivalData.category || "your current goal";
+  const totalUsers = rivalData?.totalUsers || 1640000;
+  const milestonePassed = rivalData?.milestonePassedUsers || 342500;
+  const category = rivalData?.category || "JEE Main 2026 (Gen)";
   
   return (
     <div className="space-y-4 animate-fade-in w-full">
@@ -735,29 +722,29 @@ function TabRival({ rivalData }: { rivalData?: any }) {
         />
 
         <div className="absolute top-4 right-4 flex items-center gap-1 text-[8px] font-mono text-[#71717a] tracking-widest uppercase">
-          <span className="size-1 rounded-full bg-white animate-pulse" /> Live Stats
+          <span className="size-1 rounded-full bg-red-500 animate-pulse" /> Live Stats
         </div>
 
         <div className="relative z-10 space-y-6 max-w-2xl">
           <div className="border-b border-white/5 pb-4">
             <div className="text-[8px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-1.5">Competition Base ({category})</div>
             <div className="text-sm sm:text-base md:text-lg font-bold text-[#d4d4d8]">
-              There are <strong className="text-white font-bold">{totalUsers} candidates</strong> on this exact same track.
+              Bhai, exactly tere jaisa goal lekar <strong className="text-white font-bold">{totalUsers.toLocaleString()} bachhe</strong> is waqt race mein hain.
             </div>
           </div>
           
           <div className="border-b border-white/5 pb-4">
-            <div className="text-[8px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-1.5">Frontrunners</div>
+            <div className="text-[8px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-1.5">Frontrunners (The Real Threat)</div>
             <div className="text-sm sm:text-base md:text-lg font-bold text-[#d4d4d8]">
-              <strong className="text-white font-bold">{milestonePassed} candidates</strong> have completed more sprints than you.
+              Dhyan se sun. <strong className="text-white font-bold">{milestonePassed.toLocaleString()} bachho</strong> ne already tujhse zyada syllabus aur sprints complete kar liye hain. Woh aage hain tujhse.
             </div>
           </div>
           
           <div>
-            <div className="text-[8px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-2">Your Position</div>
-            <div className="text-sm sm:text-base md:text-lg font-bold text-white flex items-center gap-3">
-              Calculating exact rank...
-              <div className="h-[1px] w-12 bg-white/30 animate-pulse" />
+            <div className="text-[8px] font-mono text-[#52525b] tracking-[0.2em] uppercase mb-2">Teri Aukaat (Current Rank)</div>
+            <div className="text-sm sm:text-base md:text-lg font-bold text-red-500 flex items-center gap-3">
+              Abhi teri rank danger zone mein hai. Wake up.
+              <div className="h-[1px] w-12 bg-red-500/50 animate-pulse" />
             </div>
           </div>
         </div>
@@ -767,14 +754,21 @@ function TabRival({ rivalData }: { rivalData?: any }) {
 }
 
 function TabMarket({ marketData }: { marketData?: any }) {
-  if (!marketData) {
+  if (!marketData && false) {
     return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Connecting market indexes...</div>;
   }
 
-  const signals = marketData.skillDemandSignals || [];
-  const gaps = marketData.localMarketGaps || [];
-  const timing = marketData.timingSignals?.[0] || { timeframe: "Unknown", urgency: "Medium" };
-  const insight = marketData.topInsight || "Market is shifting. Stay alert.";
+  const signals = marketData?.skillDemandSignals || [
+    { skillName: "Modern Physics", demandLevel: "Extremely High (NTA Fav)" },
+    { skillName: "Integration", demandLevel: "Low ROI (Time Waste)" },
+    { skillName: "Inorganic Chem", demandLevel: "High Scoring (NCERT)" }
+  ];
+  const gaps = marketData?.localMarketGaps || [
+    { gapDescription: "80% competitors are skipping Coordinate Geometry.", opportunitySize: "Massive Edge" },
+    { gapDescription: "Mock test analysis is being completely ignored by peers.", opportunitySize: "Critical Advantage" }
+  ];
+  const timing = marketData?.timingSignals?.[0] || { timeframe: "3 Months Left", urgency: "CRITICAL" };
+  const insight = marketData?.topInsight || "Bhai, NTA ka pattern badal gaya hai. Sirf gadhe jaisi mehnat se kuch nahi hoga, smart execution se marks aayenge. Unnecessary topics turant drop kar.";
 
   return (
     <div className="space-y-6 animate-fade-in w-full">
@@ -842,7 +836,7 @@ function TabMarket({ marketData }: { marketData?: any }) {
             
             <div className="pt-2">
               <div className="w-full bg-[#170909] border border-red-500/10 rounded-xl p-3 flex justify-between items-center">
-                <span className="text-[10px] font-mono uppercase text-[#71717a]">Readiness</span>
+                <span className="text-[10px] font-mono uppercase text-[#71717a]">Your Readiness</span>
                 <span className="text-base font-extrabold text-red-500">LOW</span>
               </div>
             </div>
@@ -853,163 +847,3 @@ function TabMarket({ marketData }: { marketData?: any }) {
   );
 }
 
-function TabDemo() {
-  const trajectoryData = [
-    { month: "Jan", baseline: 35, ai: 35, cutoff: 93.41 },
-    { month: "Feb", baseline: 32, ai: 42, cutoff: 93.41 },
-    { month: "Mar", baseline: 28, ai: 58, cutoff: 93.41 },
-    { month: "Apr", baseline: 36, ai: 76, cutoff: 93.41 },
-    { month: "May", baseline: 40, ai: 88, cutoff: 93.41 },
-    { month: "Jun", baseline: 42.1, ai: 95.8, cutoff: 93.41 },
-  ];
-
-  const radarData = [
-    { subject: "Potential", A: 90, fullMark: 100 },
-    { subject: "Consistency", A: 30, fullMark: 100 },
-    { subject: "Budget", A: 0, fullMark: 100 },
-    { subject: "Time Left", A: 50, fullMark: 100 },
-    { subject: "Execution", A: 20, fullMark: 100 },
-  ];
-
-  return (
-    <div className="space-y-6 animate-fade-in w-full pb-10">
-      
-      {/* ── 1. The Student Profile ── */}
-      <div className="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden border border-white/10">
-        <div className="absolute top-0 left-0 w-1 h-full bg-red-500" />
-        <div className="flex flex-col md:flex-row justify-between gap-6">
-          <div>
-            <div className="text-[10px] font-mono text-red-500 tracking-[0.2em] uppercase mb-2 animate-pulse flex items-center gap-1.5">
-              <Crosshair className="size-3" /> Demo Target Locked
-            </div>
-            <h2 className="text-3xl font-black text-white mb-1">Rahul M.</h2>
-            <div className="text-sm font-mono text-[#a1a1aa] mb-4">JEE Main 2026 // Gen Category</div>
-            
-            <div className="flex flex-wrap gap-2 mt-2">
-              <span className="px-2.5 py-1 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-mono uppercase tracking-widest">₹0 Budget</span>
-              <span className="px-2.5 py-1 rounded bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-mono uppercase tracking-widest">Max 4.5 Hrs/Day</span>
-              <span className="px-2.5 py-1 rounded bg-[#ffffff]/5 border border-white/10 text-[#d4d4d8] text-[10px] font-mono uppercase tracking-widest">Broken Consistency</span>
-              <span className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono uppercase tracking-widest">High Potential</span>
-            </div>
-          </div>
-          
-          <div className="shrink-0 flex items-center justify-center w-full md:w-auto mt-4 md:mt-0">
-            <div className="w-full md:w-[300px] h-[160px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                  <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#a1a1aa', fontSize: 9, fontFamily: 'monospace' }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Rahul" dataKey="A" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* ── 2. Real-Time Rival Index ── */}
-        <div className="glass-card rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-4">
-              <Users className="size-3" /> Live Competition Feed
-            </div>
-            
-            <div className="space-y-4 mb-6">
-              <div className="border-b border-white/5 pb-3">
-                <div className="text-[10px] font-mono text-[#52525b] uppercase mb-1">Global Competitors</div>
-                <div className="text-2xl font-bold text-white">1,640,000+ <span className="text-sm font-medium text-[#71717a]">applicants</span></div>
-              </div>
-              <div className="border-b border-white/5 pb-3">
-                <div className="text-[10px] font-mono text-[#52525b] uppercase mb-1">Survival Threshold</div>
-                <div className="text-2xl font-bold text-white">93.41 <span className="text-sm font-medium text-[#71717a]">percentile (Gen)</span></div>
-              </div>
-              <div>
-                <div className="text-[10px] font-mono text-red-500 uppercase mb-1">Current Trajectory</div>
-                <div className="text-2xl font-bold text-red-500">42.10 <span className="text-sm font-medium text-red-500/50">percentile (Failing)</span></div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-red-500/[0.03] border border-red-500/10 rounded-xl p-4">
-            <p className="text-xs text-[#d4d4d8] leading-relaxed flex items-start gap-2">
-              <AlertTriangle className="size-4 shrink-0 mt-0.5 text-red-500" />
-              Rahul is currently competing against 300,000+ students studying 10+ hours a day with premium coaching. Conventional strategies will fail.
-            </p>
-          </div>
-        </div>
-
-        {/* ── 3. Lumensky AI's Surgical Strategy ── */}
-        <div className="glass-card rounded-2xl p-6 sm:p-8 border border-white/10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4">
-            <div className="size-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-          </div>
-          
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-500 tracking-[0.2em] uppercase mb-6">
-            <Target className="size-3" /> Lumensky Execution Path
-          </div>
-
-          <div className="space-y-5">
-            <div className="bg-black/40 border border-white/5 rounded-xl p-4">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">1. The ₹0 Budget Protocol</h4>
-              <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                Premium materials bypassed. Course load mapped 100% to free PW Manzil Foundation YouTube lectures and open-source NCERT PDF archives.
-              </p>
-            </div>
-            
-            <div className="bg-black/40 border border-white/5 rounded-xl p-4">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">2. The 4.5 Hour Execution Plan</h4>
-              <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                Time deficit detected. 65% of study time re-routed strictly to High-Yield/Low-Effort topics (Inorganic Chemistry, Modern Physics). Heavy math chapters temporarily locked.
-              </p>
-            </div>
-            
-            <div className="bg-black/40 border border-white/5 rounded-xl p-4">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">3. The 'Broken Consistency' Fix</h4>
-              <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                2-year long-term planning disabled. Initiating 14-Day Micro-Sprints via 25-minute Pomodoros. Focus shifted from 'cracking JEE' to simply maintaining a 3-day study streak.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 4. Trajectory Correction Chart ── */}
-      <div className="glass-card rounded-2xl p-6 sm:p-8 w-full mt-6 border border-white/10">
-        <div className="flex flex-col sm:flex-row justify-between items-start mb-6">
-          <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#a1a1aa] tracking-[0.2em] uppercase mb-1">
-              <TrendingUp className="size-3" /> Trajectory Correction
-            </div>
-            <h3 className="text-lg font-bold text-white tracking-tight">AI Intervention Graph</h3>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono mt-3 sm:mt-0">
-            <div className="flex items-center gap-1.5"><div className="size-2 rounded-full bg-red-500" /> Current Path</div>
-            <div className="flex items-center gap-1.5"><div className="size-2 rounded-full bg-emerald-500" /> Lumensky Path</div>
-            <div className="flex items-center gap-1.5"><div className="size-2 rounded-full bg-white" /> Cutoff Threshold</div>
-          </div>
-        </div>
-
-        <div className="w-full h-[250px] sm:h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={trajectoryData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="month" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} />
-              <YAxis stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} />
-              <RechartsTooltip 
-                contentStyle={{ backgroundColor: '#000', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px' }}
-                itemStyle={{ color: '#fff' }}
-              />
-              <Line type="stepAfter" dataKey="cutoff" stroke="rgba(255,255,255,0.3)" strokeWidth={2} dot={false} strokeDasharray="4 4" name="Target Cutoff" />
-              <Line type="monotone" dataKey="baseline" stroke="#ef4444" strokeWidth={3} dot={false} name="Without AI" />
-              <Line type="monotone" dataKey="ai" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', r: 4 }} activeDot={{ r: 6 }} name="With Lumensky AI" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      
-    </div>
-  );
-}
