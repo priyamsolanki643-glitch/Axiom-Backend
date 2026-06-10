@@ -70,10 +70,9 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 1px solid transparent;
-          border-top: 2px solid rgba(255,255,255,1);
-          border-right: 1.5px solid rgba(255,255,255,0.4);
-          border-left: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-top: 1px solid rgba(255,255,255,1);
+          border-right: 1px solid rgba(255,255,255,0.5);
         }
         /* Exact timings from chat-view */
         .ring-1 { animation: spin1 1.8s linear infinite; }
