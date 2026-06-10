@@ -105,13 +105,17 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
       const cosY = Math.cos(rotationY);
       const sinY = Math.sin(rotationY);
 
+      const time = Date.now() * 0.001;
+      const breatheScale = 1 + Math.sin(time * 1.5) * 0.03; // Gentle psychological breathing
+      const currentRadius = sphereRadius * breatheScale;
+
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         
         // Apply radius scaling dynamically
-        const px = p.originalX * sphereRadius;
-        const py = p.originalY * sphereRadius;
-        const pz = p.originalZ * sphereRadius;
+        const px = p.originalX * currentRadius;
+        const py = p.originalY * currentRadius;
+        const pz = p.originalZ * currentRadius;
 
         // 3D Rotation Matrix
         let x1 = px * cosY - pz * sinY;
@@ -121,23 +125,24 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         let z2 = z1 * cosX + py * sinX;
 
         // 3D to 2D Projection
-        const perspective = 1000;
+        const perspective = 1200; // Flatter, more massive perspective
         const scale = perspective / (perspective + z2);
         
         const projX = width / 2 + x1 * scale;
         const projY = height / 2 + y2 * scale;
 
         // Depth sorting opacity and size (Z-index illusion)
-        const depthRatio = (z2 + sphereRadius) / (sphereRadius * 2);
-        const opacity = Math.max(0.05, 1 - depthRatio);
+        const depthRatio = (z2 + currentRadius) / (currentRadius * 2);
+        // Exponential fade: front particles are bright, back particles fade fast
+        const opacity = Math.max(0.05, 1 - Math.pow(depthRatio, 1.5));
         
-        // Finer, sharper dots for a more premium look
-        const radius = Math.max(0.3, 1.2 * scale * opacity);
+        // Larger dots when close, drawing the eye inwards
+        const radius = Math.max(0.5, 2.5 * scale * opacity);
 
         ctx.beginPath();
         ctx.arc(projX, projY, radius, 0, Math.PI * 2);
-        // Reduced brightness (40% max) so text remains ultra-legible
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.4})`;
+        // Brilliant white (100% opacity capability)
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.fill();
       }
 
@@ -233,51 +238,45 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           to  { background-position:  200% 0; }
         }
 
-        /* Trillion Dollar High-Contrast Button (Universally Supported) */
+        /* Psychological Dominance CTA: Blinding White -> Transparent */
         .btn-lumensky-core {
           position: relative;
           display: inline-flex;
           align-items: center;
           gap: 12px;
-          padding: 16px 42px;
+          padding: 18px 48px;
           border-radius: 9999px;
-          background: #000000;
-          color: #ffffff;
+          background: #ffffff;
+          color: #000000;
           font-family: 'Inter', sans-serif;
-          font-weight: 600;
-          font-size: 15px;
-          letter-spacing: 0.06em;
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          font-weight: 700;
+          font-size: 16px;
+          letter-spacing: 0.02em;
+          border: 1px solid #ffffff;
           cursor: pointer;
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
           overflow: hidden;
           z-index: 10;
-          box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+          box-shadow: 0 0 40px rgba(255, 255, 255, 0.15), 0 0 80px rgba(255, 255, 255, 0.05);
+          animation: coreBreathe 3s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .btn-lumensky-core::before {
-          content: '';
-          position: absolute;
-          top: 0; left: -100%;
-          width: 100%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-          transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        @keyframes coreBreathe {
+          0% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.1); transform: scale(1); }
+          100% { box-shadow: 0 0 60px rgba(255, 255, 255, 0.3), 0 0 100px rgba(255, 255, 255, 0.15); transform: scale(1.02); }
         }
 
         .btn-lumensky-core:hover {
-          transform: translateY(-2px) scale(1.02);
-          background: #ffffff;
-          color: #000000;
-          border-color: #ffffff;
-          box-shadow: 0 10px 40px rgba(255, 255, 255, 0.25);
-        }
-        
-        .btn-lumensky-core:hover::before {
-          left: 100%;
+          transform: translateY(-2px) scale(1.05) !important;
+          background: transparent;
+          color: #ffffff;
+          border-color: rgba(255, 255, 255, 0.8);
+          box-shadow: 0 10px 50px rgba(255, 255, 255, 0.2);
+          animation: none;
         }
 
         .btn-lumensky-core:active {
-          transform: translateY(1px) scale(0.98);
+          transform: translateY(1px) scale(0.98) !important;
         }
 
         .btn-lumensky-core .arrow-icon {
@@ -357,36 +356,36 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
             willChange: "transform, opacity",
           }}
         >
-          {/* Ultra-dark atmospheric halo for text legibility */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[160%] bg-black/70 blur-[50px] rounded-full z-[-1] pointer-events-none" />
+          {/* Psychological halo: Deep radial fade instead of a murky blur */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[180%] bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0.85)_0%,_rgba(0,0,0,0.4)_45%,_rgba(0,0,0,0)_75%)] rounded-[100%] z-[-1] pointer-events-none" />
 
           {/* Headline */}
-          <h1 className="text-white leading-[1.05] font-medium font-display mb-8">
-            {/* First Line - Stop planning. */}
+          <h1 className="leading-[1.0] font-display mb-8 flex flex-col items-center">
+            {/* First Line - Stop planning. (Diminished to create problem focus) */}
             <div 
-              className="tracking-tighter pb-1.5 text-white/95"
-              style={{ fontSize: "clamp(3.0rem, 7.0vw, 5.6rem)", fontWeight: 400 }}
+              className="tracking-tight text-zinc-400 pb-2"
+              style={{ fontSize: "clamp(2.2rem, 5.0vw, 4.0rem)", fontWeight: 400 }}
             >
               Stop planning.
             </div>
             
-            {/* Second Line - Start executing. */}
+            {/* Second Line - Start executing. (Absolute dominance) */}
             <div 
-              className="shimmer-text-lumensky tracking-tighter"
-              style={{ fontSize: "clamp(3.2rem, 7.5vw, 6.0rem)", fontWeight: 600, marginTop: "-0.1em" }}
+              className="text-white tracking-tighter"
+              style={{ fontSize: "clamp(3.6rem, 9.0vw, 7.2rem)", fontWeight: 700, letterSpacing: "-0.04em", textShadow: "0 0 40px rgba(255,255,255,0.3)" }}
             >
               Start executing.
             </div>
           </h1>
 
           {/* Subtext */}
-          <p className="text-[#a1a1aa] text-[16px] md:text-[18px] leading-relaxed max-w-xl mx-auto mb-12 font-sans font-normal tracking-wide">
+          <p className="text-[#a1a1aa] text-[16px] md:text-[19px] leading-relaxed max-w-xl mx-auto mb-12 font-sans font-normal tracking-wide">
             A strategist and executioner that converts your ambition into
             raw, immutable daily action. No fluff. No excuses. No mercy.
           </p>
 
           {/* Centered CTA Row */}
-          <div className="flex justify-center w-full mt-4">
+          <div className="flex justify-center w-full mt-2">
             <button onClick={handleStart} className="btn-lumensky-core group">
               <span>Get started</span>
               <ArrowRight size={18} className="arrow-icon opacity-80 group-hover:opacity-100" />
