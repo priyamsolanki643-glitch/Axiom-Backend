@@ -604,26 +604,28 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 <div className="flex justify-start animate-message-reveal">
                   <div className="flex items-center gap-3 px-1 py-3">
                     <style>{`
-                      @keyframes circularSpin {
-                        100% { transform: rotate(360deg); }
-                      }
                       .spinner-ring {
                         position: relative;
                         width: 16px;
                         height: 16px;
-                        animation: circularSpin 1.2s linear infinite;
+                        transform: rotate(45deg);
+                      }
+                      @keyframes dotPulse {
+                        0%, 100% { transform: scale(0.5); opacity: 0.2; box-shadow: none; }
+                        50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 10px rgba(255,255,255,0.9); }
                       }
                       .spinner-dot {
                         position: absolute;
-                        width: 4.5px;
-                        height: 4.5px;
+                        width: 5.5px;
+                        height: 5.5px;
                         border-radius: 50%;
                         background-color: white;
+                        animation: dotPulse 1.2s ease-in-out infinite;
                       }
-                      .spinner-dot:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); box-shadow: 0 0 8px rgba(255,255,255,0.8); opacity: 1; }
-                      .spinner-dot:nth-child(2) { right: 0; top: 50%; transform: translateY(-50%); opacity: 0.7; }
-                      .spinner-dot:nth-child(3) { bottom: 0; left: 50%; transform: translateX(-50%); opacity: 0.4; }
-                      .spinner-dot:nth-child(4) { left: 0; top: 50%; transform: translateY(-50%); opacity: 0.2; }
+                      .spinner-dot:nth-child(1) { top: 0; left: 0; animation-delay: 0s; }
+                      .spinner-dot:nth-child(2) { top: 0; right: 0; animation-delay: 0.3s; }
+                      .spinner-dot:nth-child(3) { bottom: 0; right: 0; animation-delay: 0.6s; }
+                      .spinner-dot:nth-child(4) { bottom: 0; left: 0; animation-delay: 0.9s; }
                       @keyframes textPulse {
                         0%, 100% { opacity: 1; }
                         50% { opacity: 0.6; }
