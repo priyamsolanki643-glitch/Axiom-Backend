@@ -604,29 +604,54 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 <div className="flex justify-start animate-message-reveal">
                   <div className="flex items-center gap-3 px-1 py-3">
                     <style>{`
-                      @keyframes premiumSpin {
-                        0% { transform: rotate(0deg) scale(1); }
-                        50% { transform: rotate(180deg) scale(0.6); }
-                        100% { transform: rotate(360deg) scale(1); }
-                      }
-                      .spinner-ring {
+                      .gyro-container {
                         position: relative;
-                        width: 16px;
-                        height: 16px;
-                        animation: premiumSpin 2s cubic-bezier(0.68, -0.25, 0.265, 1.25) infinite;
+                        width: 22px;
+                        height: 22px;
+                        perspective: 120px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
                       }
-                      .spinner-dot {
+                      .gyro-core {
                         position: absolute;
-                        width: 4px;
-                        height: 4px;
+                        width: 5px;
+                        height: 5px;
+                        background: #fff;
                         border-radius: 50%;
-                        background-color: #ffffff;
-                        box-shadow: 0 0 12px 2px rgba(255,255,255,0.9);
+                        box-shadow: 0 0 12px 3px rgba(255,255,255,1), 0 0 20px 5px rgba(255,255,255,0.5);
+                        animation: corePulse 1.5s ease-in-out infinite alternate;
                       }
-                      .spinner-dot:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
-                      .spinner-dot:nth-child(2) { bottom: 0; left: 50%; transform: translateX(-50%); }
-                      .spinner-dot:nth-child(3) { left: 0; top: 50%; transform: translateY(-50%); }
-                      .spinner-dot:nth-child(4) { right: 0; top: 50%; transform: translateY(-50%); }
+                      .gyro-ring {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        border: 1px solid rgba(255,255,255,0.15);
+                        border-radius: 50%;
+                        border-top: 1.5px solid rgba(255,255,255,0.9);
+                        border-right: 1px solid rgba(255,255,255,0.4);
+                        box-shadow: inset 0 0 4px rgba(255,255,255,0.2), 0 0 4px rgba(255,255,255,0.2);
+                      }
+                      .ring-1 { animation: spin1 1.8s linear infinite; }
+                      .ring-2 { animation: spin2 2.4s linear infinite; }
+                      .ring-3 { animation: spin3 3s linear infinite; }
+
+                      @keyframes spin1 { 
+                        0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } 
+                      }
+                      @keyframes spin2 { 
+                        0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); }
+                        100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } 
+                      }
+                      @keyframes spin3 { 
+                        0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
+                        100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } 
+                      }
+                      @keyframes corePulse {
+                        0% { transform: scale(0.8); opacity: 0.8; box-shadow: 0 0 10px 2px rgba(255,255,255,0.8); }
+                        100% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 20px 6px rgba(255,255,255,1), 0 0 30px 10px rgba(255,255,255,0.3); }
+                      }
                       
                       @keyframes shimmerText {
                         0% { background-position: -200% center; }
@@ -634,22 +659,24 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                       }
                       .loading-text-prof {
                         font-family: 'Inter', sans-serif;
-                        font-weight: 500;
+                        font-weight: 600;
                         font-size: 13px;
-                        letter-spacing: 0.08em;
-                        background: linear-gradient(90deg, #666666 20%, #ffffff 50%, #666666 80%);
+                        letter-spacing: 0.1em;
+                        text-transform: uppercase;
+                        background: linear-gradient(90deg, #444 0%, #fff 50%, #444 100%);
                         background-size: 200% auto;
                         color: transparent;
                         -webkit-background-clip: text;
                         background-clip: text;
-                        animation: shimmerText 2s linear infinite;
+                        animation: shimmerText 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                        text-shadow: 0 0 20px rgba(255,255,255,0.15);
                       }
                     `}</style>
-                    <div className="spinner-ring">
-                      <div className="spinner-dot"></div>
-                      <div className="spinner-dot"></div>
-                      <div className="spinner-dot"></div>
-                      <div className="spinner-dot"></div>
+                    <div className="gyro-container">
+                      <div className="gyro-ring ring-1"></div>
+                      <div className="gyro-ring ring-2"></div>
+                      <div className="gyro-ring ring-3"></div>
+                      <div className="gyro-core"></div>
                     </div>
                     {/* Rotating status text */}
                     <span 
