@@ -256,8 +256,8 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
     // Call LLM with the generated system prompt from the engine
     let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
     if (systemPrompt) {
-      const enrichedPrompt = systemPrompt + "\n\nINSTRUCTION: Maintain the professional, supportive, and highly analytical Hinglish persona (hybrid of ChatGPT, Claude, and Gemini style). " + 
-        (activeMission ? "If user explicitly logs a task completion/failure, set task_classification to 'completed' or 'failed'. **EXECUTION MIRROR LINGUISTIC RADAR**: At the end of your response, casually ask a 1-sentence question about their PW activity today. Analyze their incoming message text for hesitation words ('but', 'maybe', 'try') or abnormally short sentence length to detect early dropout risk signals (avoidance/stress)." : "Extract any onboarding constraints to build context, or prompt user to lock either Option A (Alpha) or Option B (Beta).");
+      const enrichedPrompt = systemPrompt + "\n\n" + 
+        (activeMission ? "If user explicitly logs a task completion/failure, set task_classification to 'completed' or 'failed'. **EXECUTION MIRROR LINGUISTIC RADAR**: At the end of your response, casually ask a 1-sentence question about their current execution/mission activity today. Analyze their incoming message text for hesitation words ('but', 'maybe', 'try') or abnormally short sentence length to detect early dropout risk signals (avoidance/stress)." : "Extract any onboarding constraints to build context, or prompt user to lock either Option A (Alpha) or Option B (Beta).");
       
       const smartResponse = await LLMService.generateSmartResponse(
         actualUserId, 
