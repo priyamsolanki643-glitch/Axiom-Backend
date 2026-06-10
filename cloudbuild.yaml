@@ -18,7 +18,7 @@ steps:
       - '--region=europe-west1'
       - '--platform=managed'
       - '--allow-unauthenticated'
-      - '--update-env-vars=AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT'
+      - '--update-env-vars=AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT,SUPABASE_URL=$_SUPABASE_URL,SUPABASE_SERVICE_KEY=$_SUPABASE_SERVICE_KEY'
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -29,4 +29,6 @@ images:
 # Substitutions must be set in the Cloud Build Trigger settings
 substitutions:
   _AI_PROVIDER_KEY: ''
+  _SUPABASE_URL: 'https://kscqvigvcfjdulonvdxa.supabase.co'
+  _SUPABASE_SERVICE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzY3F2aWd2Y2ZqZHVsb252ZHhhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDY2MjAxMywiZXhwIjoyMDk2MjM4MDEzfQ.lNlB6nnfaeP9UADMPrMLBh0NzXr_EK6GYZB8TszR_KM'
 

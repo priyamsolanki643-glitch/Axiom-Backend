@@ -3,17 +3,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { LLMService } from './llm.service';
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://kscqvigvcfjdulonvdxa.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzY3F2aWd2Y2ZqZHVsb252ZHhhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDY2MjAxMywiZXhwIjoyMDk2MjM4MDEzfQ.lNlB6nnfaeP9UADMPrMLBh0NzXr_EK6GYZB8TszR_KM';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-const isLocalFallback = false;
+const isLocalFallback = !supabaseUrl || !supabaseKey;
 
 let supabase: any = null;
 const fallbackFilePath = path.join(process.cwd(), 'database.json');
 
 try {
-  if (!isLocalFallback) {
+  if (!isLocalFallback && supabaseUrl && supabaseKey) {
+    console.log('VECTOR_SERVICE: Connecting to Supabase at', supabaseUrl);
     supabase = createClient(supabaseUrl, supabaseKey);
+  } else {
+    console.log('VECTOR_SERVICE: Running in Local Fallback mode using database.json');
   }
 } catch (error) {
   console.error("CRITICAL ERROR IN VECTOR_SERVICE INIT:", error);

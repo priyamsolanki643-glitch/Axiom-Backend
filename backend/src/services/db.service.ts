@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 // Determine if we should use local JSON fallback
-const isLocalFallback = false; // Forced to false to ensure Supabase is used
+const isLocalFallback = !supabaseUrl || !supabaseKey;
 
 let supabase: any = null;
 const fallbackFilePath = path.join(process.cwd(), 'database.json');
