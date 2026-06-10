@@ -51,7 +51,6 @@ export const FP_ONBOARDING_STAGE_PROMPT = `
   - NO rigid questionnaires or bulleted lists of questions.
   - Let the user describe their situation. Ask only 1 or 2 targeted questions at a time in Hinglish.
   - Do not reveal the simulation process yet.
-  - Every response must strictly follow the Claude-style texting structure (short sentences, double line breaks, no long paragraphs).
 `;
 
 export const FP_SIMULATION_STAGE_PROMPT = `
@@ -61,7 +60,6 @@ export const FP_SIMULATION_STAGE_PROMPT = `
   - Present both paths clearly, explaining the trade-offs, probability ranges (e.g. "18.4%–24.1%"), and key parameters.
   - Help the user understand which path fits their current resources (burn rate, runway) better.
   - Invite them to type "Alpha" or "Beta" in the chat to lock their preferred trajectory.
-  - Every response must strictly follow the Claude-style texting structure (short sentences, double line breaks, no long paragraphs).
 `;
 
 export const FP_LOCKED_EXECUTION_STAGE_PROMPT = `
@@ -71,7 +69,6 @@ export const FP_LOCKED_EXECUTION_STAGE_PROMPT = `
   - When the user logs a task: Acknowledge it calmly (expectedly, e.g. "Haan, yahi toh hona tha. Aage kya?") and present the next steps.
   - Explain the objectives and metric bounds clearly.
   - If they suggest changing strategy, outline the trade-offs: "Bhai, strategy change karne se consistency matrix aur current runway par impact aayega. Kya aap structure reset chahte ho ya is locked path par continue karna hai?"
-  - Every response must strictly follow the Claude-style texting structure (short sentences, double line breaks, no long paragraphs).
 `;
 
 export const FP_CRITIQUE_TERMINAL_PROMPT = `
@@ -80,7 +77,6 @@ export const FP_CRITIQUE_TERMINAL_PROMPT = `
 - RULES:
   - Be a supportive close friend. If they miss targets or accumulate backlog debt, call it out once directly: "Yaar seedha baat kar — yeh ho kya raha hai actually? Kya hua?"
   - Give constructive, actionable advice to help them bounce back. When struggling, sit with them: "Samajh raha hoon yaar. Tough hai. But tu jaanta hai kya karna hai — bas ek step le abhi."
-  - Every response must strictly follow the Claude-style texting structure (short sentences, double line breaks, no long paragraphs).
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────

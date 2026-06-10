@@ -114,7 +114,7 @@ export class LLMService {
       }
 
       const fullContents = [
-        { role: 'user', parts: [{ text: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching this schema: " + JSON.stringify(responseSchema) + ". Do not include any markdown formatting, just pure JSON. CRITICAL: Your response_text MUST strictly follow the TEXTING FORMATTING RULES (short sentences, double line breaks, max 2-3 sentences per block)." }] },
+        { role: 'user', parts: [{ text: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching this schema: " + JSON.stringify(responseSchema) + ". You may use markdown formatting (like bullet points and headers) inside the response_text string, but the overall output MUST be pure JSON." }] },
         ...conversationHistory
       ];
 
@@ -163,7 +163,7 @@ export class LLMService {
       const { client, actualModel } = getAIClientForModel('FP Pro'); // Use pro for backend logic by default
       
       const fullContents = [
-        { role: 'user', parts: [{ text: systemPrompt + "\n\nCRITICAL: Your response_text MUST strictly follow the TEXTING FORMATTING RULES (short sentences, double line breaks, max 2-3 sentences per block)." }] },
+        { role: 'user', parts: [{ text: systemPrompt + "\n\nCRITICAL: Maintain the Axis AI persona as defined in the system prompt." }] },
         ...conversationHistory
       ];
 
