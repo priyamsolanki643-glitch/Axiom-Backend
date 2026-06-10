@@ -604,39 +604,45 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
                 <div className="flex justify-start animate-message-reveal">
                   <div className="flex items-center gap-3 px-1 py-3">
                     <style>{`
+                      @keyframes premiumSpin {
+                        0% { transform: rotate(0deg) scale(1); }
+                        50% { transform: rotate(180deg) scale(0.6); }
+                        100% { transform: rotate(360deg) scale(1); }
+                      }
                       .spinner-ring {
                         position: relative;
                         width: 16px;
                         height: 16px;
-                        transform: rotate(45deg);
-                      }
-                      @keyframes dotPulse {
-                        0%, 100% { transform: scale(0.5); opacity: 0.2; box-shadow: none; }
-                        50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 10px rgba(255,255,255,0.9); }
+                        animation: premiumSpin 2s cubic-bezier(0.68, -0.25, 0.265, 1.25) infinite;
                       }
                       .spinner-dot {
                         position: absolute;
-                        width: 5.5px;
-                        height: 5.5px;
+                        width: 4px;
+                        height: 4px;
                         border-radius: 50%;
-                        background-color: white;
-                        animation: dotPulse 1.2s ease-in-out infinite;
+                        background-color: #ffffff;
+                        box-shadow: 0 0 12px 2px rgba(255,255,255,0.9);
                       }
-                      .spinner-dot:nth-child(1) { top: 0; left: 0; animation-delay: 0s; }
-                      .spinner-dot:nth-child(2) { top: 0; right: 0; animation-delay: 0.3s; }
-                      .spinner-dot:nth-child(3) { bottom: 0; right: 0; animation-delay: 0.6s; }
-                      .spinner-dot:nth-child(4) { bottom: 0; left: 0; animation-delay: 0.9s; }
-                      @keyframes textPulse {
-                        0%, 100% { opacity: 1; }
-                        50% { opacity: 0.6; }
+                      .spinner-dot:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
+                      .spinner-dot:nth-child(2) { bottom: 0; left: 50%; transform: translateX(-50%); }
+                      .spinner-dot:nth-child(3) { left: 0; top: 50%; transform: translateY(-50%); }
+                      .spinner-dot:nth-child(4) { right: 0; top: 50%; transform: translateY(-50%); }
+                      
+                      @keyframes shimmerText {
+                        0% { background-position: -200% center; }
+                        100% { background-position: 200% center; }
                       }
                       .loading-text-prof {
-                        font-family: sans-serif;
+                        font-family: 'Inter', sans-serif;
                         font-weight: 500;
                         font-size: 13px;
-                        color: white;
-                        letter-spacing: 0.05em;
-                        animation: textPulse 1.5s ease-in-out infinite;
+                        letter-spacing: 0.08em;
+                        background: linear-gradient(90deg, #666666 20%, #ffffff 50%, #666666 80%);
+                        background-size: 200% auto;
+                        color: transparent;
+                        -webkit-background-clip: text;
+                        background-clip: text;
+                        animation: shimmerText 2s linear infinite;
                       }
                     `}</style>
                     <div className="spinner-ring">
