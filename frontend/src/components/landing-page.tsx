@@ -120,7 +120,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
         ctx.beginPath();
         ctx.arc(projX, projY, radius, 0, Math.PI * 2);
-        ctx.fillStyle = \`rgba(255, 255, 255, \${opacity * 0.9})\`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.9})`;
         ctx.fill();
       }
 
@@ -214,6 +214,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           to  { background-position:  200% 0; }
         }
 
+        /* Trillion Dollar High-Contrast Button (Universally Supported) */
         .btn-lumensky-core {
           position: relative;
           display: inline-flex;
@@ -221,43 +222,39 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           gap: 12px;
           padding: 16px 42px;
           border-radius: 9999px;
-          background: rgba(255, 255, 255, 0.03);
+          background: #000000;
           color: #ffffff;
           font-family: 'Inter', sans-serif;
-          font-weight: 500;
-          font-size: 16px;
-          letter-spacing: 0.05em;
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          font-weight: 600;
+          font-size: 15px;
+          letter-spacing: 0.06em;
+          border: 1px solid rgba(255, 255, 255, 0.3);
           cursor: pointer;
-          backdrop-filter: blur(10px);
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           overflow: hidden;
           z-index: 10;
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
         }
 
         .btn-lumensky-core::before {
           content: '';
           position: absolute;
-          inset: 0;
-          border-radius: 9999px;
-          padding: 1px;
-          background: linear-gradient(45deg, transparent, rgba(255,255,255,0.5), transparent);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          opacity: 0;
-          transition: opacity 0.4s ease;
+          top: 0; left: -100%;
+          width: 100%; height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-lumensky-core:hover {
           transform: translateY(-2px) scale(1.02);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 10px 40px -10px rgba(255, 255, 255, 0.25);
-          border: 1px solid rgba(255, 255, 255, 0.4);
+          background: #ffffff;
+          color: #000000;
+          border-color: #ffffff;
+          box-shadow: 0 10px 40px rgba(255, 255, 255, 0.25);
         }
         
         .btn-lumensky-core:hover::before {
-          opacity: 1;
+          left: 100%;
         }
 
         .btn-lumensky-core:active {
