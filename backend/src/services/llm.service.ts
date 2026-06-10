@@ -28,6 +28,33 @@ function getAIClientForModel(modelName?: string): { client: GoogleGenAI, actualM
   return { client: new GoogleGenAI({ apiKey: key }), actualModel };
 }
 
+function cleanAndParseJSON(text: string): any {
+  let cleaned = text.trim();
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(json)?\s*/i, '');
+    cleaned = cleaned.replace(/\s*```$/, '');
+  }
+  
+  const firstBrace = cleaned.indexOf('{');
+  const firstBracket = cleaned.indexOf('[');
+  let startIdx = -1;
+  let endIdx = -1;
+  
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    startIdx = firstBrace;
+    endIdx = cleaned.lastIndexOf('}');
+  } else if (firstBracket !== -1) {
+    startIdx = firstBracket;
+    endIdx = cleaned.lastIndexOf(']');
+  }
+  
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    cleaned = cleaned.substring(startIdx, endIdx + 1);
+  }
+  
+  return JSON.parse(cleaned);
+}
+
 export class LLMService {
   private static async sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -82,17 +109,16 @@ export class LLMService {
         model: actualModel,
         contents: conversationHistory as any,
         config: {
-          systemInstruction: systemPrompt,
-          responseMimeType: 'application/json',
-          responseSchema: responseSchema,
+          systemInstruction: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching the schema. Do not include any text before or after the JSON.",
           temperature: 0.3,
+          tools: [{ googleSearch: {} }],
         }
       });
 
       const rawText = response.text;
       if (!rawText) throw new Error("Empty response from LLM");
 
-      return JSON.parse(rawText);
+      return cleanAndParseJSON(rawText);
     } catch (error: any) {
       console.error('LLM Smart Generation Error:', error);
       throw error;
@@ -165,18 +191,17 @@ export class LLMService {
       
       const response = await client.models.generateContent({
         model: actualModel,
-        contents: [{ role: 'user', parts: [{ text: researchMandate }] }] as any,
+        contents: [{ role: 'user', parts: [{ text: researchMandate + "\n\nIMPORTANT: You must return the report in JSON format matching the schema: { marketSummary: string, localOpportunities: string[], competitorLandscape: string[], recommendedAction: string, confidenceScore: number }. Output ONLY valid JSON." }] }] as any,
         config: {
-          responseMimeType: 'application/json',
-          responseSchema: responseSchema,
           temperature: 0.2,
+          tools: [{ googleSearch: {} }],
         }
       });
 
       const rawText = response.text;
       if (!rawText) throw new Error("Empty response from LLM Grounding");
 
-      return JSON.parse(rawText);
+      return cleanAndParseJSON(rawText);
     } catch (error: any) {
       console.error('LLM Grounding Error:', error);
       throw error;
@@ -291,18 +316,17 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
       
       const response = await client.models.generateContent({
         model: actualModel,
-        contents: [{ role: 'user', parts: [{ text: strictPrompt }] }] as any,
+        contents: [{ role: 'user', parts: [{ text: strictPrompt + "\n\nIMPORTANT: You must return the output in JSON format matching the schema: Array of objects with properties { id: string, title: string, category: string, opportunityScore: number, capitalRequired: number, timeToFirstRevenue: number, whyThisForThisUser: string }. Output ONLY valid JSON." }] }] as any,
         config: {
-          responseMimeType: 'application/json',
-          responseSchema: responseSchema,
           temperature: 0.4,
+          tools: [{ googleSearch: {} }],
         }
       });
 
       const rawText = response.text;
       if (!rawText) throw new Error("Empty response from LLM Opportunity Generator");
 
-      return JSON.parse(rawText);
+      return cleanAndParseJSON(rawText);
     } catch (error: any) {
       console.error('LLM Opportunity Generator Error:', error);
       throw error;
