@@ -154,12 +154,16 @@ export function VaultModal({ onClose }: VaultModalProps) {
         <div className="relative z-20 px-4 sm:px-6 md:px-10 pt-5 sm:pt-6 md:pt-8 pb-4 border-b border-white/5 flex flex-col bg-transparent">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="size-8 sm:size-9 rounded-[8px] border border-white/10 flex items-center justify-center bg-black shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-                <Lock className="size-3.5 text-white/80" />
+              <div className="size-8 sm:size-9 rounded-[8px] border border-red-500/30 flex items-center justify-center bg-red-500/10 shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                <Lock className="size-3.5 text-red-500" />
               </div>
               <div>
-                <div className="text-[9px] font-mono text-[#a1a1aa] tracking-[0.22em] uppercase mb-0.5">FP // ARCHIVE</div>
-                <h1 className="text-base sm:text-lg md:text-xl font-bold text-white tracking-tight">THE VAULT</h1>
+                <div className="text-[9px] font-mono text-red-500 tracking-[0.22em] uppercase mb-0.5 flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-red-500 animate-pulse" /> LIVE DEMO PROJECTION
+                </div>
+                <h1 className="text-base sm:text-lg md:text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                  THE VAULT <span className="text-[10px] bg-white/10 text-white/70 px-2 py-0.5 rounded font-mono font-medium uppercase tracking-wider">Rahul M.</span>
+                </h1>
               </div>
             </div>
             
