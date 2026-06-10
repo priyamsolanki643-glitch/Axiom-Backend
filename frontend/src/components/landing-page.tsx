@@ -34,8 +34,9 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
     canvas.height = height;
 
     const particles: { originalX: number, originalY: number, originalZ: number }[] = [];
-    const particleCount = 1200; // Extremely dense star matrix
-    let sphereRadius = Math.min(width, height) * 0.45; 
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 700 : 1200; // 120FPS optimization for mobile
+    let sphereRadius = Math.min(width, height) * (isMobile ? 0.32 : 0.45); 
     
     // Fibonacci sphere algorithm for perfect even distribution
     const phi = Math.PI * (3 - Math.sqrt(5));
@@ -88,8 +89,8 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
-      // Precision radius for mobile
-      sphereRadius = Math.min(width, height) * (width < 768 ? 0.42 : 0.45);
+      // Precision radius for mobile: smaller circle so text explicitly overhangs the edges
+      sphereRadius = Math.min(width, height) * (width < 768 ? 0.32 : 0.45);
     };
     handleResize(); // Initialize correct responsive size
 
@@ -155,11 +156,13 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         const g = Math.floor(240 * (1 - gradientRatio) + 0 * gradientRatio);
         const b = 255;
 
-        // Draw soft outer glow (bloom effect)
-        ctx.beginPath();
-        ctx.arc(projX, projY, radius * 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.15})`;
-        ctx.fill();
+        // 120FPS Optimization: Only draw the expensive bloom aura for front-facing particles
+        if (opacity > 0.4) {
+          ctx.beginPath();
+          ctx.arc(projX, projY, radius * 2.4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.15})`;
+          ctx.fill();
+        }
 
         // Draw bright inner core
         ctx.beginPath();
@@ -386,7 +389,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
             {/* First Line - Stop planning. */}
             <div 
               className="tracking-tighter pb-1 text-white/95 leading-[1.1] whitespace-nowrap"
-              style={{ fontSize: "clamp(1.5rem, 8.5vw, 5.0rem)", fontWeight: 400 }}
+              style={{ fontSize: "clamp(1.8rem, 9.5vw, 5.0rem)", fontWeight: 400 }}
             >
               Stop planning.
             </div>
@@ -394,7 +397,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
             {/* Second Line - Start executing. */}
             <div 
               className="shimmer-text-lumensky tracking-tighter pb-2 md:pb-4 leading-[1.15] whitespace-nowrap"
-              style={{ fontSize: "clamp(2.0rem, 11.5vw, 6.5rem)", fontWeight: 600, marginTop: "-0.05em" }}
+              style={{ fontSize: "clamp(2.5rem, 12vw, 6.8rem)", fontWeight: 600, marginTop: "-0.05em" }}
             >
               Start executing.
             </div>
