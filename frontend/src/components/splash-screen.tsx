@@ -64,17 +64,17 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 1px solid rgba(255,255,255,1);
+          border: 1px solid rgba(255,255,255,0.6);
           opacity: 0;
-          transform: scale(0.5);
-          box-shadow: 0 0 10px rgba(255,255,255,0.5);
+          transform: translateZ(0) scale(0.5);
+          will-change: transform, opacity;
         }
         .gyro-container.phase-1 .gyro-shockwave {
           animation: shockwaveExpand 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes shockwaveExpand {
-          0% { transform: scale(0.5); opacity: 1; border-width: 2px; }
-          100% { transform: scale(6); opacity: 0; border-width: 0px; }
+          0% { transform: translateZ(0) scale(0.5); opacity: 1; }
+          100% { transform: translateZ(0) scale(5); opacity: 0; }
         }
 
         .gyro-core {
