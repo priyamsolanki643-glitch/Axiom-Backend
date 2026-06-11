@@ -64,17 +64,18 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 1px solid rgba(255,255,255,0.6);
+          border: 1px solid rgba(255,255,255,1);
           opacity: 0;
-          transform: translateZ(0) scale(0.5);
-          will-change: transform, opacity;
+          transform: scale(0.5);
+          box-shadow: 0 0 10px rgba(255,255,255,0.5);
+          will-change: transform, opacity, border-width;
         }
         .gyro-container.phase-1 .gyro-shockwave {
           animation: shockwaveExpand 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes shockwaveExpand {
-          0% { transform: translateZ(0) scale(0.5); opacity: 1; }
-          100% { transform: translateZ(0) scale(5); opacity: 0; }
+          0% { transform: translate3d(0,0,0) scale(0.5); opacity: 1; border-width: 2px; }
+          100% { transform: translate3d(0,0,0) scale(6); opacity: 0; border-width: 0px; }
         }
 
         .gyro-core {
@@ -94,8 +95,11 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           border-top: 1px solid rgba(255,255,255,0.8);
           border-right: 1px solid rgba(255,255,255,0.3);
           box-shadow: inset 0 0 10px rgba(255,255,255,0.02),
-                      -1px 0 3px rgba(255, 255, 255, 0.2), /* Subtle white blur */
-                      1px 0 3px rgba(255, 255, 255, 0.4);  /* Sharp white edge */
+                      -1px 0 3px rgba(255, 255, 255, 0.2), 
+                      1px 0 3px rgba(255, 255, 255, 0.4);
+          will-change: transform;
+          backface-visibility: hidden; /* Fixes 3D anti-aliasing lag on mobile GPUs */
+          outline: 1px solid transparent;
         }
         /* Exact timings from chat-view */
         .ring-1 { animation: spin1 1.8s linear infinite; }
@@ -123,16 +127,16 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         @keyframes shoot4 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(45px, 55px) scale(0); opacity: 0; } }
 
         @keyframes spin1 { 
-          0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
-          100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } 
+          0% { transform: translate3d(0,0,0) rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
+          100% { transform: translate3d(0,0,0) rotateX(65deg) rotateY(0deg) rotateZ(360deg); } 
         }
         @keyframes spin2 { 
-          0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); }
-          100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } 
+          0% { transform: translate3d(0,0,0) rotateX(65deg) rotateY(60deg) rotateZ(0deg); }
+          100% { transform: translate3d(0,0,0) rotateX(65deg) rotateY(60deg) rotateZ(360deg); } 
         }
         @keyframes spin3 { 
-          0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
-          100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } 
+          0% { transform: translate3d(0,0,0) rotateX(65deg) rotateY(-60deg) rotateZ(0deg); }
+          100% { transform: translate3d(0,0,0) rotateX(65deg) rotateY(-60deg) rotateZ(360deg); } 
         }
         
         @keyframes corePulse {
