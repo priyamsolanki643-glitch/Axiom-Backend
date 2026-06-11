@@ -2,7 +2,9 @@ import '../utils/env';
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 import { ContextMatrix, CapabilityVector } from '../engine/types';
 
-function getAIClientForModel(modelName?: string): { client: GoogleGenAI, actualModel: string } {
+let currentKeyIndex = 0;
+
+function getAIClientForModel(modelName?: string, rotate = false): { client: GoogleGenAI, actualModel: string } {
   const keys = process.env.AI_KEYS 
     ? process.env.AI_KEYS.split(',').map(k => k.trim()).filter(Boolean)
     : process.env.GEMINI_KEYS
@@ -21,8 +23,13 @@ function getAIClientForModel(modelName?: string): { client: GoogleGenAI, actualM
     throw new Error('No AI API Keys configured');
   }
 
-  // Force single key and use latest eligible model
-  const key = keys[0];
+  if (rotate && keys.length > 1) {
+    currentKeyIndex = (currentKeyIndex + 1) % keys.length;
+  } else if (currentKeyIndex >= keys.length) {
+    currentKeyIndex = 0;
+  }
+
+  const key = keys[currentKeyIndex];
   const actualModel = 'gemini-2.5-flash';
   
   return { client: new GoogleGenAI({ apiKey: key }), actualModel };
@@ -118,16 +125,33 @@ export class LLMService {
         ...conversationHistory
       ];
 
-      const { client, actualModel } = getAIClientForModel(modelName);
-      
-      const response = await client.models.generateContent({
-        model: actualModel,
-        contents: fullContents as any,
-        config: {
-          temperature: 0.3,
-          tools: [{ googleSearch: {} }],
+      let response;
+      let attempts = 0;
+      const maxAttempts = 4;
+      while (attempts < maxAttempts) {
+        try {
+          const { client, actualModel } = getAIClientForModel(modelName, attempts > 0);
+          response = await client.models.generateContent({
+            model: actualModel,
+            contents: fullContents as any,
+            config: {
+              temperature: 0.3,
+              tools: [{ googleSearch: {} }],
+            }
+          });
+          break;
+        } catch (err: any) {
+          attempts++;
+          const errMsg = err?.message?.toLowerCase() || '';
+          if (errMsg.includes('quota') || errMsg.includes('429') || errMsg.includes('rate limit') || errMsg.includes('exceeded')) {
+            console.log(`[LLMService] Quota hit on attempt ${attempts}. Rotating key if available and retrying...`);
+            if (attempts >= maxAttempts) throw err;
+            await this.sleep(1500 * attempts);
+            continue;
+          }
+          throw err;
         }
-      });
+      }
 
       const rawText = response.text;
       if (!rawText) throw new Error("Empty response from LLM");
@@ -160,22 +184,34 @@ export class LLMService {
         required: ['response_text']
       };
 
-      const { client, actualModel } = getAIClientForModel('FP Pro'); // Use pro for backend logic by default
-      
-      const fullContents = [
-        { role: 'user', parts: [{ text: systemPrompt + "\n\nCRITICAL: Maintain the Axis AI persona as defined in the system prompt." }] },
-        ...conversationHistory
-      ];
-
-      const response = await client.models.generateContent({
-        model: actualModel,
-        contents: fullContents as any,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: responseSchema,
-          temperature: 0.3, 
+      let response;
+      let attempts = 0;
+      const maxAttempts = 4;
+      while (attempts < maxAttempts) {
+        try {
+          const { client, actualModel } = getAIClientForModel('FP Pro', attempts > 0);
+          response = await client.models.generateContent({
+            model: actualModel,
+            contents: fullContents as any,
+            config: {
+              responseMimeType: 'application/json',
+              responseSchema: responseSchema,
+              temperature: 0.3, 
+            }
+          });
+          break;
+        } catch (err: any) {
+          attempts++;
+          const errMsg = err?.message?.toLowerCase() || '';
+          if (errMsg.includes('quota') || errMsg.includes('429') || errMsg.includes('rate limit') || errMsg.includes('exceeded')) {
+            console.log(`[LLMService] Quota hit on attempt ${attempts}. Rotating key if available and retrying...`);
+            if (attempts >= maxAttempts) throw err;
+            await this.sleep(1500 * attempts);
+            continue;
+          }
+          throw err;
         }
-      });
+      }
 
       const rawText = response.text;
       if (!rawText) throw new Error("Empty response from LLM");
