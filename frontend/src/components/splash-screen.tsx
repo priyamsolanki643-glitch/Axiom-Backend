@@ -27,12 +27,6 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
     <div 
       className={`fixed inset-0 z-[9999] bg-black text-white overflow-hidden transition-opacity duration-400 ease-out ${phase === 4 ? 'opacity-0' : 'opacity-100'}`}
     >
-      {/* Background grain texture */}
-      <div 
-        className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-0"
-        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
-      />
-      
       {/* Deep Vignette for absolute center focus */}
       <div className="absolute inset-0 pointer-events-none z-1" style={{ background: 'radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%)' }} />
 
@@ -52,11 +46,12 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           justify-content: center;
           transition: opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
           opacity: 0;
-          transform: scale(0.05) translateY(60px) rotateX(60deg);
+          transform: translate3d(0, 60px, 0) scale(0.05) rotateX(60deg);
+          will-change: transform, opacity;
         }
         .gyro-container.phase-1 {
           opacity: 1;
-          transform: scale(2.2) translateY(0) rotateX(0deg);
+          transform: translate3d(0, 0, 0) scale(2.2) rotateX(0deg);
         }
         
         .gyro-shockwave {
@@ -66,15 +61,15 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           border-radius: 50%;
           border: 1px solid rgba(255,255,255,1);
           opacity: 0;
-          transform: scale(0.5);
-          box-shadow: 0 0 10px rgba(255,255,255,0.5);
+          transform: translate3d(0, 0, 0) scale(0.5);
+          will-change: transform, opacity;
         }
         .gyro-container.phase-1 .gyro-shockwave {
           animation: shockwaveExpand 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes shockwaveExpand {
-          0% { transform: scale(0.5); opacity: 1; border-width: 2px; }
-          100% { transform: scale(6); opacity: 0; border-width: 0px; }
+          0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 1; border-width: 2px; }
+          100% { transform: translate3d(0, 0, 0) scale(6); opacity: 0; border-width: 0px; }
         }
 
         .gyro-core {
@@ -93,9 +88,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           border: 1px solid rgba(255,255,255,0.06);
           border-top: 1px solid rgba(255,255,255,0.8);
           border-right: 1px solid rgba(255,255,255,0.3);
-          box-shadow: inset 0 0 10px rgba(255,255,255,0.02),
-                      -1px 0 3px rgba(255, 255, 255, 0.2), /* Subtle white blur */
-                      1px 0 3px rgba(255, 255, 255, 0.4);  /* Sharp white edge */
+          will-change: transform;
         }
         /* Exact timings from chat-view */
         .ring-1 { animation: spin1 1.8s linear infinite; }
@@ -110,17 +103,17 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           background: #fff;
           border-radius: 50%;
           opacity: 0;
-          box-shadow: 0 0 4px #fff;
+          will-change: transform, opacity;
         }
         .gyro-container.phase-1 .p1 { animation: shoot1 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .gyro-container.phase-1 .p2 { animation: shoot2 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .gyro-container.phase-1 .p3 { animation: shoot3 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .gyro-container.phase-1 .p4 { animation: shoot4 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        @keyframes shoot1 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-40px, -50px) scale(0); opacity: 0; } }
-        @keyframes shoot2 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(60px, -30px) scale(0); opacity: 0; } }
-        @keyframes shoot3 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-50px, 40px) scale(0); opacity: 0; } }
-        @keyframes shoot4 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(45px, 55px) scale(0); opacity: 0; } }
+        @keyframes shoot1 { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(-40px, -50px, 0) scale(0); opacity: 0; } }
+        @keyframes shoot2 { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(60px, -30px, 0) scale(0); opacity: 0; } }
+        @keyframes shoot3 { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(-50px, 40px, 0) scale(0); opacity: 0; } }
+        @keyframes shoot4 { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(45px, 55px, 0) scale(0); opacity: 0; } }
 
         @keyframes spin1 { 
           0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
@@ -136,8 +129,8 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         }
         
         @keyframes corePulse {
-          0% { transform: scale(0.5); opacity: 0.3; box-shadow: 0 0 2px rgba(255,255,255,0.1); }
-          100% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,1); }
+          0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 0.3; }
+          100% { transform: translate3d(0, 0, 0) scale(1.5); opacity: 1; }
         }
 
         .lumensky-text {
@@ -152,17 +145,15 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           -webkit-background-clip: text;
           background-clip: text;
           opacity: 0;
-          filter: blur(20px);
-          transform: translateY(25px) scale(0.9);
+          transform: translate3d(0, 25px, 0) scale(0.9);
           transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
-                      filter 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
                       transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
                       letter-spacing 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity, letter-spacing;
         }
         .lumensky-text.phase-2 {
           opacity: 1;
-          filter: blur(0px);
-          transform: translateY(0) scale(1);
+          transform: translate3d(0, 0, 0) scale(1);
           letter-spacing: 0.45em; /* Snap into perfect focus */
           animation: textShimmer 3s ease-in-out infinite alternate;
         }
@@ -170,23 +161,23 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         .text-energy-blade {
           position: absolute;
           width: 200%;
-          height: 2px;
+          height: 1px;
           background: rgba(255, 255, 255, 1);
-          box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.9),
-                      0 0 60px 15px rgba(255, 255, 255, 0.5); /* Pure white optical flare */
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Performance friendly flare */
           opacity: 0;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%) scaleX(0);
+          transform: translate3d(-50%, -50%, 0) scaleX(0);
           z-index: 0;
+          will-change: transform, opacity;
         }
         .text-energy-blade.phase-2 {
           animation: bladeStrike 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes bladeStrike {
-          0% { transform: translate(-50%, -50%) scaleX(0); opacity: 1; }
-          20% { transform: translate(-50%, -50%) scaleX(1); opacity: 1; height: 2px; }
-          100% { transform: translate(-50%, -50%) scaleX(0); opacity: 0; height: 0px; }
+          0% { transform: translate3d(-50%, -50%, 0) scaleX(0); opacity: 1; }
+          20% { transform: translate3d(-50%, -50%, 0) scaleX(1); opacity: 1; height: 1px; }
+          100% { transform: translate3d(-50%, -50%, 0) scaleX(0); opacity: 0; height: 0px; }
         }
 
         @keyframes textShimmer {
