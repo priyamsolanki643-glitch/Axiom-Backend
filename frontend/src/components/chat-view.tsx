@@ -274,14 +274,22 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
       let reply = "Parameter logged.";
       if (data?.error) {
+        let rawError = "";
         try { 
           if (typeof data.error === 'object') {
-            reply = "System Error: " + (data.error.message || JSON.stringify(data.error));
+            rawError = data.error.message || JSON.stringify(data.error);
           } else {
-            reply = "System Error: " + (JSON.parse(data.error)?.error?.message ?? data.error); 
+            rawError = JSON.parse(data.error)?.error?.message ?? data.error; 
           }
         }
-        catch { reply = "System Error: " + data.error; }
+        catch { rawError = data.error; }
+
+        const errStr = rawError.toLowerCase();
+        if (errStr.includes("quota") || errStr.includes("rate limit") || errStr.includes("429") || errStr.includes("exceeded")) {
+          reply = "Lumensky Engine is currently processing peak tactical data. Please allow a brief 30-second cooldown before transmitting the next parameter.";
+        } else {
+          reply = "System Notification: A brief network anomaly occurred. Please re-transmit your parameter.";
+        }
       } else if (data?.data?.ai_response?.response_text) {
         reply = data.data.ai_response.response_text;
       }
