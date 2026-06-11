@@ -3,6 +3,8 @@ import { GoogleGenAI, Type, Schema } from '@google/genai';
 import { ContextMatrix, CapabilityVector } from '../engine/types';
 
 let currentKeyIndex = 0;
+let currentModelIndex = 0;
+const FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
 
 function getAIClientForModel(modelName?: string, rotate = false): { client: GoogleGenAI, actualModel: string } {
   const keys = process.env.AI_KEYS 
@@ -23,14 +25,21 @@ function getAIClientForModel(modelName?: string, rotate = false): { client: Goog
     throw new Error('No AI API Keys configured');
   }
 
-  if (rotate && keys.length > 1) {
-    currentKeyIndex = (currentKeyIndex + 1) % keys.length;
-  } else if (currentKeyIndex >= keys.length) {
-    currentKeyIndex = 0;
+  if (rotate) {
+    currentModelIndex++;
+    if (currentModelIndex >= FALLBACK_MODELS.length) {
+      currentModelIndex = 0;
+      if (keys.length > 1) {
+        currentKeyIndex = (currentKeyIndex + 1) % keys.length;
+      }
+    }
   }
 
+  if (currentKeyIndex >= keys.length) currentKeyIndex = 0;
+  if (currentModelIndex >= FALLBACK_MODELS.length) currentModelIndex = 0;
+
   const key = keys[currentKeyIndex];
-  const actualModel = 'gemini-2.5-flash';
+  const actualModel = FALLBACK_MODELS[currentModelIndex];
   
   return { client: new GoogleGenAI({ apiKey: key }), actualModel };
 }
@@ -127,7 +136,7 @@ export class LLMService {
 
       let response;
       let attempts = 0;
-      const maxAttempts = 4;
+      const maxAttempts = 12;
       while (attempts < maxAttempts) {
         try {
           const { client, actualModel } = getAIClientForModel(modelName, attempts > 0);
@@ -186,7 +195,7 @@ export class LLMService {
 
       let response;
       let attempts = 0;
-      const maxAttempts = 4;
+      const maxAttempts = 12;
       while (attempts < maxAttempts) {
         try {
           const { client, actualModel } = getAIClientForModel('FP Pro', attempts > 0);
