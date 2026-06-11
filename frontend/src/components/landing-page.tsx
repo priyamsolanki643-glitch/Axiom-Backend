@@ -50,93 +50,72 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           background-image: none !important;
         }
 
-        .grid-floor {
-          position: absolute;
-          width: 200vw;
-          height: 100vh;
-          bottom: -30vh;
-          left: -50vw;
-          background-image: 
-            linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);
-          background-size: 60px 60px;
-          transform: perspective(400px) rotateX(70deg);
-          mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);
-          -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 50%);
-          pointer-events: none;
-        }
-
-        .eclipse-glow {
+        .monolith-glow {
           position: absolute;
           top: -20vh;
           left: 50%;
           transform: translateX(-50%);
-          width: 100vw;
-          height: 100vw;
-          max-width: 1200px;
-          max-height: 1200px;
-          background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 60%);
+          width: 80vw;
+          height: 80vw;
+          max-width: 1000px;
+          max-height: 1000px;
+          background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 70%);
           border-radius: 50%;
           pointer-events: none;
-          animation: eclipsePulse 6s ease-in-out infinite alternate;
-        }
-        @keyframes eclipsePulse {
-          0% { transform: translateX(-50%) scale(1); opacity: 0.6; }
-          100% { transform: translateX(-50%) scale(1.1); opacity: 1; }
         }
 
-        .shimmer-text-lumensky {
-          color: transparent;
-          background: linear-gradient(90deg, #444 0%, #fff 40%, #fff 60%, #444 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          background-clip: text;
-          animation: shimmer 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        /* The Mechanical Sweep Reveal for "Start executing." */
+        .reveal-mask {
+          position: relative;
+          display: inline-block;
+          overflow: hidden;
         }
-        @keyframes shimmer {
-          0%  { background-position: -200% 0; }
-          to  { background-position:  200% 0; }
+        .reveal-mask::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 100%;
+          height: 100%;
+          background: #000000;
+          animation: maskReveal 1.2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+          animation-delay: 0.6s;
+          border-left: 2px solid #ffffff; /* Optical cutting blade */
+        }
+        @keyframes maskReveal {
+          0% { width: 100%; opacity: 1; }
+          99% { width: 0%; opacity: 1; }
+          100% { width: 0%; opacity: 0; border-left: none; }
         }
 
-        /* Psychological Dominance CTA: Blinding White -> Transparent */
+        /* Psychological Dominance CTA: Monolithic White Block */
         .btn-lumensky-core {
           position: relative;
           display: inline-flex;
           align-items: center;
           gap: 12px;
-          padding: 18px 48px;
-          border-radius: 9999px;
+          padding: 16px 42px;
+          border-radius: 0px; /* Sharp Machine Aesthetic */
           background: #ffffff;
           color: #000000;
           font-family: 'Inter', sans-serif;
-          font-weight: 700;
-          font-size: 16px;
-          letter-spacing: 0.02em;
-          border: 1px solid #ffffff;
+          font-weight: 600;
+          font-size: 14px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
           cursor: pointer;
-          transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
           overflow: hidden;
           z-index: 10;
-          box-shadow: 0 0 40px rgba(255, 255, 255, 0.15), 0 0 80px rgba(255, 255, 255, 0.05);
-          animation: coreBreathe 3s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes coreBreathe {
-          0% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.1); transform: scale(1); }
-          100% { box-shadow: 0 0 60px rgba(255, 255, 255, 0.3), 0 0 100px rgba(255, 255, 255, 0.15); transform: scale(1.02); }
         }
 
         .btn-lumensky-core:hover {
-          transform: translateY(-2px) scale(1.05) !important;
-          background: transparent;
-          color: #ffffff;
-          border-color: rgba(255, 255, 255, 0.8);
-          box-shadow: 0 10px 50px rgba(255, 255, 255, 0.2);
-          animation: none;
+          transform: translateY(-2px) scale(1.02);
+          background: #e0e0e0;
         }
 
         .btn-lumensky-core:active {
-          transform: translateY(1px) scale(0.98) !important;
+          transform: translateY(1px) scale(0.98);
         }
 
         .btn-lumensky-core .arrow-icon {
@@ -148,36 +127,36 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
         .btn-signin-lumensky {
           background: transparent;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 9999px;
+          border: none;
           cursor: pointer;
-          font-size: 13px;
-          padding: 8px 20px;
-          color: #ffffff;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          padding: 8px 16px;
+          color: rgba(255, 255, 255, 0.6);
           font-weight: 500;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: color 0.3s ease;
         }
         .btn-signin-lumensky:hover {
-          background: rgba(255, 255, 255, 0.06);
-          border-color: rgba(255, 255, 255, 0.4);
+          color: #ffffff;
         }
 
         .btn-login-lumensky {
           background: #ffffff;
-          border: 1px solid #ffffff;
-          border-radius: 9999px;
+          border: none;
+          border-radius: 0px;
           cursor: pointer;
-          font-size: 13px;
-          padding: 8px 20px;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          padding: 8px 24px;
           color: #000000;
           font-weight: 600;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .btn-login-lumensky:hover {
-          background: #f4f4f5;
           transform: translateY(-1px);
-          box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+          background: #e0e0e0;
         }
       `}</style>
 
@@ -199,6 +178,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
       {/* ── Hero Main Content ── */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 max-w-4xl mx-auto w-full pointer-events-none">
+        <div className="monolith-glow"></div>
         <div 
           className="flex flex-col items-center w-full relative pointer-events-auto"
           style={{
@@ -213,22 +193,24 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
             {/* First Line - Stop planning. */}
             <div 
               className="tracking-tighter pb-1 text-white/95 leading-[1.1] whitespace-nowrap"
-              style={{ fontSize: "clamp(1.8rem, 9.5vw, 5.0rem)", fontWeight: 400 }}
+              style={{ fontSize: "clamp(1.8rem, 9.5vw, 5.0rem)", fontWeight: 300 }}
             >
               Stop planning.
             </div>
             
             {/* Second Line - Start executing. */}
-            <div 
-              className="shimmer-text-lumensky tracking-tighter pb-2 md:pb-4 leading-[1.15] whitespace-nowrap"
-              style={{ fontSize: "clamp(2.5rem, 12vw, 6.8rem)", fontWeight: 600, marginTop: "-0.05em" }}
-            >
-              Start executing.
+            <div className="reveal-mask">
+              <div 
+                className="tracking-tighter pb-2 md:pb-4 leading-[1.15] whitespace-nowrap text-white"
+                style={{ fontSize: "clamp(2.5rem, 12vw, 6.8rem)", fontWeight: 700, marginTop: "-0.05em" }}
+              >
+                Start executing.
+              </div>
             </div>
           </h1>
 
           {/* Subtext */}
-          <p className="text-[#a1a1aa] text-[14px] sm:text-[16px] md:text-[19px] leading-relaxed max-w-xl mx-auto mb-10 px-2 font-sans font-normal tracking-wide">
+          <p className="text-[#a1a1aa] text-[13px] sm:text-[15px] md:text-[17px] leading-relaxed max-w-xl mx-auto mb-12 px-2 font-sans font-light tracking-wide">
             A strategist and executioner that converts your ambition into
             raw, immutable daily action. No fluff. No excuses. No mercy.
           </p>
