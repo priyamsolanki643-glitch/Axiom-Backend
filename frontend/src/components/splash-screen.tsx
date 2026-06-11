@@ -58,24 +58,6 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           opacity: 1;
           transform: scale(2.2) translateY(0) rotateX(0deg);
         }
-        
-        .gyro-shockwave {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          border: 1px solid rgba(255,255,255,1);
-          opacity: 0;
-          transform: scale(0.5);
-          box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-        .gyro-container.phase-1 .gyro-shockwave {
-          animation: shockwaveExpand 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes shockwaveExpand {
-          0% { transform: scale(0.5); opacity: 1; border-width: 2px; }
-          100% { transform: scale(6); opacity: 0; border-width: 0px; }
-        }
 
         .gyro-core {
           position: absolute;
@@ -200,7 +182,6 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         
         {/* 3D Gyroscopic Core with Particles */}
         <div className={`gyro-container mb-12 z-20 ${phase >= 1 ? 'phase-1' : ''}`}>
-          <div className="gyro-shockwave"></div>
           {/* High Velocity Particles */}
           <div className="particle p1"></div>
           <div className="particle p2"></div>
