@@ -21,32 +21,41 @@ export async function executeWithRotation(
     throw new Error('No AI API Keys configured');
   }
 
-  // Multi-model rotation to bypass 503 high demand and 429 quota limits on specific node clusters
+  // ✅ Fixed: Removed non-existent 'gemini-3.1-flash-lite'
   const fallbackModels = [
     'gemini-2.0-flash',
     'gemini-1.5-flash',
     'gemini-1.5-pro',
-    'gemini-2.0-flash-lite-preview-02-05',
-    'gemini-3.1-flash-lite'
+    'gemini-2.0-flash-lite',    // ✅ correct alias
+    'gemini-1.0-pro',           // ✅ stable fallback
   ];
-  
-  let lastError = null;
-  
+
+  let lastError: any = null;
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const key = keys[attempt % keys.length];
     const actualModel = fallbackModels[attempt % fallbackModels.length];
     const client = new GoogleGenAI({ apiKey: key });
-    
+
     try {
-      // Force inject the current rotating model into the payload
       const attemptPayload = { ...payload, model: actualModel };
       return await client.models.generateContent(attemptPayload as any);
     } catch (err: any) {
-      console.warn(`[LLM Proxy] Attempt ${attempt + 1}/${maxRetries} failed with model ${actualModel}. Error: ${err.message || '503 High Demand'}`);
       lastError = err;
-      
-      // Wait 1.5s before rotating key and model
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const msg: string = err.message || '';
+
+      // ✅ Parse the retry delay from the Gemini error message
+      const retryMatch = msg.match(/retry in ([\d.]+)s/i);
+      const waitMs = retryMatch
+        ? Math.ceil(parseFloat(retryMatch[1]) * 1000) + 500  // add 500ms buffer
+        : 1500;
+
+      console.warn(
+        `[LLM Proxy] Attempt ${attempt + 1}/${maxRetries} failed` +
+        ` with model ${actualModel}. Waiting ${waitMs}ms. Error: ${msg}`
+      );
+
+      await new Promise(resolve => setTimeout(resolve, waitMs));
     }
   }
   

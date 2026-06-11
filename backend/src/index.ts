@@ -24,6 +24,20 @@ process.on('unhandledRejection', (reason) => {
 app.use('*', cors());
 app.use('*', requireIdempotency);
 
+// Global Error Handler to intercept LLM Quota / 429 Errors
+app.onError((err: any, c) => {
+  console.error('Global Route Error:', err);
+  const msg: string = err.message || '';
+  
+  const isQuota = msg.includes('quota') || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
+  if (isQuota) {
+    return c.json({ error: "I'm a bit overloaded right now — please try again in a minute! 🙏" }, 429);
+  }
+  
+  // For standard errors
+  return c.json({ error: msg || "Something went wrong on my end. Please try again." }, 500);
+});
+
 
 app.get('/', (c) => c.text('FP-OS Core Runtime Active'));
 app.get('/health', (c) => c.json({ status: 'ok' }));
