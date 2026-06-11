@@ -942,12 +942,12 @@ export async function runIntelligenceMatrix(
   // Overall market score: how favorable is the environment for this user?
   const avgDemandScore = skillDemandSignals.reduce((sum, s) => {
     const levelMap = { very_high: 1.0, high: 0.8, medium: 0.6, low: 0.3, declining: 0.1 };
-    return sum + levelMap[s.demandLevel];
+    return sum + (levelMap[s.demandLevel as keyof typeof levelMap] ?? 0.6);
   }, 0) / Math.max(1, skillDemandSignals.length);
 
   const saturationPenalty = {
     unsaturated: 0, early_mover: 0.05, growing: 0.1, competitive: 0.25, saturated: 0.4,
-  }[competitorLandscape.saturationLevel];
+  }[competitorLandscape.saturationLevel as 'unsaturated' | 'early_mover' | 'growing' | 'competitive' | 'saturated'] ?? 0.1;
 
   const actNowBonus = timingSignals.filter((s) => s.urgency === 'act_now').length * 0.05;
 
