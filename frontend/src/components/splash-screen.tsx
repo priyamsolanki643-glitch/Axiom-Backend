@@ -91,20 +91,17 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 1px solid rgba(255,255,255,0.06);
-          border-top: 1px solid rgba(255,255,255,0.8);
-          border-right: 1px solid rgba(255,255,255,0.3);
-          box-shadow: inset 0 0 10px rgba(255,255,255,0.02),
-                      -1px 0 3px rgba(255, 255, 255, 0.2), 
-                      1px 0 3px rgba(255, 255, 255, 0.4);
+          border: 1px solid rgba(255,255,255,0.15); /* Thin subtle line */
+          border-top: 1px solid rgba(255,255,255,0.6); /* Subtle highlight */
+          border-bottom: 1px solid rgba(255,255,255,0.6);
           will-change: transform;
           backface-visibility: hidden; /* Fixes 3D anti-aliasing lag on mobile GPUs */
           outline: 1px solid transparent;
         }
-        /* Exact timings from chat-view */
-        .ring-1 { animation: spin1 1.8s linear infinite; }
-        .ring-2 { animation: spin2 2.4s linear infinite; }
-        .ring-3 { animation: spin3 3s linear infinite; }
+        /* Slow, majestic, low-impact animations */
+        .ring-1 { animation: spin1 20s linear infinite; }
+        .ring-2 { animation: spin2 25s linear infinite; }
+        .ring-3 { animation: spin3 30s linear infinite; }
 
         /* Particle Burst System */
         .particle {
