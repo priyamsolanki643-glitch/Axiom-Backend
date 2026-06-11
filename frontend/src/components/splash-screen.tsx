@@ -94,8 +94,8 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           border-top: 1px solid rgba(255,255,255,0.8);
           border-right: 1px solid rgba(255,255,255,0.3);
           box-shadow: inset 0 0 10px rgba(255,255,255,0.02),
-                      -1px 0 3px rgba(0, 255, 255, 0.4), /* Cyber-cyan split */
-                      1px 0 3px rgba(255, 0, 0, 0.4);    /* Cyber-red split */
+                      -1px 0 3px rgba(220, 38, 38, 0.5), /* PW Red split */
+                      1px 0 3px rgba(37, 99, 235, 0.5);  /* PW Blue split */
         }
         /* Exact timings from chat-view */
         .ring-1 { animation: spin1 1.8s linear infinite; }
@@ -173,7 +173,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           height: 2px;
           background: rgba(255, 255, 255, 1);
           box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.9),
-                      0 0 60px 20px rgba(0, 150, 255, 0.4); /* Intense optical flare */
+                      0 0 60px 15px rgba(255, 255, 255, 0.5); /* Pure white optical flare */
           opacity: 0;
           top: 50%;
           left: 50%;
