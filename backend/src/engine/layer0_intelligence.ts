@@ -344,7 +344,7 @@ export function buildSkillDemandSignal(
   }
 
   // Adjust rates for geography tier
-  const geoMultiplier = tierDemandMultipliers[geographyTier];
+  const geoMultiplier = tierDemandMultipliers[geographyTier] || 0.90;
   const tierRateMultiplier = geographyTier === 'tier1_metro' ? 1.4 : geographyTier === 'tier2_city' ? 1.0 : 0.7;
 
   const adjustedRateLow = Math.floor(rateRangeLow * tierRateMultiplier);

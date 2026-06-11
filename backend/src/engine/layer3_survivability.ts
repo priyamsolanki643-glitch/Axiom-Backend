@@ -57,7 +57,7 @@ function getGeographySurvivalBuffer(tier: GeographyTier): number {
     tier3_semi_urban: 2000,
     rural: 1000,
   };
-  return buffers[tier];
+  return buffers[tier] || 4000;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

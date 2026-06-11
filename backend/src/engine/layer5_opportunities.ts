@@ -193,7 +193,7 @@ export function generateLocalGeoArbitrageOpportunities(
   matrix: ContextMatrix,
   capability: CapabilityVector,
 ): Opportunity[] {
-  const geoIntel = GEO_OPPORTUNITY_MAP[matrix.socioeconomic.geographyTier];
+  const geoIntel = GEO_OPPORTUNITY_MAP[matrix.socioeconomic.geographyTier] || GEO_OPPORTUNITY_MAP['tier2_city'];
   const opportunities: Opportunity[] = [];
 
   // Match user skills to local scarcities
@@ -404,7 +404,7 @@ export function generateTrendWindowOpportunities(
 
     const score = calculateOpportunityScore({
       marketVelocity: trend.marketVelocity,
-      localArbitrageMultiplier: GEO_OPPORTUNITY_MAP[matrix.socioeconomic.geographyTier].localArbitrageMultiplier,
+      localArbitrageMultiplier: (GEO_OPPORTUNITY_MAP[matrix.socioeconomic.geographyTier] || GEO_OPPORTUNITY_MAP['tier2_city']).localArbitrageMultiplier,
       capitalRequirementINR: 0,
       userLiquidCapital: matrix.socioeconomic.liquidCapital,
       skillMatchScore: 0.65,  // Trends reward early movers
