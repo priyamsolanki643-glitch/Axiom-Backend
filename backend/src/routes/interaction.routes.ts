@@ -16,6 +16,57 @@ import {
 import { updateConsistencyScore } from '../engine/layer10_statelock';
 import { runLegalAudit } from '../engine/layer13_legalaudit';
 import { LLMService } from '../services/llm.service';
+
+function getAIErrorMessage(err: any): string {
+  if (!err) return 'Unknown AI error';
+  return (
+    err?.message ||
+    err?.error?.message ||
+    err?.cause?.message ||
+    JSON.stringify(err)
+  );
+}
+
+function isQuotaStyleError(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes('quota exceeded') ||
+    m.includes('resource_exhausted') ||
+    m.includes('429') ||
+    m.includes('rate limit') ||
+    m.includes('too many requests')
+  );
+}
+
+function isRetryableAIError(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    isQuotaStyleError(m) ||
+    m.includes('503') ||
+    m.includes('overloaded') ||
+    m.includes('unavailable') ||
+    m.includes('internal error') ||
+    m.includes('deadline exceeded') ||
+    m.includes('timeout') ||
+    m.includes('timed out') ||
+    m.includes('socket hang up') ||
+    m.includes('econnreset')
+  );
+}
+
+function toUserSafeAIText(err: any): string {
+  const message = getAIErrorMessage(err).toLowerCase();
+
+  if (isQuotaStyleError(message)) {
+    return 'AI is busy right now. Please retry in about a minute.';
+  }
+
+  if (isRetryableAIError(message)) {
+    return 'Temporary AI issue on the backend. Please retry in a moment.';
+  }
+
+  return 'Something went wrong while generating the reply. Please try again.';
+}
 import { DbService } from '../services/db.service';
 import { VectorService } from '../services/vector.service';
 import { requireAuth } from '../middleware/auth.middleware';
@@ -88,7 +139,25 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
     } else {
       // User has no active mission. Let's see if onboarding is complete!
       const currentHistory = [...conversationHistory, { role: 'user', parts: [{ text: message }] }] as any;
-      const extraction = await LLMService.extractOnboardingData(currentHistory);
+      let extraction;
+      try {
+        extraction = await LLMService.extractOnboardingData(currentHistory);
+      } catch (err: any) {
+        console.error('ONBOARDING_EXTRACTION_ERROR:', getAIErrorMessage(err));
+
+        return c.json(
+          {
+            status: 'success',
+            data: {
+              engine_result: { type: 'chat_response', data: {} },
+              ai_response: {
+                response_text: toUserSafeAIText(err)
+              }
+            }
+          },
+          200
+        );
+      }
       
       if (extraction.isComplete) {
         // Onboarding parameters are complete!
@@ -259,13 +328,35 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
       const enrichedPrompt = systemPrompt + "\n\n" + 
         (activeMission ? "If user explicitly logs a task completion/failure, set task_classification to 'completed' or 'failed'. **EXECUTION MIRROR LINGUISTIC RADAR**: At the end of your response, casually ask a 1-sentence question about their current execution/mission activity today. Analyze their incoming message text for hesitation words ('but', 'maybe', 'try') or abnormally short sentence length to detect early dropout risk signals (avoidance/stress)." : "Extract any onboarding constraints to build context, or prompt user to lock either Option A (Alpha) or Option B (Beta).");
       
-      const smartResponse = await LLMService.generateSmartResponse(
-        actualUserId, 
-        enrichedPrompt, 
-        [...conversationHistory, { role: 'user', parts: [{ text: message }] }] as any,
-        !activeMission,
-        model
-      );
+      let smartResponse;
+      try {
+        smartResponse = await LLMService.generateSmartResponse(
+          actualUserId,
+          enrichedPrompt,
+          [...conversationHistory, { role: 'user', parts: [{ text: message }] }] as any,
+          !activeMission,
+          model
+        );
+      } catch (err: any) {
+        console.error('SMART_RESPONSE_ERROR:', getAIErrorMessage(err));
+
+        const safeText = toUserSafeAIText(err);
+
+        await DbService.saveMessage(currentThreadId, actualUserId, 'fp', safeText);
+
+        return c.json(
+          {
+            status: 'success',
+            data: {
+              engine_result: result,
+              ai_response: {
+                response_text: safeText
+              }
+            }
+          },
+          200
+        );
+      }
 
       llmResponse.response_text = smartResponse.response_text;
 
@@ -652,9 +743,31 @@ interactionRoutes.post('/log-task', async (c) => {
     }).catch(err => console.error('HIVE_MIND: Failed to store task outcome memory:', err));
 
     return c.json({ status: 'success', data: updatedMission });
-  } catch (error: any) {
-    console.error('Log Task Error:', error);
-    return c.json({ error: error.message }, 500);
+  } catch (err: any) {
+    const rawMessage = getAIErrorMessage(err);
+
+    console.error('INTERACTION_ROUTE /log-task ERROR:', {
+      error: rawMessage
+    });
+
+    return c.json(
+      {
+        status: 'error',
+        data: {
+          engine_result: {
+            type: 'system_error',
+            data: {
+              retryable: isRetryableAIError(rawMessage),
+              source: 'interaction.log-task'
+            }
+          },
+          ai_response: {
+            response_text: toUserSafeAIText(err)
+          }
+        }
+      },
+      isRetryableAIError(rawMessage) ? 503 : 500
+    );
   }
 });
 
