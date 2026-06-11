@@ -4,7 +4,13 @@ import { ContextMatrix, CapabilityVector } from '../engine/types';
 
 let currentKeyIndex = 0;
 let currentModelIndex = 0;
-const FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
+const FALLBACK_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.5-pro',
+  'gemini-2.0-pro-exp-02-05'
+];
 
 function getAIClientForModel(modelName?: string, rotate = false): { client: GoogleGenAI, actualModel: string } {
   const keys = process.env.AI_KEYS 
