@@ -126,54 +126,40 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           font-family: 'Inter', sans-serif;
           font-weight: 300;
           font-size: 22px;
-          letter-spacing: 1.5em; /* Extreme wide start */
+          letter-spacing: 0.5em; /* Fixed wide tracking */
+          padding-left: 0.5em; /* Optical centering */
           text-transform: uppercase;
-          background: linear-gradient(90deg, #555 0%, #fff 50%, #555 100%);
-          background-size: 200% auto;
-          color: transparent;
-          -webkit-background-clip: text;
-          background-clip: text;
+          color: #ffffff;
           opacity: 0;
-          filter: blur(20px);
-          transform: translateY(25px) scale(0.9);
+          transform: translateZ(0) translateY(25px) scale(1.1);
           transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
-                      filter 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
-                      transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
-                      letter-spacing 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+                      transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity;
         }
         .lumensky-text.phase-2 {
           opacity: 1;
-          filter: blur(0px);
-          transform: translateY(0) scale(1);
-          letter-spacing: 0.45em; /* Snap into perfect focus */
-          animation: textShimmer 3s ease-in-out infinite alternate;
+          transform: translateZ(0) translateY(0) scale(1);
         }
 
         .text-energy-blade {
           position: absolute;
-          width: 200%;
+          width: 150%;
           height: 2px;
-          background: rgba(255, 255, 255, 1);
-          box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.9),
-                      0 0 60px 15px rgba(255, 255, 255, 0.5); /* Pure white optical flare */
+          background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%); /* GPU friendly flare */
           opacity: 0;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%) scaleX(0);
+          transform: translateZ(0) translate(-50%, -50%) scaleX(0);
           z-index: 0;
+          will-change: transform, opacity;
         }
         .text-energy-blade.phase-2 {
           animation: bladeStrike 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes bladeStrike {
-          0% { transform: translate(-50%, -50%) scaleX(0); opacity: 1; }
-          20% { transform: translate(-50%, -50%) scaleX(1); opacity: 1; height: 2px; }
-          100% { transform: translate(-50%, -50%) scaleX(0); opacity: 0; height: 0px; }
-        }
-
-        @keyframes textShimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
+          0% { transform: translateZ(0) translate(-50%, -50%) scaleX(0); opacity: 1; }
+          20% { transform: translateZ(0) translate(-50%, -50%) scaleX(1); opacity: 1; height: 1px; }
+          100% { transform: translateZ(0) translate(-50%, -50%) scaleX(0); opacity: 0; height: 0px; }
         }
       `}</style>
 
