@@ -93,12 +93,34 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           border: 1px solid rgba(255,255,255,0.06);
           border-top: 1px solid rgba(255,255,255,0.8);
           border-right: 1px solid rgba(255,255,255,0.3);
-          box-shadow: inset 0 0 10px rgba(255,255,255,0.02);
+          box-shadow: inset 0 0 10px rgba(255,255,255,0.02),
+                      -1px 0 3px rgba(0, 255, 255, 0.4), /* Cyber-cyan split */
+                      1px 0 3px rgba(255, 0, 0, 0.4);    /* Cyber-red split */
         }
         /* Exact timings from chat-view */
         .ring-1 { animation: spin1 1.8s linear infinite; }
         .ring-2 { animation: spin2 2.4s linear infinite; }
         .ring-3 { animation: spin3 3s linear infinite; }
+
+        /* Particle Burst System */
+        .particle {
+          position: absolute;
+          width: 1.5px;
+          height: 1.5px;
+          background: #fff;
+          border-radius: 50%;
+          opacity: 0;
+          box-shadow: 0 0 4px #fff;
+        }
+        .gyro-container.phase-1 .p1 { animation: shoot1 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .gyro-container.phase-1 .p2 { animation: shoot2 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .gyro-container.phase-1 .p3 { animation: shoot3 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .gyro-container.phase-1 .p4 { animation: shoot4 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes shoot1 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-40px, -50px) scale(0); opacity: 0; } }
+        @keyframes shoot2 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(60px, -30px) scale(0); opacity: 0; } }
+        @keyframes shoot3 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-50px, 40px) scale(0); opacity: 0; } }
+        @keyframes shoot4 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(45px, 55px) scale(0); opacity: 0; } }
 
         @keyframes spin1 { 
           0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
@@ -147,10 +169,11 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
         .text-energy-blade {
           position: absolute;
-          width: 140%;
-          height: 1px;
+          width: 200%;
+          height: 2px;
           background: rgba(255, 255, 255, 1);
-          box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.8);
+          box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.9),
+                      0 0 60px 20px rgba(0, 150, 255, 0.4); /* Intense optical flare */
           opacity: 0;
           top: 50%;
           left: 50%;
@@ -158,12 +181,12 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           z-index: 0;
         }
         .text-energy-blade.phase-2 {
-          animation: bladeStrike 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: bladeStrike 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes bladeStrike {
           0% { transform: translate(-50%, -50%) scaleX(0); opacity: 1; }
-          30% { transform: translate(-50%, -50%) scaleX(1); opacity: 0.8; height: 1px; }
-          100% { transform: translate(-50%, -50%) scaleX(0); opacity: 0; }
+          20% { transform: translate(-50%, -50%) scaleX(1); opacity: 1; height: 2px; }
+          100% { transform: translate(-50%, -50%) scaleX(0); opacity: 0; height: 0px; }
         }
 
         @keyframes textShimmer {
@@ -175,9 +198,15 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
       {/* Absolute Centering Wrapper to guarantee perfect alignment */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         
-        {/* 3D Gyroscopic Core */}
+        {/* 3D Gyroscopic Core with Particles */}
         <div className={`gyro-container mb-12 z-20 ${phase >= 1 ? 'phase-1' : ''}`}>
           <div className="gyro-shockwave"></div>
+          {/* High Velocity Particles */}
+          <div className="particle p1"></div>
+          <div className="particle p2"></div>
+          <div className="particle p3"></div>
+          <div className="particle p4"></div>
+          
           <div className="gyro-ring ring-1"></div>
           <div className="gyro-ring ring-2"></div>
           <div className="gyro-ring ring-3"></div>
