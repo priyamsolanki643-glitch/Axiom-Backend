@@ -29,9 +29,12 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
     >
       {/* Background grain texture */}
       <div 
-        className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay"
+        className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-0"
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
       />
+      
+      {/* Deep Vignette for absolute center focus */}
+      <div className="absolute inset-0 pointer-events-none z-1" style={{ background: 'radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%)' }} />
 
       {/* Instant Flash Layer (Zero lag pure CSS opacity, replaces heavy scale/blur) */}
       <div 
@@ -43,17 +46,35 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           position: relative;
           width: 32px;
           height: 32px;
-          perspective: 150px;
+          perspective: 200px;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: opacity 1.2s ease-out, transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: opacity 1.5s cubic-bezier(0.16, 1, 0.3, 1), transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
           opacity: 0;
-          transform: scale(0.1) translateY(40px) rotateX(45deg);
+          transform: scale(0.05) translateY(60px) rotateX(60deg);
         }
         .gyro-container.phase-1 {
           opacity: 1;
-          transform: scale(2.0) translateY(0) rotateX(0deg);
+          transform: scale(2.2) translateY(0) rotateX(0deg);
+        }
+        
+        .gyro-shockwave {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,1);
+          opacity: 0;
+          transform: scale(0.5);
+          box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .gyro-container.phase-1 .gyro-shockwave {
+          animation: shockwaveExpand 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes shockwaveExpand {
+          0% { transform: scale(0.5); opacity: 1; border-width: 2px; }
+          100% { transform: scale(6); opacity: 0; border-width: 0px; }
         }
 
         .gyro-core {
@@ -94,14 +115,14 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         
         @keyframes corePulse {
           0% { transform: scale(0.5); opacity: 0.3; box-shadow: 0 0 2px rgba(255,255,255,0.1); }
-          100% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 12px rgba(255,255,255,0.9); }
+          100% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,1); }
         }
 
         .lumensky-text {
           font-family: 'Inter', sans-serif;
           font-weight: 300;
           font-size: 22px;
-          letter-spacing: 1.2em; /* Start extremely wide */
+          letter-spacing: 1.5em; /* Extreme wide start */
           text-transform: uppercase;
           background: linear-gradient(90deg, #555 0%, #fff 50%, #555 100%);
           background-size: 200% auto;
@@ -109,12 +130,12 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           -webkit-background-clip: text;
           background-clip: text;
           opacity: 0;
-          filter: blur(12px);
-          transform: translateY(15px) scale(0.95);
-          transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
-                      filter 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
-                      transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
-                      letter-spacing 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+          filter: blur(20px);
+          transform: translateY(25px) scale(0.9);
+          transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                      filter 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                      transform 1.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                      letter-spacing 1.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .lumensky-text.phase-2 {
           opacity: 1;
@@ -122,6 +143,27 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           transform: translateY(0) scale(1);
           letter-spacing: 0.45em; /* Snap into perfect focus */
           animation: textShimmer 3s ease-in-out infinite alternate;
+        }
+
+        .text-energy-blade {
+          position: absolute;
+          width: 140%;
+          height: 1px;
+          background: rgba(255, 255, 255, 1);
+          box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.8);
+          opacity: 0;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scaleX(0);
+          z-index: 0;
+        }
+        .text-energy-blade.phase-2 {
+          animation: bladeStrike 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes bladeStrike {
+          0% { transform: translate(-50%, -50%) scaleX(0); opacity: 1; }
+          30% { transform: translate(-50%, -50%) scaleX(1); opacity: 0.8; height: 1px; }
+          100% { transform: translate(-50%, -50%) scaleX(0); opacity: 0; }
         }
 
         @keyframes textShimmer {
@@ -135,17 +177,21 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         
         {/* 3D Gyroscopic Core */}
         <div className={`gyro-container mb-12 z-20 ${phase >= 1 ? 'phase-1' : ''}`}>
+          <div className="gyro-shockwave"></div>
           <div className="gyro-ring ring-1"></div>
           <div className="gyro-ring ring-2"></div>
           <div className="gyro-ring ring-3"></div>
           <div className="gyro-core"></div>
         </div>
 
-        {/* Lumensky Wordmark with dynamic padding to offset letter-spacing optical illusion */}
-        <div 
-          className={`lumensky-text z-10 pl-[0.5em] ${phase >= 2 ? 'phase-2' : ''}`}
-        >
-          Lumensky
+        {/* Lumensky Wordmark Container with Energy Blade */}
+        <div className="relative flex justify-center items-center">
+          <div className={`text-energy-blade ${phase >= 2 ? 'phase-2' : ''}`}></div>
+          <div 
+            className={`lumensky-text z-10 pl-[0.5em] ${phase >= 2 ? 'phase-2' : ''}`}
+          >
+            Lumensky
+          </div>
         </div>
 
       </div>
