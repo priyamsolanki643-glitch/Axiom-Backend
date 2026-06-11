@@ -23,7 +23,6 @@ export async function executeWithRotation(
 
   // Multi-model rotation to bypass 503 high demand and 429 quota limits on specific node clusters
   const fallbackModels = [
-    'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-1.5-flash',
     'gemini-1.5-pro',
