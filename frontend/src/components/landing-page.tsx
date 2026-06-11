@@ -71,6 +71,19 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           background-clip: text;
         }
 
+        .shimmer-text-lumensky {
+          color: transparent;
+          background: linear-gradient(90deg, #444 0%, #fff 40%, #fff 60%, #444 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: shimmer 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes shimmer {
+          0%  { background-position: -200% 0; }
+          to  { background-position:  200% 0; }
+        }
+
         /* Psychological Dominance CTA: Black Pill with Glow */
         .btn-lumensky-core {
           position: relative;
@@ -183,7 +196,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
             
             {/* Second Line - Start executing. */}
             <div 
-              className="gradient-text-lumensky tracking-tighter pb-2 md:pb-4 leading-[1.15] whitespace-nowrap"
+              className="shimmer-text-lumensky tracking-tighter pb-2 md:pb-4 leading-[1.15] whitespace-nowrap"
               style={{ fontSize: "clamp(2.5rem, 12vw, 6.8rem)", fontWeight: 600, marginTop: "-0.05em" }}
             >
               Start executing.
