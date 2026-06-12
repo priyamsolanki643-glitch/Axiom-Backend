@@ -13,7 +13,7 @@ import {
   Clock, BrainCircuit, Target, MessageSquareWarning, Timer, ScanFace
 } from 'lucide-react';
 
-// --- DEMO DATA ---
+// --- DEMO DATA (Fallback) ---
 const retentionData = [
   { day: 'Day 0', industry: 100, fp: 100 },
   { day: 'Day 5', industry: 82, fp: 97 },
@@ -24,13 +24,13 @@ const retentionData = [
   { day: 'Day 30', industry: 38, fp: 76 },
 ];
 
-const riskData = [
+const fallbackRiskData = [
   { name: 'Flight Risk (Quit Zone)', value: 14, color: '#ef4444' },
   { name: 'Drifting (Cons. < 50%)', value: 24, color: '#eab308' },
   { name: 'Locked In (Cons. > 80%)', value: 62, color: '#22c55e' },
 ];
 
-const frictionData = [
+const fallbackFrictionData = [
   { name: 'Rotational Mechanics Backlog', count: 5420 },
   { name: 'Skipping Sunday Mock Tests', count: 4100 },
   { name: 'Lectures @ 2x Spd (No Notes)', count: 3250 },
@@ -39,10 +39,10 @@ const frictionData = [
 
 // --- COMPONENTS ---
 
-const DemoBadge = () => (
-  <div className="absolute top-2 right-2 px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-[10px] text-yellow-500 font-mono tracking-wider flex items-center gap-1 z-10 backdrop-blur-md">
+const DemoBadge = ({ isLive }: { isLive?: boolean }) => (
+  <div className={`absolute top-2 right-2 px-2 py-1 ${isLive ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'} border rounded text-[10px] font-mono tracking-wider flex items-center gap-1 z-10 backdrop-blur-md`}>
     <AlertTriangle size={10} />
-    DEMO PROJECTION
+    {isLive ? 'LIVE DB DATA' : 'DEMO PROJECTION'}
   </div>
 );
 
@@ -57,8 +57,50 @@ const SectionHeader = ({ title, icon: Icon, subtitle }: any) => (
 );
 
 export default function CMOTerminal() {
-  const [studentCount, setStudentCount] = useState(100000);
-  const [coursePrice, setCoursePrice] = useState(4000);
+  const [studentCount, setStudentCount] = React.useState(100000);
+  const [coursePrice, setCoursePrice] = React.useState(4000);
+  const [riskData, setRiskData] = React.useState(fallbackRiskData);
+  const [frictionData, setFrictionData] = React.useState(fallbackFrictionData);
+  const [isLive, setIsLive] = React.useState(false);
+  const [topFriction, setTopFriction] = React.useState("Rotational Mechanics Backlog");
+  const [topFrictionCount, setTopFrictionCount] = React.useState(5420);
+
+  React.useEffect(() => {
+    // Fetch live data from backend
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    fetch(`${apiUrl}/api/v1/analytics/cohort-health`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success' && data.data) {
+          const liveData = data.data;
+          
+          setStudentCount(liveData.totalActiveStudents > 1000 ? liveData.totalActiveStudents : 100000);
+          
+          const redCount = liveData.redBandAlerts || 0;
+          const greenCount = liveData.totalActiveStudents ? liveData.totalActiveStudents - redCount : 0;
+          
+          if (liveData.totalActiveStudents > 0) {
+            setRiskData([
+              { name: 'Flight Risk (Quit Zone)', value: redCount, color: '#ef4444' },
+              { name: 'Drifting (Cons. < 50%)', value: Math.floor(liveData.totalActiveStudents * 0.2), color: '#eab308' },
+              { name: 'Locked In (Cons. > 80%)', value: Math.max(0, greenCount - Math.floor(liveData.totalActiveStudents * 0.2)), color: '#22c55e' },
+            ]);
+            setIsLive(true);
+          }
+
+          if (liveData.subjectFrictionHeatmap && liveData.subjectFrictionHeatmap.length > 0) {
+            const mappedFriction = liveData.subjectFrictionHeatmap.map((item: any) => ({
+              name: item.subject,
+              count: item.affectedStudents
+            }));
+            setFrictionData(mappedFriction);
+            setTopFriction(liveData.subjectFrictionHeatmap[0].subject);
+            setTopFrictionCount(liveData.subjectFrictionHeatmap[0].affectedStudents);
+          }
+        }
+      })
+      .catch(err => console.error("Failed to fetch live cohort health:", err));
+  }, []);
 
   // ROI Math (Projected 8.5% lift in retention/conversion over 1 year)
   const retentionLiftPercent = 8.5;
@@ -99,7 +141,7 @@ export default function CMOTerminal() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative overflow-hidden"
           >
-            <DemoBadge />
+            <DemoBadge isLive={isLive} />
             <SectionHeader title="Retention Impact" icon={TrendingUp} subtitle="Projected Day-30 Batch Retention vs Industry Avg" />
             
             <div className="flex items-end gap-6 mb-6">
@@ -135,7 +177,7 @@ export default function CMOTerminal() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative"
           >
-            <DemoBadge />
+            <DemoBadge isLive={isLive} />
             <SectionHeader title="Dropout Risk Radar" icon={ShieldAlert} subtitle="Real-time behavioral risk classification" />
             
             <div className="flex flex-col md:flex-row items-center gap-6">
@@ -155,8 +197,8 @@ export default function CMOTerminal() {
               <div className="flex-1 space-y-4">
                 <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                   <div className="text-red-500 font-bold text-sm mb-1">Top Dropout Catalyst (This Week)</div>
-                  <div className="text-white text-lg">Rotational Mechanics Backlog</div>
-                  <div className="text-zinc-400 text-xs mt-1">Affected: 5,420 students in Lakshya Batch</div>
+                  <div className="text-white text-lg">{topFriction}</div>
+                  <div className="text-zinc-400 text-xs mt-1">Affected: {topFrictionCount.toLocaleString()} students</div>
                 </div>
 
                 <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center justify-between">
@@ -179,7 +221,7 @@ export default function CMOTerminal() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative"
           >
-            <DemoBadge />
+            <DemoBadge isLive={isLive} />
             <SectionHeader title="Execution Intelligence" icon={BarChart} subtitle="Identified friction points causing inconsistency" />
             
             <div className="h-64 w-full mt-4">
@@ -250,7 +292,7 @@ export default function CMOTerminal() {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative"
         >
-          <DemoBadge />
+          <DemoBadge isLive={isLive} />
           <SectionHeader title="ROI Calculator" icon={Calculator} subtitle="Projected revenue saved via AI-driven retention" />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
