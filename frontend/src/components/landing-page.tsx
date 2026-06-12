@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
 import { ParticleSphere } from "@/components/particle-sphere";
+import { MagneticButton } from "@/components/magnetic-button";
 
 interface LandingPageProps {
   onLock: () => void;
@@ -215,10 +216,12 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           {/* Centered CTA Row */}
           <div className="flex justify-center w-full mt-2">
             <div className="eclipse-glow"></div>
-            <button onClick={handleStart} className="btn-lumensky-core group">
-              <span>Get started</span>
-              <ArrowRight size={18} className="arrow-icon opacity-80 group-hover:opacity-100" />
-            </button>
+            <MagneticButton strength={25} onClick={handleStart}>
+              <button className="btn-lumensky-core group">
+                <span>Get started</span>
+                <ArrowRight size={18} className="arrow-icon opacity-80 group-hover:opacity-100" />
+              </button>
+            </MagneticButton>
           </div>
         </div>
       </main>

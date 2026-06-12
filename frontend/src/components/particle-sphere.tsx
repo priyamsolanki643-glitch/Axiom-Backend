@@ -23,12 +23,12 @@ export function ParticleSphere() {
     window.addEventListener("resize", handleResize);
 
     // Particle Configuration
-    const particleCount = 400; // Total number of dots
-    const sphereRadius = Math.min(width, height) * 0.4; // Responsive radius
+    const particleCount = 600; // Total number of dots
+    const sphereRadius = Math.max(width, height) * 0.45; // Larger radius to cover the text area
     const particles: { x: number; y: number; z: number; color: string }[] = [];
 
-    // Generate random colors (RGB / Cyberpunk aesthetic)
-    const colors = ["#00ffcc", "#ff00cc", "#0066ff", "#ffffff"];
+    // Generate sleek, professional monochromatic/neural colors
+    const colors = ["#ffffff", "#a1a1aa", "#52525b", "#27272a"];
 
     // Distribute points evenly on a sphere using Golden Ratio (Fibonacci sphere)
     const phi = Math.PI * (3 - Math.sqrt(5)); // golden angle

@@ -144,7 +144,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black overflow-hidden ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl border-r border-white/5 overflow-hidden ${
           isOpen ? "w-[260px] translate-x-0 opacity-100" : "w-0 -translate-x-full opacity-0"
         }`}
       >
@@ -343,7 +343,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
         </div>
 
         {/* ── Footer / Upgrade / Profile ── */}
-        <div className="p-3 bg-black shrink-0 flex flex-col gap-3">
+        <div className="p-3 bg-transparent shrink-0 flex flex-col gap-3 border-t border-white/5">
           
           {/* User profile row */}
           <div className="relative">
