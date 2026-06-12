@@ -114,7 +114,7 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
 
       let responseText = "";
       if (activeMission) {
-        responseText = `Hey bro! Lumensky here.
+        responseText = `Hey bro!
 
 Tera streak abhi ${activeMission.streakDays} days par hai.
 
@@ -122,9 +122,9 @@ Consistency score ${activeMission.consistencyScore}% hai.
 
 Bata, aaj ka execution start karein? Kuch block chal raha hai kya? 🚀🔥`;
       } else {
-        responseText = `Hey bhai. Lumensky here.
+        responseText = `Hey bhai.
 
-Kaisa hai aaj? Kya chal raha hai dimag mein? ⚡️`;
+Kaisa hai? Kya chal raha hai dimag mein? ⚡️`;
       }
 
       await DbService.saveMessage(currentThreadId, actualUserId, 'fp', responseText);
