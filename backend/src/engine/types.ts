@@ -125,6 +125,28 @@ export interface GoalVector {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ED-TECH INTELLIGENCE (B2B COHORT HEALTH & VAULT)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SubjectVelocity {
+  subjectName: string;
+  learningRate: number;       // 0.0 to 1.0 (e.g., fast in Physics, struggling in Math)
+  backlogHours: number;       // How far behind they are
+}
+
+export interface EdTechIntelligence {
+  targetExam: 'JEE' | 'NEET' | 'UPSC' | 'CA' | 'OTHER';
+  examDate: string | null;
+  examProximityDays: number;
+  examStressMultiplier: number; // 1.0 to 3.0 (scales up as exam gets closer)
+  
+  subjectVelocities: SubjectVelocity[];
+  
+  cohortDropoutRiskIndex: number; // 0-100%. If > 80%, triggers Red Band
+  isRedBandDropoutRisk: boolean;  // B2B Dashboard Alert Flag
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // THE MASTER CONTEXT MATRIX (C)
 // Single source of truth for all downstream reasoning layers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -136,6 +158,7 @@ export interface ContextMatrix {
   infrastructure: InfrastructureCluster;
   psychometric: PsychometricCluster;
   goalVector: GoalVector;
+  edTechIntelligence?: EdTechIntelligence; // NEW: PW B2B Dashboard integration
   onboardingText: string;           // Raw onboarding conversation text for AI analysis
   onboardingCompletedAt: string;    // ISO timestamp
   consentGranted: boolean;          // DPDP Act 2023 / GDPR compliance
@@ -609,6 +632,7 @@ export interface UserRuntime {
   currentTaskSprint: TaskSprint | null;
   consistencyHistory: ConsistencyEvent[];
   legalAuditReport: LegalAuditReport | null;          // NEW: Layer 13 report
+  edTechIntelligence?: EdTechIntelligence;            // NEW: Layer for B2B Vault
 }
 
 export interface ConsistencyEvent {

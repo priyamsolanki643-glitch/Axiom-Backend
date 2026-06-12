@@ -1138,3 +1138,22 @@ interactionRoutes.post('/operator/current-tasks', async (c) => {
     return c.json({ error: error.message }, 500);
   }
 });
+
+// B2B CMO Dashboard Endpoint for PW Pitch (Mock Data)
+interactionRoutes.get('/api/v1/analytics/cohort-health', async (c) => {
+  const mockB2bData = {
+    totalActiveStudents: 12450,
+    averageConsistencyScore: 76.4,
+    redBandAlerts: 412, // Students at imminent risk of dropping out
+    dropoutPreventionRate: 84.2, // Lumensky's success in rescuing Red Band students
+    subjectFrictionHeatmap: [
+      { subject: "Organic Chemistry", frictionLevel: "Critical", affectedStudents: 3200 },
+      { subject: "Rotational Mechanics", frictionLevel: "High", affectedStudents: 2100 }
+    ]
+  };
+
+  return c.json({
+    status: 'success',
+    data: mockB2bData
+  });
+});
