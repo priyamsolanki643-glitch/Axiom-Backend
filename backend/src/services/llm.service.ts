@@ -2,7 +2,12 @@ import '../utils/env';
 import { GoogleGenAI, Type, Schema } from '@google/genai';
 import { ContextMatrix, CapabilityVector } from '../engine/types';
 
-const HARDCODED_KEYS: string[] = [];
+const HARDCODED_KEYS: string[] = [
+  "AIzaSyADhnxSuEtdP5GHMJ_QJbOhNfgDfIujumI",
+  "AIzaSyApmNdQKeuXuN55w6ajnQhjAK0V8ALHhew",
+  "AIzaSyCiOefYmmgmuZKg_Fu5XcUhWIafRmsEeB0",
+  "AIzaSyCSB9xsxVZWXoFq56PtkeAvT113kpu5nVw"
+];
 
 // Track cooldowns across the entire service instance: key = `${model}-${keyIndex}`, value = timestamp in ms when cooldown expires
 const globalCooldownMap = new Map<string, number>();
@@ -14,9 +19,9 @@ export async function executeWithRotation(
   const keys = [
     ...(process.env.AI_KEYS ? process.env.AI_KEYS.split(',') : []),
     ...(process.env.GEMINI_KEYS ? process.env.GEMINI_KEYS.split(',') : []),
-    process.env.AI_PROVIDER_KEY,
-    process.env.GEMINI_API_KEY,
-    process.env.GOOGLE_API_KEY,
+    ...(process.env.AI_PROVIDER_KEY ? process.env.AI_PROVIDER_KEY.split(',') : []),
+    ...(process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.split(',') : []),
+    ...(process.env.GOOGLE_API_KEY ? process.env.GOOGLE_API_KEY.split(',') : []),
     ...HARDCODED_KEYS
   ]
     .map(k => k?.trim())
