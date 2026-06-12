@@ -447,7 +447,7 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
       <header 
-        className="reveal-chat-item h-14 shrink-0 flex items-center justify-between px-6 bg-[#000000] z-20"
+        className="reveal-chat-item h-14 shrink-0 flex items-center justify-between px-6 bg-transparent backdrop-blur-xl border-b border-white/5 z-20 sticky top-0"
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center gap-3">
