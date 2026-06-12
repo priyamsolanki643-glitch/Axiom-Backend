@@ -257,15 +257,11 @@ export class LLMService {
         ? conversationHistory.slice(-MAX_HISTORY) 
         : conversationHistory;
 
-      const fullContents = [
-        { role: 'user', parts: [{ text: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching this schema: " + JSON.stringify(responseSchema) + ". You may use markdown formatting (like bullet points and headers) inside the response_text string, but the overall output MUST be pure JSON." }] },
-        ...truncatedHistory
-      ];
-
       const response = await executeWithRotation({
         model: modelName || 'gemini-2.5-flash',
-        contents: fullContents as any,
+        contents: truncatedHistory as any,
         config: {
+          systemInstruction: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching this schema: " + JSON.stringify(responseSchema) + ". You may use markdown formatting (like bullet points and headers) inside the response_text string, but the overall output MUST be pure JSON.",
           temperature: 0.3
         }
       });
@@ -306,14 +302,14 @@ export class LLMService {
         ? conversationHistory.slice(-MAX_HISTORY) 
         : conversationHistory;
 
-      const fullContents = [
-        { role: 'user', parts: [{ text: systemPrompt + "\n\nCRITICAL: Maintain the Lumensky persona as defined in the system prompt." }] },
-        ...truncatedHistory
-      ];
+      const responseContents = truncatedHistory.length > 0
+        ? truncatedHistory
+        : [{ role: 'user', parts: [{ text: 'Please analyze.' }] }];
 
       const response = await executeWithRotation({
-        contents: fullContents as any,
+        contents: responseContents as any,
         config: {
+          systemInstruction: systemPrompt + "\n\nCRITICAL: Maintain the Lumensky persona as defined in the system prompt.",
           responseMimeType: 'application/json',
           responseSchema: responseSchema,
           temperature: 0.3, 
