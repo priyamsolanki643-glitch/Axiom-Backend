@@ -122,11 +122,9 @@ Consistency score ${activeMission.consistencyScore}% hai.
 
 Bata, aaj ka execution start karein? Kuch block chal raha hai kya? 🚀🔥`;
       } else {
-        responseText = `Hey bro! Lumensky here.
+        responseText = `Hey bhai. Lumensky here.
 
-Batao, kya mast goal setup karna hai aaj?
-
-Apne targets set karein aur build karna start karein? 🚀🔥`;
+Kaisa hai aaj? Kya chal raha hai dimag mein? ⚡️`;
       }
 
       await DbService.saveMessage(currentThreadId, actualUserId, 'fp', responseText);
