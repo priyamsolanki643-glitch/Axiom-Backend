@@ -23,8 +23,8 @@ export function ParticleSphere() {
     window.addEventListener("resize", handleResize);
 
     // Particle Configuration
-    const particleCount = 600; // Total number of dots
-    const sphereRadius = Math.max(width, height) * 0.45; // Larger radius to cover the text area
+    const particleCount = 800; // Total number of dots
+    const sphereRadius = Math.max(width, height) * 0.8; // Massive radius to fully cover the text area
     const particles: { x: number; y: number; z: number; color: string }[] = [];
 
     // Generate sleek, professional monochromatic/neural colors
@@ -51,6 +51,22 @@ export function ParticleSphere() {
     let animationFrameId: number;
     let rotationX = 0;
     let rotationY = 0;
+    let targetSpeedX = 0.001;
+    let targetSpeedY = 0.002;
+    let currentSpeedX = 0.001;
+    let currentSpeedY = 0.002;
+
+    // Mouse Interaction for Speed
+    const handleMouseMove = (e: MouseEvent) => {
+      // Normalize mouse from -1 to 1
+      const nx = (e.clientX / width) * 2 - 1;
+      const ny = (e.clientY / height) * 2 - 1;
+      
+      // Speed multiplier (moving mouse changes the rotation speed)
+      targetSpeedX = 0.001 + (ny * 0.015);
+      targetSpeedY = 0.002 + (nx * 0.015);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
@@ -59,9 +75,13 @@ export function ParticleSphere() {
       const cx = width / 2;
       const cy = height / 2;
 
-      // Slow continuous rotation
-      rotationX += 0.001;
-      rotationY += 0.002;
+      // Smoothly interpolate speed
+      currentSpeedX += (targetSpeedX - currentSpeedX) * 0.05;
+      currentSpeedY += (targetSpeedY - currentSpeedY) * 0.05;
+
+      // Apply rotation
+      rotationX += currentSpeedX;
+      rotationY += currentSpeedY;
 
       const cosX = Math.cos(rotationX);
       const sinX = Math.sin(rotationX);
@@ -79,8 +99,8 @@ export function ParticleSphere() {
         const z2 = -p.x * sinY + z1 * cosY;
 
         // Perspective projection
-        const fov = 400; // Field of view
-        const scale = fov / (fov + z2 + sphereRadius * 1.5); // Add distance so scale isn't infinity
+        const fov = 600; // Wider field of view for massive sphere
+        const scale = fov / (fov + z2 + sphereRadius * 1.5); 
 
         return {
           x: x2 * scale + cx,
@@ -96,23 +116,18 @@ export function ParticleSphere() {
 
       // Draw dots
       projected.forEach(p => {
-        // Size gets smaller as it goes further back
         const size = Math.max(0.5, 3 * p.scale); 
-        
-        // Opacity gets lower as it goes further back
         const maxZ = sphereRadius;
         const minZ = -sphereRadius;
-        const normalizedZ = (p.z - minZ) / (maxZ - minZ); // 0 (front) to 1 (back)
-        const opacity = Math.max(0.1, 1 - (normalizedZ * 0.8)); // Front is bright, back is dim
+        const normalizedZ = (p.z - minZ) / (maxZ - minZ); 
+        const opacity = Math.max(0.05, 1 - (normalizedZ * 0.85)); 
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-        
-        // Apply RGB color with depth-based opacity
         ctx.fillStyle = p.color;
         ctx.globalAlpha = opacity;
         ctx.fill();
-        ctx.globalAlpha = 1; // Reset
+        ctx.globalAlpha = 1;
       });
 
       animationFrameId = requestAnimationFrame(render);
@@ -122,6 +137,7 @@ export function ParticleSphere() {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
