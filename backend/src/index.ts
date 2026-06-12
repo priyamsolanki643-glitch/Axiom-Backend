@@ -51,11 +51,12 @@ app.get('/api/test-ai', async (c) => {
   try {
     const { GoogleGenAI } = await import('@google/genai');
     const keys = [
-      'AIzaSyADhnxSuEtdP5GHMJ_QJbOhNfgDfIujumI',
-      'AIzaSyApmNdQKeuXuN55w6ajnQhjAK0V8ALHhew',
-      'AIzaSyCiOefYmmgmuZKg_Fu5XcUhWIafRmsEeB0',
-      'AIzaSyCSB9xsxVZWXoFq56PtkeAvT113kpu5nVw'
-    ];
+      process.env.GEMINI_API_KEY,
+      process.env.AI_PROVIDER_KEY,
+      process.env.AI_KEYS,
+      process.env.GEMINI_KEYS,
+      process.env.GOOGLE_API_KEY
+    ].flatMap(k => k ? k.split(',') : []).map(k => k.trim()).filter(Boolean);
     const results: any[] = [];
     for (let i = 0; i < keys.length; i++) {
       try {

@@ -5,12 +5,7 @@ import { ContextMatrix, CapabilityVector } from '../engine/types';
 // ─────────────────────────────────────────────────────────────────────────────
 // API KEY POOL — 4 keys × rotating = near-zero quota failures
 // ─────────────────────────────────────────────────────────────────────────────
-const HARDCODED_KEYS: string[] = [
-  "AIzaSyADhnxSuEtdP5GHMJ_QJbOhNfgDfIujumI",
-  "AIzaSyApmNdQKeuXuN55w6ajnQhjAK0V8ALHhew",
-  "AIzaSyCiOefYmmgmuZKg_Fu5XcUhWIafRmsEeB0",
-  "AIzaSyCSB9xsxVZWXoFq56PtkeAvT113kpu5nVw"
-];
+const HARDCODED_KEYS: string[] = [];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // COOLDOWN MAP — prevents hammering a quota-exhausted key
