@@ -258,23 +258,37 @@ export class LLMService {
       }
 
       const MAX_HISTORY = 10;
-      const truncatedHistory = conversationHistory.length > MAX_HISTORY 
-        ? conversationHistory.slice(-MAX_HISTORY) 
+      const rawHistory = conversationHistory.length > MAX_HISTORY
+        ? conversationHistory.slice(-MAX_HISTORY)
         : conversationHistory;
+
+      // Gemini REQUIRES at least one 'user' turn in contents.
+      // If history is somehow empty (first message edge case), inject a dummy starter.
+      const safeContents = rawHistory.length > 0
+        ? rawHistory
+        : [{ role: 'user' as const, parts: [{ text: 'Hello' }] }];
+
+      // Ensure the final turn is always a 'user' turn (Gemini rejects if last is 'model').
+      const lastRole = safeContents[safeContents.length - 1]?.role;
+      const contentsForApi = lastRole === 'model'
+        ? [...safeContents, { role: 'user' as const, parts: [{ text: '...' }] }]
+        : safeContents;
 
       const response = await executeWithRotation({
         model: modelName || 'gemini-2.5-flash',
-        contents: truncatedHistory as any,
+        contents: contentsForApi as any,
         config: {
-          systemInstruction: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching this schema: " + JSON.stringify(responseSchema) + ". You may use markdown formatting (like bullet points and headers) inside the response_text string, but the overall output MUST be pure JSON.",
-          temperature: 0.3
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.85,
         }
       });
 
       const rawText = response.text;
       if (!rawText) throw new Error("Empty response from LLM");
 
-      return cleanAndParseJSON(rawText);
+      return JSON.parse(rawText);
     } catch (error: any) {
       console.error('LLM Smart Generation Error:', error);
       throw error;

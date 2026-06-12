@@ -111,25 +111,45 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
       const activeMission = await DbService.getActiveMission(actualUserId);
       let currentThreadId = thread_id;
       if (!currentThreadId) {
-        const newThread = await DbService.createChatThread(actualUserId, "Greeting Conversation");
+        const newThread = await DbService.createChatThread(actualUserId, "Conversation");
         currentThreadId = newThread.id;
       }
 
       await DbService.saveMessage(currentThreadId, actualUserId, 'user', message);
 
+      // Build a tight context-aware system prompt for the greeting
+      const greetingSystemPrompt = activeMission
+        ? `You are Lumensky — a brutally honest, warm, Hinglish-speaking AI buddy helping students achieve their goals.
+
+The student just said "${message}" to you.
+
+Their current status:
+- Streak: ${activeMission.streakDays} days
+- Consistency Score: ${activeMission.consistencyScore}/100
+- Day ${activeMission.dayNumber} of ${activeMission.totalDays}
+- Active Path: ${activeMission.lockedPath || 'In progress'}
+
+Reply naturally in Hinglish — like a smart older bro checking in. Reference their actual numbers. Ask ONE sharp question or give ONE sharp nudge. 2-4 lines max. No markdown. No "Hey bhai" as opener every time — vary it.`
+        : `You are Lumensky — a brutally honest, warm, Hinglish-speaking AI buddy helping students figure out their path in life.
+
+The student just said "${message}" to greet you. They haven't set their goal yet.
+
+Reply casually in Hinglish — like a smart older bro who's genuinely curious. Ask what's going on in their life or what they want to achieve. 2-3 lines max. No markdown. Vary your opener — not always "Hey bhai".`;
+
       let responseText = "";
-      if (activeMission) {
-        responseText = `Hey bro!
-
-Tera streak abhi ${activeMission.streakDays} days par hai.
-
-Consistency score ${activeMission.consistencyScore}% hai.
-
-Bata, aaj ka execution start karein? Kuch block chal raha hai kya? 🚀🔥`;
-      } else {
-        responseText = `Hey bhai.
-
-Kaisa hai? Kya chal raha hai dimag mein? ⚡️`;
+      try {
+        const greetRes = await LLMService.generateSmartResponse(
+          actualUserId,
+          greetingSystemPrompt,
+          [...conversationHistory, { role: 'user', parts: [{ text: message }] }] as any,
+          false,
+          'gemini-2.5-flash'
+        );
+        responseText = greetRes.response_text;
+      } catch {
+        responseText = activeMission
+          ? `Bhai! ${activeMission.streakDays} day streak chal rahi hai, consistency ${activeMission.consistencyScore}% hai. Aaj ka plan kya hai?`
+          : `Arre! Kya haal hai? Bata kya chal raha hai dimag mein.`;
       }
 
       await DbService.saveMessage(currentThreadId, actualUserId, 'fp', responseText);
