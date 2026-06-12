@@ -252,9 +252,14 @@ export class LLMService {
         };
       }
 
+      const MAX_HISTORY = 10;
+      const truncatedHistory = conversationHistory.length > MAX_HISTORY 
+        ? conversationHistory.slice(-MAX_HISTORY) 
+        : conversationHistory;
+
       const fullContents = [
         { role: 'user', parts: [{ text: systemPrompt + "\n\nIMPORTANT: You must output your response in JSON format matching this schema: " + JSON.stringify(responseSchema) + ". You may use markdown formatting (like bullet points and headers) inside the response_text string, but the overall output MUST be pure JSON." }] },
-        ...conversationHistory
+        ...truncatedHistory
       ];
 
       const response = await executeWithRotation({
@@ -296,9 +301,14 @@ export class LLMService {
         required: ['response_text']
       };
 
+      const MAX_HISTORY = 10;
+      const truncatedHistory = conversationHistory.length > MAX_HISTORY 
+        ? conversationHistory.slice(-MAX_HISTORY) 
+        : conversationHistory;
+
       const fullContents = [
         { role: 'user', parts: [{ text: systemPrompt + "\n\nCRITICAL: Maintain the Lumensky persona as defined in the system prompt." }] },
-        ...conversationHistory
+        ...truncatedHistory
       ];
 
       const response = await executeWithRotation({
