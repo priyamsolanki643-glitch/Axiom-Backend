@@ -17,6 +17,10 @@ import { updateConsistencyScore } from '../engine/layer10_statelock';
 import { runLegalAudit } from '../engine/layer13_legalaudit';
 import { LLMService } from '../services/llm.service';
 import { analyticsWorker } from '../workers/analytics.worker';
+import { runOmniPipeline, triggerDeepSync } from '../engine/OmniPipeline';
+import type { EmotionalSignal } from '../engine/layer14_empathy';
+import type { ChaosEventType } from '../engine/layer15_chaos';
+import type { OmniContext } from '../services/cache.service';
 
 function getAIErrorMessage(err: any): string {
   if (!err) return 'Unknown AI error';
@@ -377,19 +381,65 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
       }
     }
 
-    // Call LLM with the generated system prompt from the engine
-    let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
-    if (systemPrompt) {
-      let similarMemText = "";
-      if (similarMemories && similarMemories.length > 0) {
-        similarMemText = "\n\n## HIVE MIND SIMILAR TRAJECTORIES (PAST COHORT EXPERIENCES):\n" + 
-          similarMemories.map(m => `- Opportunity: ${m.mission_name} (${m.locked_path} path)\n  Result: ${m.outcome_summary}\n  Success/Consistency Score: ${m.success_rate}%`).join('\n') + 
-          "\nUse these past cohort references contextually in your reply (e.g. referencing dropshipping or freelance video editing failures/successes) if the user is pursuing something similar, to show real-world patterns.";
-      }
+    // ── OmniPipeline: Route through Fast-Path or Deep-Path ─────────────────────
+    // This is the 100-Crore architecture. OmniPipeline decides:
+    //   FAST PATH: Cache hit → sub-second → Gemini gets pre-computed ToneVector
+    //   DEEP PATH: Cache miss/structural event → full 16-layer recompute
+    // Gemini's ONLY job after this: translate the math into natural Hinglish.
+    let finalSystemPrompt = systemPrompt; // Fallback to engine prompt if pipeline errors
+    let isCrisisMode = false;
 
-      const enrichedPrompt = systemPrompt + similarMemText + "\n\n" + 
-        (activeMission ? "If user explicitly logs a task completion/failure, set task_classification to 'completed' or 'failed'. **EXECUTION MIRROR LINGUISTIC RADAR**: At the end of your response, casually ask a 1-sentence question about their current execution/mission activity today. Analyze their incoming message text for hesitation words ('but', 'maybe', 'try') or abnormally short sentence length to detect early dropout risk signals (avoidance/stress)." : "Extract any onboarding constraints to build context, or prompt user to lock either Option A (Alpha) or Option B (Beta).");
-      
+    try {
+      const omniInput = {
+        userId: actualUserId,
+        userMessage: message,
+        conversationHistory: conversationHistory as any,
+        contextMatrix: state_context?.contextMatrix ?? null,
+        frictionProfile: state_context?.frictionProfile ?? null,
+        strategyState: state_context?.strategyState ?? null,
+        detectedEmotionalSignals: [] as EmotionalSignal[],
+        detectedChaosEvents: [] as ChaosEventType[],
+        daysSinceLastActivity: 0,
+        consecutiveCompletionCount: activeMission?.streakDays ?? 0,
+        consecutiveFailureCount: activeMission?.streakDays === 0 ? 1 : 0,
+        daysSinceLastMilestone: activeMission?.dayNumber ?? 0,
+        milestonesHitTotal: activeMission?.dayNumber ?? 0,
+        streakDays: activeMission?.streakDays ?? 0,
+        currentTasks: [] as OmniContext['currentTasks'],
+        recentMemories: (similarMemories || []).map((m: any) => ({
+          content: `${m.mission_name} (${m.locked_path}): ${m.outcome_summary}`,
+          relevanceScore: (m.success_rate || 50) / 100,
+        })),
+      };
+
+      // On strategy lock → force deep path to recompute full OmniContext
+      const deepTrigger = isTransitioningToExecution ? 'strategy_locked' : undefined;
+      const omniResult = await runOmniPipeline(omniInput, deepTrigger as any);
+
+      finalSystemPrompt = omniResult.geminiSystemPrompt;
+      isCrisisMode = omniResult.isCrisisMode;
+
+      console.log(`[OmniPipeline] Path: ${omniResult.pathUsed.toUpperCase()} | Crisis: ${isCrisisMode} | User: ${actualUserId}`);
+    } catch (omniErr: any) {
+      // Non-blocking fallback — if OmniPipeline errors, use the raw systemPrompt
+      console.error('[OmniPipeline] Failed, falling back to raw systemPrompt:', omniErr?.message);
+    }
+
+    // Call LLM with the OmniPipeline-generated system prompt
+    // Gemini receives only the translation directive. All thinking is already done.
+    let llmResponse = { response_text: "System prompt generated, awaiting LLM..." };
+    if (finalSystemPrompt) {
+      // Enrich with cohort memory (if any — already injected via OmniContext.recentMemories)
+      const legacyMemText = (!state_context?.contextMatrix && similarMemories && similarMemories.length > 0)
+        ? "\n\n## COHORT INTELLIGENCE:\n" +
+          similarMemories.map((m: any) => `- ${m.mission_name} (${m.locked_path}): ${m.outcome_summary}`).join('\n')
+        : "";
+
+      const enrichedPrompt = finalSystemPrompt + legacyMemText + "\n\n" +
+        (activeMission
+          ? "If user explicitly logs a task completion/failure, set task_classification to 'completed' or 'failed'. Analyze their message for hesitation words ('but', 'maybe', 'try') to detect dropout risk."
+          : "Guide user naturally through goal discovery. When data is sufficient, present simulated paths.");
+
       let smartResponse;
       try {
         smartResponse = await LLMService.generateSmartResponse(
