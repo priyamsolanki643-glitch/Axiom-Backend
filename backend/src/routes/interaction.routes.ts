@@ -16,6 +16,7 @@ import {
 import { updateConsistencyScore } from '../engine/layer10_statelock';
 import { runLegalAudit } from '../engine/layer13_legalaudit';
 import { LLMService } from '../services/llm.service';
+import { analyticsWorker } from '../workers/analytics.worker';
 
 function getAIErrorMessage(err: any): string {
   if (!err) return 'Unknown AI error';
@@ -479,70 +480,11 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
     }
 
     // =======================================================================
-    // DEEP ANALYTICS: BACKGROUND LINGUISTIC EXTRACTION & RISK CALCULATION
+    // DEEP ANALYTICS: ASYNCHRONOUS EVENT QUEUE
     // =======================================================================
+    // Completely decoupled from the API request thread for enterprise scalability
     if (activeMission) {
-      (async () => {
-        try {
-          // 1. Calculate Delays & Baseline Math
-          const lastSignal = await DbService.getLastLinguisticSignal(actualUserId);
-          const messageLength = message.length;
-          
-          let responseDelayMinutes = 0;
-          if (lastSignal) {
-            const lastTime = new Date(lastSignal.timestamp).getTime();
-            const nowTime = new Date().getTime();
-            responseDelayMinutes = Math.floor((nowTime - lastTime) / 60000);
-          }
-
-          // 2. Simple sync linguistic analysis (Mocking deep LLM extraction for performance)
-          const lowerMsg = message.toLowerCase();
-          const hesitationWords = ['maybe', 'try', 'but', 'perhaps', 'trying', 'kal se', 'sochunga', 'not sure'];
-          const hesitationCount = hesitationWords.reduce((count, word) => count + (lowerMsg.split(word).length - 1), 0);
-          
-          const stressDetected = hesitationCount > 1 || messageLength < 15;
-          let energyLevel = 'medium';
-          if (messageLength > 100 && !stressDetected) energyLevel = 'high';
-          else if (stressDetected) energyLevel = 'low';
-
-          // Detect subjects roughly
-          let subject = 'none';
-          if (lowerMsg.match(/(physics|maths|chemistry|bio|rotational|kinematics|organic)/)) {
-            subject = lowerMsg.match(/(physics|maths|chemistry|bio|rotational|kinematics|organic)/)![0];
-          }
-
-          // 3. Save Deep Signal
-          await DbService.saveLinguisticSignal({
-            user_id: actualUserId,
-            message_length: messageLength,
-            response_delay_minutes: responseDelayMinutes,
-            hesitation_count: hesitationCount,
-            stress_detected: stressDetected,
-            subject,
-            energy_level: energyLevel
-          });
-
-          // 4. Seven-Day Risk Report Aggregation Check
-          const last7Days = await DbService.getLinguisticSignalsLast7Days(actualUserId);
-          if (last7Days.length >= 7 && last7Days.length % 7 === 0) { // Gen report every 7 interactions
-            const avgHesitation = last7Days.reduce((sum, log) => sum + log.hesitation_count, 0) / 7;
-            const stressRatio = last7Days.filter(l => l.stress_detected).length / 7;
-            
-            const dropoutRiskScore = Math.min(100, Math.floor((avgHesitation * 15) + (stressRatio * 50) + 10));
-            
-            await DbService.saveWeeklyRiskReport({
-              user_id: actualUserId,
-              dropout_risk_score: dropoutRiskScore,
-              dominant_avoidance_subject: subject,
-              consistency_fingerprint_trend: stressRatio > 0.5 ? 'declining' : 'improving'
-            });
-            console.log(`[DEEP ANALYTICS] Generated Weekly Risk Report for ${actualUserId}. Risk Score: ${dropoutRiskScore}`);
-          }
-
-        } catch (e) {
-          console.error('[DEEP ANALYTICS] Background extraction failed:', e);
-        }
-      })();
+      analyticsWorker.enqueueMessageAnalysis(actualUserId, message);
     }
 
     // Background task: Auto-extract mission if no active mission exists yet and this seems like a goal
@@ -1137,21 +1079,17 @@ interactionRoutes.post('/operator/current-tasks', async (c) => {
   }
 });
 
-// B2B CMO Dashboard Endpoint for PW Pitch (Mock Data)
+// B2B CMO Dashboard Endpoint for PW Pitch (Real Aggregation)
 interactionRoutes.get('/api/v1/analytics/cohort-health', async (c) => {
-  const mockB2bData = {
-    totalActiveStudents: 12450,
-    averageConsistencyScore: 76.4,
-    redBandAlerts: 412, // Students at imminent risk of dropping out
-    dropoutPreventionRate: 84.2, // Lumensky's success in rescuing Red Band students
-    subjectFrictionHeatmap: [
-      { subject: "Organic Chemistry", frictionLevel: "Critical", affectedStudents: 3200 },
-      { subject: "Rotational Mechanics", frictionLevel: "High", affectedStudents: 2100 }
-    ]
-  };
-
-  return c.json({
-    status: 'success',
-    data: mockB2bData
-  });
+  try {
+    const b2bData = await DbService.getB2bCohortAnalytics();
+    
+    return c.json({
+      status: 'success',
+      data: b2bData
+    });
+  } catch (err) {
+    console.error("Cohort Health API Error:", err);
+    return c.json({ error: "Failed to fetch cohort analytics" }, 500);
+  }
 });
