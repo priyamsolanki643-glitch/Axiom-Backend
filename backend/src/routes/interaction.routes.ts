@@ -60,7 +60,8 @@ function isRetryableAIError(message: string): boolean {
 }
 
 function toUserSafeAIText(err: any): string {
-  const message = getAIErrorMessage(err).toLowerCase();
+  const rawMessage = getAIErrorMessage(err);
+  const message = rawMessage.toLowerCase();
 
   if (isQuotaStyleError(message)) {
     return 'AI is busy right now. Please retry in about a minute.';
@@ -70,7 +71,8 @@ function toUserSafeAIText(err: any): string {
     return 'Temporary AI issue on the backend. Please retry in a moment.';
   }
 
-  return 'Something went wrong while generating the reply. Please try again.';
+  // TEMPORARY DEBUG: Return actual error so we can see what's failing
+  return `[DEBUG ERROR]: ${rawMessage}`;
 }
 import { DbService } from '../services/db.service';
 import { VectorService } from '../services/vector.service';

@@ -1,5 +1,5 @@
 git add -A
-git commit -m "fix: plain text mode for chat, fix cloudbuild yaml step3"
+git commit -m "debug: expose real errors in response + public test-ai endpoint + fix cloudbuild"
 git push origin main
 git push fp_repo main
 git push fp_repo main:backend --force

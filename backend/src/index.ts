@@ -39,12 +39,42 @@ app.onError((err: any, c) => {
   }
   
   // For standard errors
-  return c.json({ success: false, message: "Something went wrong while generating the reply. Please try again." }, 503);
+  return c.json({ success: false, message: "Something went wrong while generating the reply. Please try again.", error: err.message }, 503);
 });
 
 
 app.get('/', (c) => c.text('FP-OS Core Runtime Active'));
-app.get('/health', (c) => c.json({ status: 'ok' }));
+app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
+
+// DEBUG: Public endpoint to test Gemini API key + model directly
+app.get('/api/test-ai', async (c) => {
+  try {
+    const { GoogleGenAI } = await import('@google/genai');
+    const keys = [
+      'AIzaSyADhnxSuEtdP5GHMJ_QJbOhNfgDfIujumI',
+      'AIzaSyApmNdQKeuXuN55w6ajnQhjAK0V8ALHhew',
+      'AIzaSyCiOefYmmgmuZKg_Fu5XcUhWIafRmsEeB0',
+      'AIzaSyCSB9xsxVZWXoFq56PtkeAvT113kpu5nVw'
+    ];
+    const results: any[] = [];
+    for (let i = 0; i < keys.length; i++) {
+      try {
+        const client = new GoogleGenAI({ apiKey: keys[i] });
+        const resp = await client.models.generateContent({
+          model: 'gemini-1.5-flash',
+          contents: [{ role: 'user', parts: [{ text: 'Reply with exactly: OK' }] }],
+          config: { maxOutputTokens: 10 }
+        });
+        results.push({ key: i + 1, status: 'OK', text: resp.text });
+      } catch (e: any) {
+        results.push({ key: i + 1, status: 'ERROR', error: e?.message || String(e) });
+      }
+    }
+    return c.json({ results });
+  } catch (e: any) {
+    return c.json({ error: e?.message }, 500);
+  }
+});
 
 // Mount specific domains
 app.route('/api/v1/interaction', interactionRoutes);
