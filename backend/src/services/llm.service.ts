@@ -234,8 +234,9 @@ export class LLMService {
 
   // ──────────────────────────────────────────────────────────────────────────
   // PRIMARY CHAT RESPONDER
-  // Called for every user message. Returns response_text + task_classification.
-  // Uses JSON mode with responseSchema for 100% structured output.
+  // Returns natural Hinglish response + lightweight task classification.
+  // Uses plain-text mode (NOT JSON mode) for maximum reliability.
+  // JSON mode has too many constraints that cause 400 errors in production.
   // ──────────────────────────────────────────────────────────────────────────
   static async generateSmartResponse(
     userId: string,
@@ -248,38 +249,9 @@ export class LLMService {
     task_classification: 'completed' | 'failed' | 'none';
     onboarding_data?: any;
   }> {
-    // Schema definition
-    const responseSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        response_text: {
-          type: Type.STRING,
-          description: 'Your response to the user in natural Hinglish. No markdown.'
-        },
-        task_classification: {
-          type: Type.STRING,
-          enum: ['completed', 'failed', 'none'],
-          description: "If user is reporting a task outcome: 'completed' or 'failed'. Otherwise: 'none'."
-        }
-      },
-      required: ['response_text', 'task_classification']
-    };
-
-    if (isModeOnboarding) {
-      responseSchema.properties!['onboarding_data'] = {
-        type: Type.OBJECT,
-        properties: {
-          isComplete: { type: Type.BOOLEAN },
-          declaredGoal: { type: Type.STRING },
-          region: { type: Type.STRING },
-          liquidCapital: { type: Type.NUMBER },
-          dailyUninterruptedHours: { type: Type.NUMBER },
-          pathPreference: { type: Type.STRING },
-          rawSkillStrings: { type: Type.ARRAY, items: { type: Type.STRING } }
-        },
-        required: ['isComplete']
-      };
-    }
+    // Last user message for regex classification
+    const lastUserTurn = [...conversationHistory].reverse().find(t => t.role === 'user');
+    const lastUserMsg = lastUserTurn?.parts?.map(p => p.text).join(' ') || '';
 
     // Trim to last 10 turns for speed
     const MAX_HISTORY = 10;
@@ -288,9 +260,10 @@ export class LLMService {
       : conversationHistory;
 
     const safeContents = buildSafeContents(rawHistory);
-
-    // systemInstruction must not have markdown when used with JSON mode
     const cleanSystemInstruction = stripMarkdownForSystemInstruction(systemPrompt);
+
+    // ── Primary call: plain text (no JSON schema constraints) ─────────────────
+    let responseText = '';
 
     try {
       const response = await executeWithRotation({
@@ -298,55 +271,52 @@ export class LLMService {
         contents: safeContents as any,
         config: {
           systemInstruction: cleanSystemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema: responseSchema,
           temperature: 0.9,
           maxOutputTokens: 1024,
         }
       });
 
       const rawText = response.text;
-      if (!rawText) throw new Error('Empty response from LLM');
+      if (!rawText || rawText.trim().length === 0) throw new Error('Empty response from LLM');
+      responseText = rawText.trim();
 
-      const parsed = JSON.parse(rawText);
+    } catch (err: any) {
+      console.error('[generateSmartResponse] Primary call failed:', err?.message || err);
 
-      // Normalise task_classification
-      if (!['completed', 'failed', 'none'].includes(parsed.task_classification)) {
-        parsed.task_classification = 'none';
-      }
-
-      return parsed;
-    } catch (primaryErr: any) {
-      console.error('[generateSmartResponse] Primary error:', primaryErr?.message || primaryErr);
-
-      // ── FALLBACK: plain text mode (no JSON constraint) ──────────────────────
-      // If JSON mode fails for any reason, fall back to asking the model to
-      // output JSON manually in a plain text response, then parse it.
+      // ── Fallback: Try with a different, simpler model config ─────────────────
       try {
-        console.log('[generateSmartResponse] Attempting plain-text fallback...');
-        const fallbackPrompt = cleanSystemInstruction +
-          '\n\nIMPORTANT: Respond ONLY with a valid JSON object with exactly these fields: ' +
-          '{"response_text": "your message here", "task_classification": "none"}. No extra text.';
-
+        console.log('[generateSmartResponse] Trying fallback model config...');
         const fallbackResponse = await executeWithRotation({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-2.0-flash',
           contents: safeContents as any,
           config: {
-            systemInstruction: fallbackPrompt,
+            systemInstruction: cleanSystemInstruction,
             temperature: 0.7,
             maxOutputTokens: 512,
           }
         });
 
         const fallbackText = fallbackResponse.text;
-        if (!fallbackText) throw new Error('Empty fallback response');
+        if (!fallbackText || fallbackText.trim().length === 0) throw new Error('Empty fallback response');
+        responseText = fallbackText.trim();
 
-        return cleanAndParseJSON(fallbackText);
       } catch (fallbackErr: any) {
         console.error('[generateSmartResponse] Fallback also failed:', fallbackErr?.message);
-        throw primaryErr; // Re-throw original for upstream error handling
+        throw err; // Re-throw original error
       }
     }
+
+    // ── Task classification via regex (no LLM call needed) ───────────────────
+    const msg = lastUserMsg.toLowerCase();
+    let task_classification: 'completed' | 'failed' | 'none' = 'none';
+
+    if (/\b(done|kiya|kar liya|complete|finish|ho gaya|completed|submitted|sent|bana liya|dekh liya|call kiya|gaya tha|gaye|aa gaya)\b/i.test(msg)) {
+      task_classification = 'completed';
+    } else if (/\b(fail|nahi|nhi|miss|skip|chuk|couldn't|could not|na ho|ho nahi|kar nahi|nahi kar|nahi ho|blocked)\b/i.test(msg)) {
+      task_classification = 'failed';
+    }
+
+    return { response_text: responseText, task_classification };
   }
 
   // ──────────────────────────────────────────────────────────────────────────

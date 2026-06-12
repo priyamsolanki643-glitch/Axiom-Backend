@@ -13,18 +13,24 @@ steps:
       - 'push'
       - 'gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
 
-  # Step 3: Deploy directly to Cloud Run
-        ENV_VARS="SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT,PORT=8080,SUPABASE_URL=https://kscqvigvcfjdulonvdxa.supabase.co,SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzY3F2aWd2Y2ZqZHVsb252ZHhhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDY2MjAxMywiZXhwIjoyMDk2MjM4MDEzfQ.lNlB6nnfaeP9UADMPrMLBh0NzXr_EK6GYZB8TszR_KM"
-        if [ -n "$_AI_PROVIDER_KEY" ]; then
-          ENV_VARS="AI_PROVIDER_KEY=$_AI_PROVIDER_KEY,$$ENV_VARS"
-        fi
-        gcloud run services update fp-backend --image=gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA --region=us-central1 --platform=managed --allow-unauthenticated --port=8080 --update-env-vars="$$ENV_VARS"
-
+  # Step 3: Deploy to Cloud Run (preserves existing env vars, only updates image)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'services'
+      - 'update'
+      - 'fp-backend'
+      - '--image=gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--update-env-vars=SYSTEM_REALISM_MODE=BRUTAL_EXPLICIT,SUPABASE_URL=https://kscqvigvcfjdulonvdxa.supabase.co,SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzY3F2aWd2Y2ZqZHVsb252ZHhhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDY2MjAxMywiZXhwIjoyMDk2MjM4MDEzfQ.lNlB6nnfaeP9UADMPrMLBh0NzXr_EK6GYZB8TszR_KM,AI_KEYS=AIzaSyADhnxSuEtdP5GHMJ_QJbOhNfgDfIujumI,AIzaSyApmNdQKeuXuN55w6ajnQhjAK0V8ALHhew,AIzaSyCiOefYmmgmuZKg_Fu5XcUhWIafRmsEeB0,AIzaSyCSB9xsxVZWXoFq56PtkeAvT113kpu5nVw'
 
 images:
   - 'gcr.io/$PROJECT_ID/fp-backend:$COMMIT_SHA'
 
-# Substitutions must be set in the Cloud Build Trigger settings
 substitutions:
   _AI_PROVIDER_KEY: ''
   _SUPABASE_URL: ''
