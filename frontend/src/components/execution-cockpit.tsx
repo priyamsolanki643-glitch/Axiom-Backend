@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
+import { supabase } from "@/utils/supabase/client";
   Layers, Check, X, 
   CornerDownLeft, AlertTriangle, RefreshCw 
 } from "lucide-react";
@@ -70,7 +71,7 @@ export function ExecutionCockpit() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const res = await fetch(`${baseUrl}/api/v1/interaction/active-mission?userId=test-user`, {
-        headers: { "Authorization": "Bearer test-user" }
+        headers: { "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}` }
       });
       const result = await res.json();
       
@@ -101,7 +102,7 @@ export function ExecutionCockpit() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-user"
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
         },
         body: JSON.stringify({
           dayNumber: activeMission.dayNumber,
@@ -172,7 +173,7 @@ export function ExecutionCockpit() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-user"
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
         },
         body: JSON.stringify(payload)
       });
@@ -233,7 +234,7 @@ export function ExecutionCockpit() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-user"
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
         },
         body: JSON.stringify({
           userId: "test-user",

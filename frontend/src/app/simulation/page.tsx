@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Cpu, Terminal, CheckCircle2, Loader2 } from "lucide-react";
+import { supabase } from "@/utils/supabase/client";
 
 const SIMULATION_STEPS = [
   "Mapping local opportunity signals for Kanpur, India...",
@@ -34,7 +35,7 @@ export default function SimulationSequence() {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": "Bearer test-user"
+            "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
           },
           body: JSON.stringify({
             contextMatrix: diagnosticResult.contextMatrix,

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, Shield, Cpu, Activity, CornerDownLeft } from "lucide-react";
+import { supabase } from "@/utils/supabase/client";
 
 const INTAKE_QUESTIONS = [
   { key: "geo", text: "Where are you operating from? (City, Country)" },
@@ -55,7 +56,7 @@ export default function IntakeTerminal() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-user"
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
         },
         body: JSON.stringify({
           message: answer,
@@ -139,7 +140,7 @@ export default function IntakeTerminal() {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": "Bearer test-user"
+            "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
           },
           body: JSON.stringify(diagnosticPayload)
         });

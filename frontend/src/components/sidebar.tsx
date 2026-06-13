@@ -67,7 +67,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       await fetch(`${baseUrl}/api/v1/threads/${threadId}`, {
         method: 'DELETE',
-        headers: { "Authorization": "Bearer test-user" }
+        headers: { "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}` }
       });
       fetchThreads();
     } catch (err) {
@@ -80,7 +80,7 @@ export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarPr
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${baseUrl}/api/v1/threads?t=${Date.now()}`, {
-        headers: { "Authorization": "Bearer test-user" },
+        headers: { "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}` },
         cache: 'no-store'
       });
       const data = await res.json();

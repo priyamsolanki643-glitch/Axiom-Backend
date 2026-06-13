@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw } from "lucide-react";
+import { supabase } from "@/utils/supabase/client";
 
 interface ChatViewProps {
   onOpenSidebar: () => void;
@@ -107,7 +108,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
       try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const res = await fetch(`${baseUrl}/api/v1/threads/${tId}/messages`, {
-          headers: { "Authorization": "Bearer test-user" }
+          headers: { "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}` }
         });
         const data = await res.json();
         
@@ -256,7 +257,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-user" 
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}` 
         },
         body: JSON.stringify({
           userId: "test-user",

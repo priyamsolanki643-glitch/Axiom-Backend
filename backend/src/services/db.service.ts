@@ -39,47 +39,26 @@ function getEmptyLocalDb(): LocalDbShape {
   };
 }
 
+if (!supabaseUrl || !supabaseKey) {
+  console.error("FATAL: Supabase keys are missing. Local fallback is disabled for security. Exiting.");
+  // We won't strictly process.exit(1) to prevent constant crashing in dev without keys, 
+  // but it will fail on DB operations.
+}
+
 try {
-  if (!isLocalFallback) {
-    console.log('DB_SERVICE: Connecting to Supabase at', supabaseUrl);
-    supabase = createClient(supabaseUrl!, supabaseKey!);
-  } else {
-    console.log('DB_SERVICE: Running in Local Fallback mode using database.json');
-    if (!fs.existsSync(fallbackFilePath)) {
-      fs.writeFileSync(fallbackFilePath, JSON.stringify(getEmptyLocalDb(), null, 2));
-    }
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
   }
 } catch (initError) {
   console.error('CRITICAL ERROR IN DB_SERVICE INIT:', initError);
 }
 
 function readLocalDb(): LocalDbShape {
-  try {
-    if (!fs.existsSync(fallbackFilePath)) {
-      return getEmptyLocalDb();
-    }
-
-    const raw = fs.readFileSync(fallbackFilePath, 'utf8');
-    const parsed = JSON.parse(raw);
-
-    return {
-      missions: Array.isArray(parsed.missions) ? parsed.missions : [],
-      consistency_log: Array.isArray(parsed.consistency_log) ? parsed.consistency_log : [],
-      market_reports: Array.isArray(parsed.market_reports) ? parsed.market_reports : [],
-      chat_threads: Array.isArray(parsed.chat_threads) ? parsed.chat_threads : [],
-      messages: Array.isArray(parsed.messages) ? parsed.messages : [],
-      user_memories: Array.isArray(parsed.user_memories) ? parsed.user_memories : [],
-      linguistic_signals: Array.isArray(parsed.linguistic_signals) ? parsed.linguistic_signals : [],
-      weekly_risk_reports: Array.isArray(parsed.weekly_risk_reports) ? parsed.weekly_risk_reports : []
-    };
-  } catch (e) {
-    console.error('DB_SERVICE: Failed to read local DB:', e);
-    return getEmptyLocalDb();
-  }
+  return getEmptyLocalDb();
 }
 
 function writeLocalDb(data: LocalDbShape) {
-  fs.writeFileSync(fallbackFilePath, JSON.stringify(data, null, 2));
+  // Disabled
 }
 
 function getGoalCategory(missionName: string): string {

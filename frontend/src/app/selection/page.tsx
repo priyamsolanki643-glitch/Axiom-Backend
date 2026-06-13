@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldAlert, Check, X, AlertTriangle, Cpu, Layers } from "lucide-react";
+import { supabase } from "@/utils/supabase/client";
 
 type PathType = "Alpha" | "Beta" | null;
 
@@ -85,7 +86,7 @@ export default function PathSelection() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": "Bearer test-user"
+          "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
         },
         body: JSON.stringify(payload)
       });
