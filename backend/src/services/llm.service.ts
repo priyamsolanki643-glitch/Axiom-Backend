@@ -438,7 +438,8 @@ Skills: ${capability.calibratedSkills.map((s: any) => `${s.skillName} (level ${s
 
 Sprint 0 (First Revenue): ${isSprintZeroActive ? 'ACTIVE — 100% focus on direct outreach' : 'INACTIVE'}.
 If consistency < 40 or failures >= 2: use ultra-simple micro-tasks only.
-Apply Parkinson Law compression to time estimates.`;
+Apply Parkinson Law compression to time estimates.
+CRITICAL: You MUST explicitly demand PROOF of completion in the metricBound (e.g. 'Upload a screenshot', 'Show me the written page', 'Send a voice note of the summary'). No vague completion metrics.`;
 
     const responseSchema: Schema = {
       type: Type.ARRAY,

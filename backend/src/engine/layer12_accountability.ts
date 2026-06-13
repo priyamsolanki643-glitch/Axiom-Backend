@@ -136,63 +136,63 @@ You've made it to day ${dayNumber}. Your consistency score is ${consistencyScore
   }
 
   // Procrastination — ego-critique by leverage point
-  const baseResponse = `You missed today's task. Let me be direct.`;
+  const baseResponse = `Bhai, aaj tune apna task miss kiya hai. Let me be brutally honest with you.`;
 
   const leverageResponses: Record<EgoLeveragePoint, string> = {
     family: `${baseResponse}
 
-There is someone in your family whose financial stability depends on this working. Every day you procrastinate is a day they continue carrying a weight that doesn't need to be there.
+Teri family mein koi hai jiski financial stability ya khushi iss baat pe depend karti hai ki tu aaj mehnat karega ya nahi. Har din jab tu procrastinate karta hai, tu actually unki expectations ka gala ghot raha hai. 
 
-I'm not saying this to make you feel guilty. I'm saying it because you told me this is your reason. The gap between your stated motivation and today's execution is information. What is it telling you?
+Main tujhe guilt trip nahi de raha, reality bata raha hoon. Tune khud bola tha ki tera motivation family hai. Phir Netflix ya phone scroll karna unse zyada important kaise ho gaya?
 
-You have two choices:
-[Choice A] Run a 90-minute recovery sprint RIGHT NOW. Not tomorrow — now.
-[Choice B] Sit with the fact that the dopamine of imagining success feels better than the discomfort of building it. And decide if that's okay with you.`,
+Tere paas abhi 2 choices hain:
+[Choice A] Abhi phone rakh, aur agle 90 minute ek solid recovery sprint maar. Aaj ka target complete kar.
+[Choice B] Khushfehmi mein reh ki sab apne aap theek ho jayega, and let them down.`,
 
     proving_someone_wrong: `${baseResponse}
 
-Someone said you couldn't do this. And today you proved them right — not by failing at the task, but by not even attempting it.
+Kisi ne tujhe bola tha na ki tu nahi kar payega? Aur aaj tune apne action se (ya inaction se) unko bilkul sahi saabit kar diya. 
 
-The person who doubted you is not thinking about you right now. They're living their life. The only person this inaction is hurting is you.
+Wo insaan abhi aaram se so raha hoga ya chill kar raha hoga, aur tu apna sapna barbaad kar raha hai. Inaction sirf tujhe aur tere sapno ko maar raha hai.
 
-[Choice A] Start your task sprint in the next 10 minutes.
-[Choice B] Stay exactly where you are and let this be another day where someone else was right about you.`,
+[Choice A] Agle 10 minute mein task shuru kar aur unko galat saabit karne ki aag wapas la.
+[Choice B] Wahi reh jahan tu hai, aur ban ja ek average insaan jiske baare mein sab yahi kehte the.`,
 
     money: `${baseResponse}
 
-You said you want financial results. Today's inaction is a direct vote against that. Not philosophically — literally. Every task you skip is revenue you don't generate. That's the math.
+Tune kaha tha tujhe paise kamane hain, financial freedom chahiye. Pata hai paise kamane ka sabse bada dushman kya hai? Ye aalas. Har ek task jo tu aaj chhod raha hai, wo literal paisa hai jo tu table pe chhod raha hai.
 
-Your procrastination has a price. You're paying it today.
+Teri procrastination ki bohot badi keemat hai bhai.
 
-[Choice A] Begin your recovery sprint now. The task is still completable today.
-[Choice B] Log this as a failed day and accept the consistency score penalty. Then execute tomorrow with double intensity.`,
+[Choice A] Abhi baith aur apna execution complete kar. Ye task abhi bhi khatam ho sakta hai.
+[Choice B] Maan le ki tu sirf baatein karna jaanta hai, mehnat nahi. Din ko failed maan aur kal double mehnat karne ka jhootha wada kar.`,
 
     freedom: `${baseResponse}
 
-You said you want freedom — from the routine, from the obligation, from the constraint. The path to that freedom runs directly through the discomfort of doing today's task.
+Tujhe azaadi chahiye thi na? 9-to-5 ki ghulami ya restrictions se? Bhai, azaadi muft mein nahi milti. Uski keemat chukani padti hai daily execution ke form mein.
 
-Every day you avoid the work, the timeline to freedom extends. Not by motivation. By math.
+Jab tu aaj aalas kar raha hai, tu actually apni azaadi ko aur door dhakel raha hai. 
 
-[Choice A] Execute your task in the next 90 minutes.
-[Choice B] Accept that you are choosing continued constraint over short-term discomfort.`,
+[Choice A] Agle 90 minute full focus ke saath kaam kar aur apni azaadi ki ek aur eent (brick) rakh.
+[Choice B] Accept kar le ki tu discipline follow nahi kar sakta, aur tujhe hamesha kisi aur ke orders follow karne padenge.`,
 
     status: `${baseResponse}
 
-People who achieve things that are worth respecting are not stopped by the kind of day you're having. That's the gap you need to close — not in skill, but in execution character.
+Jin logo ki tu respect karta hai na, jo tere field ke top 1% hain, wo aisi tuchhi (petty) cheezo se distract nahi hote. Unka din chahe kaisa bhi ho, execution hota hai.
 
-The status you want comes from a track record. Track records are built on days exactly like today, when you did the work anyway.
+Tujhe status aur izzat chahiye toh kaam bhi waisa karna padega. Ek blank track record se izzat nahi milti.
 
-[Choice A] Run your task sprint now. Add to your track record.
-[Choice B] Stay where you are. This day joins the others.`,
+[Choice A] Abhi task shuru kar. Track record build kar.
+[Choice B] Wahi reh. Ek aur failed din apni life mein add kar le.`,
 
     impact: `${baseResponse}
 
-The problem you said you wanted to solve still exists today. The people you wanted to help are still dealing with it. And today, you chose not to move closer to that.
+Tune kaha tha tujhe impact create karna hai, duniya badalni hai, kisi badi problem ko solve karna hai. Lekin reality ye hai ki tu apna din control nahi kar paa raha. Duniya kya khak badlega?
 
-I'm not judging the impulse — I'm reflecting the reality. Your impact goal requires sustained execution. Today was a gap.
+Main tujhe judge nahi kar raha, tera mirror hoon main. Impact requires sustained, ruthless execution. 
 
-[Choice A] Close the gap. Begin your task sprint.
-[Choice B] Acknowledge this was a lost day and commit to zero gaps tomorrow.`,
+[Choice A] Abhi apna task shuru kar aur gap ko close kar.
+[Choice B] Accept kar ki aaj tu apne vision se door ho gaya hai.`,
   };
 
   return leverageResponses[egoLeveragePoint] ?? `${baseResponse}

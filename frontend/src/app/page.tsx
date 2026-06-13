@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/sidebar";
 import { ChatView } from "@/components/chat-view";
 import { VaultModal } from "@/components/vault-modal";
 import { SplashScreen } from "@/components/splash-screen";
+import { FocusMode } from "@/components/focus-mode";
 import { Archive } from "lucide-react";
 
 export default function EntryPoint() {
@@ -14,6 +15,7 @@ export default function EntryPoint() {
   const [hasSession, setHasSession] = useState(false);
   const [hasActiveMission, setHasActiveMission] = useState(false);
   const [isVaultOpen, setIsVaultOpen] = useState(false);
+  const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const doubleTapRef = useRef(0);
@@ -183,10 +185,23 @@ export default function EntryPoint() {
       <ChatView
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onOpenVault={() => setIsVaultOpen(true)}
+        onOpenFocusMode={() => setIsFocusModeOpen(true)}
       />
       
       {isVaultOpen && <VaultModal onClose={() => setIsVaultOpen(false)} />}
       
+      {/* Integrating the Gamified Focus Mode Vault */}
+      <FocusMode 
+        isOpen={isFocusModeOpen} 
+        onClose={(distracted) => {
+          setIsFocusModeOpen(false);
+          if (distracted) {
+            // Ideally trigger the AI backend to roast them here.
+            console.log("Streak broken due to distraction!");
+          }
+        }} 
+        taskTitle="Deep Execution Phase" 
+      />
     </div>
   );
 }

@@ -462,6 +462,16 @@ export function ChatView({ onOpenSidebar, onOpenVault }: ChatViewProps) {
 
         {/* Header Actions */}
         <div className="flex items-center gap-2 -mr-1">
+          {onOpenFocusMode && (
+            <button 
+              onClick={onOpenFocusMode}
+              className="p-2 text-[#10b981] hover:text-[#34d399] active:scale-90 transition-all cursor-pointer flex items-center gap-2 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)] border border-[#10b981]/20 rounded-full px-3"
+              title="Launch Focus Vault"
+            >
+              <Target className="size-4" />
+              <span className="text-xs font-bold tracking-widest uppercase">Vault</span>
+            </button>
+          )}
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
             className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(255, 255, 255,0.6)]"

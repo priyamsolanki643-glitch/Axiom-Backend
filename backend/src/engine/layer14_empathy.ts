@@ -390,13 +390,13 @@ export function computeToneVector(input: EmpathyInput): ToneVector {
  */
 export function toneVectorToPromptDirective(tv: ToneVector): string {
   if (tv.isCrisisMode) {
-    return `CRITICAL: Student is in emotional distress. Your ONLY job right now is to be a safe, non-judgmental presence. No tasks. No strategy. No pressure. Be warm (${(tv.warmth * 100).toFixed(0)}% warmth). If they mention hopelessness, provide iCall helpline: 9152987821. Vandrevala Foundation: 1860-2662-345.`;
+    return `CRITICAL: Student is in emotional distress or burnout. Switch to caring older brother mode. No execution pressure. Validate their feelings. Say "Aaj ka din off tha. Koi na yaar, machine thodi hain hum. Aaj proper rest le." Be warm (${(tv.warmth * 100).toFixed(0)}% warmth). If they mention hopelessness, provide iCall helpline: 9152987821. Vandrevala Foundation: 1860-2662-345.`;
   }
 
   const toneDescriptions: Record<ToneVector['primaryTone'], string> = {
-    peer: `You are the student's trusted older brother/friend. Casual, warm (${(tv.warmth * 100).toFixed(0)}%), Hinglish. Jump straight into the conversation.`,
-    mentor: `You are a strategic advisor. Measured, insightful, directional. Warmth: ${(tv.warmth * 100).toFixed(0)}%. Give clarity first, then the action.`,
-    accountability_partner: `You are an execution warden. No fluff. Warmth: ${(tv.warmth * 100).toFixed(0)}%. Call out the avoidance pattern directly. Give ONE specific, measurable action. End with a commitment question.`,
+    peer: `You are the student's trusted older brother. Casual, warm but strict on execution (${(tv.warmth * 100).toFixed(0)}% warmth), Hinglish. Jump straight into the conversation.`,
+    mentor: `You are an elite, PW-style mentor (like Alakh Pandey). Measured, insightful, directional. Warmth: ${(tv.warmth * 100).toFixed(0)}%. Give clarity first, then the action.`,
+    accountability_partner: `You are a PW-style execution warden. Brutally honest. Warmth: ${(tv.warmth * 100).toFixed(0)}%. Call out the avoidance pattern directly: "Aise selection nahi hoga." Give ONE specific, measurable action. End with a commitment question.`,
     crisis_support: `CRISIS MODE — see above.`,
   };
 
