@@ -186,29 +186,35 @@ function assembleGeminiPrompt(ctx: OmniContext, userLanguage: string): string {
   // Tone directive from Layer 14 (the mathematical emotional instruction set)
   const toneDirective = toneVectorToPromptDirective(toneVector);
 
+  const isNewUser = userSnapshot.goal === 'Goal not yet defined' && recentMemories.length === 0 && currentTasks.length === 0;
+
   // Build the user snapshot block (replaces the massive context matrix injection)
-  const snapshotBlock = [
-    `STUDENT PROFILE:`,
-    `Goal: ${userSnapshot.goal} | Timeline: ${userSnapshot.timelineMonths} months`,
-    `Day ${userSnapshot.currentDayNumber} of ${userSnapshot.totalTargetDays} | Streak: ${userSnapshot.streakDays} days`,
-    `Consistency Score: ${userSnapshot.consistencyScore}/100 | Friction: ${userSnapshot.frictionLevel.toUpperCase()}`,
-    `Active Path: ${userSnapshot.activePath}`,
-    `Next Milestone: ${userSnapshot.nextMilestoneDescription}`,
-    `Their deepest motivator (use this to anchor pushes): ${userSnapshot.egoLeveragePoint}`,
-    `Primary bottleneck: ${userSnapshot.primaryDragFactor}`,
-    `Primary asset: ${userSnapshot.primaryLiftFactor}`,
-  ].join('\n');
+  const snapshotBlock = isNewUser
+    ? `STUDENT PROFILE: This is a brand new student. We know NOTHING about them yet. Do NOT invent or quote fake statistics (no scores, no probabilities).`
+    : [
+        `STUDENT PROFILE:`,
+        `Goal: ${userSnapshot.goal} | Timeline: ${userSnapshot.timelineMonths} months`,
+        `Day ${userSnapshot.currentDayNumber} of ${userSnapshot.totalTargetDays} | Streak: ${userSnapshot.streakDays} days`,
+        `Consistency Score: ${userSnapshot.consistencyScore}/100 | Friction: ${userSnapshot.frictionLevel.toUpperCase()}`,
+        `Active Path: ${userSnapshot.activePath}`,
+        `Next Milestone: ${userSnapshot.nextMilestoneDescription}`,
+        `Their deepest motivator (use this to anchor pushes): ${userSnapshot.egoLeveragePoint}`,
+        `Primary bottleneck: ${userSnapshot.primaryDragFactor}`,
+        `Primary asset: ${userSnapshot.primaryLiftFactor}`,
+      ].join('\n');
 
   // Current tasks block
-  const tasksBlock = currentTasks.length > 0
-    ? [
-        `ACTIVE TASKS:`,
-        ...currentTasks.map(t => `- [${t.status.toUpperCase()}] ${t.title} (${t.estimatedMinutes} min)`),
-      ].join('\n')
-    : 'No active tasks — user needs a new sprint.';
+  const tasksBlock = isNewUser 
+    ? '' 
+    : (currentTasks.length > 0
+        ? [
+            `ACTIVE TASKS:`,
+            ...currentTasks.map(t => `- [${t.status.toUpperCase()}] ${t.title} (${t.estimatedMinutes} min)`),
+          ].join('\n')
+        : 'No active tasks — user needs a new sprint.');
 
-  // Chaos state block (only shown if relevant)
-  const chaosBlock = chaosState.chaosEvents.length > 0 || chaosState.currentVolatilityScore > 0.5
+  // Chaos state block (only shown if relevant and not a new user)
+  const chaosBlock = (!isNewUser && (chaosState.chaosEvents.length > 0 || chaosState.currentVolatilityScore > 0.5))
     ? [
         `DISRUPTION CONTEXT:`,
         `Volatility: ${(chaosState.currentVolatilityScore * 100).toFixed(0)}%`,
@@ -241,6 +247,24 @@ function assembleGeminiPrompt(ctx: OmniContext, userLanguage: string): string {
     `- **CRITICAL LANGUAGE DIRECTIVE**: You MUST output the final response exclusively in ${userLanguage}. Ensure the tone remains brutally honest, high-urgency, and mentor-like, natively adapted to the grammatical structure of ${userLanguage}.`,
   ].join('\n');
 
+  const roleDirectives = isNewUser
+    ? [
+        '## YOUR ROLE IN THIS INTERACTION:',
+        'You are meeting this student for the very first time. They just said hi.',
+        'Your ONLY job right now is to aggressively but warmly interrogate them to figure out what they want to achieve in life.',
+        'Do NOT quote fake statistics, probabilities, or consistency scores yet.',
+        'Write as if you are texting your younger sibling. Be brutally honest but caring.',
+        'End with exactly ONE sharp, penetrating question to get them talking about their goal.',
+      ]
+    : [
+        '## YOUR ROLE IN THIS INTERACTION:',
+        'You are a Hinglish author, not a decision maker. The engine has already decided what the student needs.',
+        'Your job: Take everything above and express it as a deeply human, natural, never-robotic message.',
+        'Write as if you are texting your younger sibling who is working towards their biggest dream.',
+        'Be specific. Reference actual numbers (consistency score, streak, milestone). Never be generic.',
+        'End with exactly ONE sharp action or question — not a list of things to do.',
+      ];
+
   return [
     FP_CORE_IDENTITY_PROMPT.trim(),
     '',
@@ -263,13 +287,8 @@ function assembleGeminiPrompt(ctx: OmniContext, userLanguage: string): string {
     '',
     '---',
     '',
-    '## YOUR ROLE IN THIS INTERACTION:',
-    'You are a Hinglish author, not a decision maker. The engine has already decided what the student needs.',
-    'Your job: Take everything above and express it as a deeply human, natural, never-robotic message.',
-    'Write as if you are texting your younger sibling who is working towards their biggest dream.',
-    'Be specific. Reference actual numbers (consistency score, streak, milestone). Never be generic.',
-    'End with exactly ONE sharp action or question — not a list of things to do.',
-  ].filter(line => line !== null && line !== undefined).join('\n');
+    ...roleDirectives
+  ].filter(line => line !== null && line !== undefined && line !== '').join('\n');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
