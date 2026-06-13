@@ -329,54 +329,14 @@ function TabMissions({ missionData }: { missionData?: MissionData }) {
     {
       id: 1,
       title: missionData.missionName || "Active Mission",
-      quote: missionData.mindsetBrief || "Tu average nahi hai. Execute kar.",
-      strategy: missionData.coreStrategy || "Follow the locked path. Execute daily targets without fail.",
+      quote: missionData.mindsetBrief || "Execute kar.",
+      strategy: missionData.coreStrategy || "Follow the locked path.",
       protocol: parseProtocol(missionData.strategyContent, missionData.lockedPath),
       day: missionData.dayNumber || 1,
       total: missionData.totalDays || 90,
-      consistency: 10
+      consistency: missionData.consistencyScore || 0
     }
-  ] : [
-    {
-      id: 1,
-      title: "Operation: Zero Budget Surgical Strike",
-      quote: "Bhai, paise nahi hain toh kya hua? Tera execution teri sabse badi funding hai. Rona band kar aur execute kar.",
-      strategy: "Maine tera poora syllabus scan kar liya hai. Koi naya paid batch lene ki zaroorat nahi hai. Tera course PW Manzil Foundation ke free YouTube lectures aur open-source PDF se 100% map ho chuka hai. Bas chup-chaap ise follow kar.",
-      protocol: [
-        "LOCKED PATH: Free Access Protocol",
-        "- 09:00 AM: PW Manzil Lecture (Physics) - 2x speed pe nahi dekhna hai, properly notes bana.",
-        "- 12:00 PM: Sirf NCERT back-exercises solve kar. Koi faltu reference book mat choona.",
-        "- 03:00 PM: NTA Abhyas App pe free chapter-wise mock test de aur apni aukaat check kar."
-      ],
-      day: 4, total: 14, consistency: 10
-    },
-    {
-      id: 2,
-      title: "The 4.5 Hour Aggression Plan",
-      quote: "4.5 ghante mein syllabus khatam nahi hota, par rank zaroor nikal sakti hai agar tu 'donkey-work' na kare.",
-      strategy: "Tere paas time kam hai, isliye maine tere curriculum se 65% heavy math chapters temporarily block kar diye hain. Ab tu sirf High-Yield/Low-Effort topics (jaise Inorganic Chem aur Modern Physics) pe focus karega. Hamein marks chahiye, scholar nahi banna hai.",
-      protocol: [
-        "LOCKED PATH: High-Yield Strike",
-        "- Focus Area 1: Modern Physics (Yahan se 3 questions guarantee aayenge).",
-        "- Focus Area 2: Block Chemistry (Ratna padega, but 2 questions fix hain).",
-        "- Blocked: Integration & Conic Sections (Isme time waste nahi karna hai, isko chhod de)."
-      ],
-      day: 1, total: 14, consistency: 10
-    },
-    {
-      id: 3,
-      title: "The 14-Day Ruthless Sprint",
-      quote: "Bhai 2 saal ka lamba plan bhool ja. Tu 3 din lagataar padh nahi paata. Aaj ka din jeet.",
-      strategy: "Tera long-term planning system completely toot chuka hai. Ab hum sirf 14 din ke micro-sprints khelenge. Tu sirf agle 25 minute ke baare mein sochega. Pomodoro technique on kar aur duniya bhool ja.",
-      protocol: [
-        "LOCKED PATH: Consistency Rehab",
-        "- Subah uthte hi seedha phone side rakh aur pehla 25-min Pomodoro execute kar.",
-        "- Agar koi task miss ho gaya, toh guilt mein mat beth. Rone se kuch nahi hoga, turant agla Pomodoro start kar.",
-        "- Din ke 10 Pomodoro (4.5 hours) hit karne hain, chahe aasmaan gir jaye."
-      ],
-      day: 2, total: 14, consistency: 10
-    }
-  ];
+  ] : [];
 
   if (activeMission) {
     return (
@@ -533,19 +493,7 @@ function TabMissions({ missionData }: { missionData?: MissionData }) {
 }
 
 function TabMirror({ mirrorData }: { mirrorData?: MirrorData }) {
-  const isTrendUp = false;
-  const score = 10;
-  
-  const data = mirrorData?.history ? [...mirrorData.history] : [85, 70, 42, 60, 30, 45, 10];
-  if (data.length > 0) data[data.length - 1] = 10; // Force last bar to crash to 10
-  while(data.length < 7) { data.unshift(data.length > 0 ? data[0] : 50); }
-  const graphData = data.slice(-7);
-
-  const insight = mirrorData?.insight || "Bhai, weekend aate hi teri consistency 45% gir jaati hai. Tu mock tests dene se darr raha hai kyunki tujhe reality face nahi karni.";
-  const strengths = mirrorData?.strengths || ["Physics theory mein tera execution rate solid hai", "Ek din miss karne ke baad tera bounce-back speed badhiya hai"];
-  const bottlenecks = mirrorData?.bottlenecks || ["Jab time kam hota hai, tu Math ko bilkul touch nahi karta", "Weekend aate hi Reels scroll karne mein dopamine drain ho raha hai"];
-  
-  if (!mirrorData && false) {
+  if (!mirrorData || !mirrorData.history || mirrorData.history.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
         <div className="text-[#52525b] text-xs font-mono tracking-widest uppercase">No execution data recorded yet</div>
@@ -553,6 +501,17 @@ function TabMirror({ mirrorData }: { mirrorData?: MirrorData }) {
       </div>
     );
   }
+
+  const data = [...mirrorData.history];
+  while(data.length < 7) { data.unshift(0); }
+  const graphData = data.slice(-7);
+
+  const score = graphData[graphData.length - 1] || 0;
+  const isTrendUp = score >= (graphData[graphData.length - 2] || 0);
+
+  const insight = mirrorData.insight || "Consistency data generated based on your recent activity.";
+  const strengths = mirrorData.strengths || [];
+  const bottlenecks = mirrorData.bottlenecks || [];
   
   return (
     <div className="space-y-6 animate-fade-in w-full">
@@ -668,14 +627,14 @@ function TabMirror({ mirrorData }: { mirrorData?: MirrorData }) {
 }
 
 function TabDebt({ missionData }: { missionData?: MissionData }) {
-  if (!missionData && false) {
-    return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Syncing debt indices...</div>;
+  if (!missionData) {
+    return <div className="text-[#a1a1aa] text-center font-mono py-12 text-[10px] tracking-widest uppercase">No execution data recorded yet.</div>;
   }
   
-  const debtDays = missionData?.debtDays || 4;
-  const consistencyScore = 10;
-  const daysToGoal = missionData?.daysToGoal || 320;
-  const streakDays = missionData?.streakDays || 2;
+  const debtDays = missionData?.debtDays || 0;
+  const consistencyScore = missionData?.consistencyScore || 0;
+  const daysToGoal = missionData?.daysToGoal || (missionData?.totalDays ? Math.max(0, missionData.totalDays - (missionData.dayNumber || 0)) : 0);
+  const streakDays = missionData?.streakDays || 0;
   const hasDebt = debtDays > 0;
 
   return (
@@ -751,12 +710,12 @@ const Dial = ({ title, value, sub, color, strokeOffset }: { title: string, value
 );
 
 function TabRival({ rivalData }: { rivalData?: RivalData }) {
-  if (!rivalData && false) {
-    return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Connecting to Peer Node...</div>;
+  if (!rivalData || rivalData.totalUsers === undefined) {
+    return <div className="text-[#a1a1aa] text-center font-mono py-12 text-[10px] tracking-widest uppercase">Insufficient data for Rival Index. Build consistency first.</div>;
   }
-  const totalUsers = rivalData?.totalUsers || 1640000;
-  const milestonePassed = rivalData?.milestonePassedUsers || 342500;
-  const category = rivalData?.category || "JEE Main 2026 (Gen)";
+  const totalUsers = rivalData.totalUsers;
+  const milestonePassed = rivalData.milestonePassedUsers || 0;
+  const category = rivalData.category || "General Context";
   
   return (
     <div className="space-y-4 animate-fade-in w-full">
@@ -803,21 +762,14 @@ function TabRival({ rivalData }: { rivalData?: RivalData }) {
 }
 
 function TabMarket({ marketData }: { marketData?: MarketData }) {
-  if (!marketData && false) {
-    return <div className="text-[#a1a1aa] text-center font-mono py-12 animate-pulse text-[10px] tracking-widest uppercase">Connecting market indexes...</div>;
+  if (!marketData) {
+    return <div className="text-[#a1a1aa] text-center font-mono py-12 text-[10px] tracking-widest uppercase">No market data available yet.</div>;
   }
 
-  const signals = marketData?.skillDemandSignals || [
-    { skillName: "Modern Physics", demandLevel: "Extremely High (NTA Fav)" },
-    { skillName: "Integration", demandLevel: "Low ROI (Time Waste)" },
-    { skillName: "Inorganic Chem", demandLevel: "High Scoring (NCERT)" }
-  ];
-  const gaps = marketData?.localMarketGaps || [
-    { gapDescription: "80% competitors are skipping Coordinate Geometry.", opportunitySize: "Massive Edge" },
-    { gapDescription: "Mock test analysis is being completely ignored by peers.", opportunitySize: "Critical Advantage" }
-  ];
-  const timing = marketData?.timingSignals?.[0] || { timeframe: "3 Months Left", urgency: "CRITICAL" };
-  const insight = marketData?.topInsight || "Bhai, NTA ka pattern badal gaya hai. Sirf gadhe jaisi mehnat se kuch nahi hoga, smart execution se marks aayenge. Unnecessary topics turant drop kar.";
+  const signals = marketData.skillDemandSignals || [];
+  const gaps = marketData.localMarketGaps || [];
+  const timing = marketData.timingSignals?.[0] || { timeframe: "Unknown", urgency: "NORMAL" };
+  const insight = marketData.topInsight || "Keep executing on your goals. Analytics will generate here over time.";
 
   return (
     <div className="flex flex-col gap-4 animate-fade-in w-full">

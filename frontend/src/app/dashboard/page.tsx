@@ -13,38 +13,10 @@ import {
   Clock, BrainCircuit, Target, MessageSquareWarning, Timer, ScanFace
 } from 'lucide-react';
 
-// --- DEMO DATA (Fallback) ---
-const retentionData = [
-  { day: 'Day 0', industry: 100, fp: 100 },
-  { day: 'Day 5', industry: 82, fp: 97 },
-  { day: 'Day 10', industry: 68, fp: 92 },
-  { day: 'Day 15', industry: 54, fp: 88 },
-  { day: 'Day 20', industry: 45, fp: 83 },
-  { day: 'Day 25', industry: 41, fp: 79 },
-  { day: 'Day 30', industry: 38, fp: 76 },
-];
-
-const fallbackRiskData = [
-  { name: 'Flight Risk (Quit Zone)', value: 14, color: '#ef4444' },
-  { name: 'Drifting (Cons. < 50%)', value: 24, color: '#eab308' },
-  { name: 'Locked In (Cons. > 80%)', value: 62, color: '#22c55e' },
-];
-
-const fallbackFrictionData = [
-  { name: 'Rotational Mechanics Backlog', count: 5420 },
-  { name: 'Skipping Sunday Mock Tests', count: 4100 },
-  { name: 'Lectures @ 2x Spd (No Notes)', count: 3250 },
-  { name: 'Dopamine Exhaustion (Reels)', count: 2800 },
-];
+const retentionData: any[] = []; // Data loaded live from DB
 
 // --- COMPONENTS ---
 
-const DemoBadge = ({ isLive }: { isLive?: boolean }) => (
-  <div className={`absolute top-2 right-2 px-2 py-1 ${isLive ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'} border rounded text-[10px] font-mono tracking-wider flex items-center gap-1 z-10 backdrop-blur-md`}>
-    <AlertTriangle size={10} />
-    {isLive ? 'LIVE DB DATA' : 'DEMO PROJECTION'}
-  </div>
-);
 
 const SectionHeader = ({ title, icon: Icon, subtitle }: any) => (
   <div className="mb-6">
@@ -57,13 +29,13 @@ const SectionHeader = ({ title, icon: Icon, subtitle }: any) => (
 );
 
 export default function CMOTerminal() {
-  const [studentCount, setStudentCount] = React.useState(100000);
+  const [studentCount, setStudentCount] = React.useState(0);
   const [coursePrice, setCoursePrice] = React.useState(4000);
-  const [riskData, setRiskData] = React.useState(fallbackRiskData);
-  const [frictionData, setFrictionData] = React.useState(fallbackFrictionData);
+  const [riskData, setRiskData] = React.useState<{name:string, value:number, color:string}[]>([]);
+  const [frictionData, setFrictionData] = React.useState<{name:string, count:number}[]>([]);
   const [isLive, setIsLive] = React.useState(false);
-  const [topFriction, setTopFriction] = React.useState("Rotational Mechanics Backlog");
-  const [topFrictionCount, setTopFrictionCount] = React.useState(5420);
+  const [topFriction, setTopFriction] = React.useState("No active friction points");
+  const [topFrictionCount, setTopFrictionCount] = React.useState(0);
 
   React.useEffect(() => {
     // Fetch live data from backend
@@ -74,7 +46,7 @@ export default function CMOTerminal() {
         if (data.status === 'success' && data.data) {
           const liveData = data.data;
           
-          setStudentCount(liveData.totalActiveStudents > 1000 ? liveData.totalActiveStudents : 100000);
+          setStudentCount(liveData.totalActiveStudents);
           
           const redCount = liveData.redBandAlerts || 0;
           const greenCount = liveData.totalActiveStudents ? liveData.totalActiveStudents - redCount : 0;
@@ -141,7 +113,7 @@ export default function CMOTerminal() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative overflow-hidden"
           >
-            <DemoBadge isLive={isLive} />
+
             <SectionHeader title="Retention Impact" icon={TrendingUp} subtitle="Projected Day-30 Batch Retention vs Industry Avg" />
             
             <div className="flex items-end gap-6 mb-6">
@@ -177,7 +149,7 @@ export default function CMOTerminal() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative"
           >
-            <DemoBadge isLive={isLive} />
+
             <SectionHeader title="Dropout Risk Radar" icon={ShieldAlert} subtitle="Real-time behavioral risk classification" />
             
             <div className="flex flex-col md:flex-row items-center gap-6">
@@ -221,7 +193,7 @@ export default function CMOTerminal() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative"
           >
-            <DemoBadge isLive={isLive} />
+
             <SectionHeader title="Execution Intelligence" icon={BarChart} subtitle="Identified friction points causing inconsistency" />
             
             <div className="h-64 w-full mt-4">
@@ -292,7 +264,7 @@ export default function CMOTerminal() {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative"
         >
-          <DemoBadge isLive={isLive} />
+
           <SectionHeader title="ROI Calculator" icon={Calculator} subtitle="Projected revenue saved via AI-driven retention" />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
@@ -395,97 +367,7 @@ export default function CMOTerminal() {
           </div>
         </motion.section>
 
-        {/* ROW 5: STUDENT JOURNEY REPLAY */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-          className="bg-zinc-950 border border-white/10 rounded-2xl p-6 relative overflow-hidden"
-        >
-          <div className="absolute top-2 right-2 px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded text-[10px] text-blue-500 font-mono tracking-wider flex items-center gap-1 z-10 backdrop-blur-md">
-            <Users size={10} />
-            ILLUSTRATIVE EXAMPLE
-          </div>
-          <SectionHeader title="Student Journey Replay" icon={Clock} subtitle="How the Logic Engine intercepts failure points" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            
-            {/* Persona 1: Rahul (Linked to Vault Demo) */}
-            <div className="bg-black border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.1)] rounded-xl p-5 hover:border-red-500/60 transition-colors relative">
-              <div className="absolute top-0 right-0 px-2 py-0.5 bg-red-500/10 text-red-500 text-[9px] font-mono tracking-widest rounded-bl-lg">LIVE VAULT LINK</div>
-              <div className="flex items-center gap-3 mb-4 mt-2">
-                <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center font-bold text-red-500">R</div>
-                <div>
-                  <div className="text-white font-bold">Rahul M.</div>
-                  <div className="text-xs text-zinc-500 font-mono">JEE 2026 • ₹0 Budget</div>
-                </div>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div>
-                  <span className="text-red-400 text-[10px] font-bold tracking-widest font-mono uppercase">System Trigger</span>
-                  <p className="text-zinc-300 mt-1 text-xs">Trajectory failing (42%ile). Only 4.5 hrs/day available. High flight risk.</p>
-                </div>
-                <div className="pl-3 border-l-2 border-green-500">
-                  <span className="text-green-500 text-[10px] font-bold tracking-widest font-mono uppercase">Lumensky Intervention</span>
-                  <p className="text-zinc-400 mt-1 text-xs">Re-routed to free PW Manzil lectures. Bypassed heavy math. Initiated 14-day micro-sprints.</p>
-                </div>
-                <div>
-                  <span className="text-blue-400 text-[10px] font-bold tracking-widest font-mono uppercase">Projected Outcome</span>
-                  <p className="text-white mt-1 text-xs font-semibold">Trajectory corrected. On track for 93.41% cutoff.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Persona 2 */}
-            <div className="bg-black border border-white/5 rounded-xl p-5 hover:border-green-500/30 transition-colors">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-white">A</div>
-                <div>
-                  <div className="text-white font-medium">Anjali V.</div>
-                  <div className="text-xs text-zinc-500">11th • Arjuna</div>
-                </div>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div>
-                  <span className="text-yellow-400 text-xs font-bold tracking-wide uppercase">Day 7 Trigger</span>
-                  <p className="text-zinc-300 mt-1">Logging fake study hours. Time-to-completion mismatch detected.</p>
-                </div>
-                <div className="pl-3 border-l-2 border-green-500">
-                  <span className="text-green-500 text-xs font-bold tracking-wide uppercase">FP Intervention</span>
-                  <p className="text-zinc-400 mt-1">Triggered 'Reality Mirror'. Showed her the widening gap between fake logs and test scores. Locked dopamine apps.</p>
-                </div>
-                <div>
-                  <span className="text-blue-400 text-xs font-bold tracking-wide uppercase">Day 30 Outcome</span>
-                  <p className="text-white mt-1">Accepted reality. Honest logging started. 65% real consistency.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Persona 3 */}
-            <div className="bg-black border border-white/5 rounded-xl p-5 hover:border-green-500/30 transition-colors">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-white">K</div>
-                <div>
-                  <div className="text-white font-medium">Karan P.</div>
-                  <div className="text-xs text-zinc-500">12th • Offline + Online</div>
-                </div>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div>
-                  <span className="text-red-400 text-xs font-bold tracking-wide uppercase">Day 20 Trigger</span>
-                  <p className="text-zinc-300 mt-1">Overwhelmed by dual coaching. Burnout imminent. Streak broken.</p>
-                </div>
-                <div className="pl-3 border-l-2 border-green-500">
-                  <span className="text-green-500 text-xs font-bold tracking-wide uppercase">FP Intervention</span>
-                  <p className="text-zinc-400 mt-1">Restructured protocol. Eliminated non-core tasks. Shifted to 'Maintenance Mode' for 3 days.</p>
-                </div>
-                <div>
-                  <span className="text-blue-400 text-xs font-bold tracking-wide uppercase">Day 30 Outcome</span>
-                  <p className="text-white mt-1">Recovered from burnout. Survived the quit-zone.</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </motion.section>
+        {/* Student Journey Replay Hidden for pure real data */}
 
       </main>
     </div>
