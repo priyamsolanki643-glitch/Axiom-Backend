@@ -16,6 +16,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [name, setName] = useState("");
+  const [preferredLanguage, setPreferredLanguage] = useState("Hinglish");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +41,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
         email,
         options: { 
           shouldCreateUser: true,
-          data: mode === "signup" ? { full_name: name.trim() } : undefined
+          data: mode === "signup" ? { full_name: name.trim(), preferred_language: preferredLanguage } : undefined
         },
       });
       if (error) throw error;
@@ -148,18 +149,39 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
             {step === "email" && (
               <form onSubmit={handleEmailSubmit} className="flex flex-col gap-4">
                 {mode === "signup" && (
-                  <div className="relative flex items-center bg-white/[0.03] border border-white/[0.05] focus-within:bg-white/[0.06] focus-within:border-white/[0.15] focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)] rounded-2xl transition-all duration-300">
-                    <User className="size-5 text-[#71717a] absolute left-4" />
-                    <input 
-                      type="text" 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Full name"
-                      className="w-full bg-transparent border-none outline-none text-white text-[15px] pl-12 pr-4 py-4 placeholder:text-[#71717a]"
-                      required
-                      autoFocus
-                    />
-                  </div>
+                  <>
+                    <div className="relative flex items-center bg-white/[0.03] border border-white/[0.05] focus-within:bg-white/[0.06] focus-within:border-white/[0.15] focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)] rounded-2xl transition-all duration-300">
+                      <User className="size-5 text-[#71717a] absolute left-4" />
+                      <input 
+                        type="text" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Full name"
+                        className="w-full bg-transparent border-none outline-none text-white text-[15px] pl-12 pr-4 py-4 placeholder:text-[#71717a]"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                    
+                    <div className="relative flex items-center bg-white/[0.03] border border-white/[0.05] focus-within:bg-white/[0.06] focus-within:border-white/[0.15] focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)] rounded-2xl transition-all duration-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5 text-[#71717a] absolute left-4">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>
+                      </svg>
+                      <select
+                        value={preferredLanguage}
+                        onChange={(e) => setPreferredLanguage(e.target.value)}
+                        className="w-full bg-transparent border-none outline-none text-white text-[15px] pl-12 pr-4 py-4 appearance-none cursor-pointer"
+                        required
+                      >
+                        <option value="Hinglish" className="bg-[#0f0f0f] text-white">Hinglish (Default Mentor)</option>
+                        <option value="English" className="bg-[#0f0f0f] text-white">English (Global)</option>
+                        <option value="Hindi" className="bg-[#0f0f0f] text-white">Hindi (Pure)</option>
+                        <option value="Spanish" className="bg-[#0f0f0f] text-white">Spanish</option>
+                        <option value="French" className="bg-[#0f0f0f] text-white">French</option>
+                        <option value="German" className="bg-[#0f0f0f] text-white">German</option>
+                      </select>
+                    </div>
+                  </>
                 )}
                 <div className="relative flex items-center bg-white/[0.03] border border-white/[0.05] focus-within:bg-white/[0.06] focus-within:border-white/[0.15] focus-within:shadow-[0_0_20px_rgba(255,255,255,0.05)] rounded-2xl transition-all duration-300">
                   <Mail className="size-5 text-[#71717a] absolute left-4" />

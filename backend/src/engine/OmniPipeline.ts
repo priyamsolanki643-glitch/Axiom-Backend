@@ -55,6 +55,7 @@ import {
 
 export interface OmniPipelineInput {
   userId: string;
+  userLanguage: string;
   userMessage: string;
   conversationHistory: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }>;
 
@@ -179,7 +180,7 @@ function buildOmniContext(input: OmniPipelineInput): OmniContext {
 // The reasoning is already done. Gemini writes. It does not think.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function assembleGeminiPrompt(ctx: OmniContext): string {
+function assembleGeminiPrompt(ctx: OmniContext, userLanguage: string): string {
   const { toneVector, chaosState, userSnapshot, currentTasks, recentMemories } = ctx;
 
   // Tone directive from Layer 14 (the mathematical emotional instruction set)
@@ -236,6 +237,7 @@ function assembleGeminiPrompt(ctx: OmniContext): string {
     `- If crisis mode is active: include iCall (9152987821) or Vandrevala Foundation (1860-2662-345)`,
     `- Never say "As an AI" or "Lumensky here"`,
     `- Never use markdown (***, ###, ---). Plain text only.`,
+    `- **CRITICAL LANGUAGE DIRECTIVE**: You MUST output the final response exclusively in ${userLanguage}. Ensure the tone remains brutally honest, high-urgency, and mentor-like, natively adapted to the grammatical structure of ${userLanguage}.`,
   ].join('\n');
 
   return [
@@ -366,7 +368,7 @@ export async function runOmniPipeline(
   }
 
   // ── Step 5: Assemble Gemini Prompt ───────────────────────────────────────────
-  const geminiSystemPrompt = assembleGeminiPrompt(omniContext);
+  const geminiSystemPrompt = assembleGeminiPrompt(omniContext, input.userLanguage);
 
   // ── Step 6: Return ───────────────────────────────────────────────────────────
   return {

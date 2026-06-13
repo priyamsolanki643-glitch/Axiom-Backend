@@ -78,7 +78,7 @@ import { DbService } from '../services/db.service';
 import { VectorService } from '../services/vector.service';
 import { requireAuth } from '../middleware/auth.middleware';
 
-export const interactionRoutes = new Hono<{ Variables: { userId: string } }>();
+export const interactionRoutes = new Hono<{ Variables: { userId: string, userLanguage: string } }>();
 
 // Enforce Zero-Trust auth globally on all interaction endpoints
 interactionRoutes.use('*', requireAuth);
@@ -100,6 +100,7 @@ const messageSchema = z.object({
 interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) => {
   const { user_id, message, conversationHistory, state_context, action, thread_id, model } = c.req.valid('json');
   const actualUserId = c.get('userId');
+  const userLanguage = c.get('userLanguage') || 'Hinglish';
 
   if (!actualUserId) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -349,7 +350,7 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
             await DbService.saveMarketReport(actualUserId, groundedData);
           }).catch(err => console.error('MARKET_REPORT: Initial generation failed on chat lock:', err));
 
-          systemPrompt = buildFullSystemPrompt('execution', executionResult.updatedRuntime);
+          systemPrompt = buildFullSystemPrompt('execution', executionResult.updatedRuntime, userLanguage);
           result = { type: 'trajectory_locked', data: executionResult };
         } else {
           // Onboarding complete, but user hasn't made a choice yet. Present simulated paths.
@@ -399,12 +400,12 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
           };
 
           const simulationData = await processOnboarding(onboardingInput);
-          systemPrompt = buildFullSystemPrompt('simulation', simulationData.userRuntime);
+          systemPrompt = buildFullSystemPrompt('simulation', simulationData.userRuntime, userLanguage);
           result = { type: 'onboarding_complete', data: simulationData };
         }
       } else {
         // Onboarding is incomplete. Normal onboarding chat prompt.
-        systemPrompt = buildFullSystemPrompt('onboarding', {});
+        systemPrompt = buildFullSystemPrompt('onboarding', {}, userLanguage);
         result = { type: 'chat_response', data: {} };
       }
     }
@@ -420,6 +421,7 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
     try {
       const omniInput = {
         userId: actualUserId,
+        userLanguage: userLanguage,
         userMessage: message,
         conversationHistory: conversationHistory as any,
         contextMatrix: state_context?.contextMatrix ?? null,

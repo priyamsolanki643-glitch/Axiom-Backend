@@ -201,6 +201,7 @@ export type FPStage = 'onboarding' | 'simulation' | 'execution' | 'critique';
 export function buildFullSystemPrompt(
   stage: FPStage,
   userRuntime: Partial<UserRuntime>,
+  userLanguage: string = 'Hinglish'
 ): string {
   const stagePrompts: Record<FPStage, string> = {
     onboarding: FP_ONBOARDING_STAGE_PROMPT,
@@ -227,6 +228,7 @@ ${stagePrompt}
 - Consistency completion reward: +${ENGINE_AXIOMS.CONSISTENCY_COMPLETION_REWARD} points per completed task
 - State lock: ${userRuntime.strategyState?.isLocked ? 'ACTIVE — Strategy changes require structural evidence' : 'Not yet locked'}
 - Hard ban: ${(userRuntime.contextMatrix?.socioeconomic.liquidCapital ?? 0) < ENGINE_AXIOMS.LOW_CAPITAL_THRESHOLD_INR ? 'ACTIVE — Generic internet advice banned for this profile' : 'Not triggered'}
+- **CRITICAL LANGUAGE DIRECTIVE**: You MUST output the final response exclusively in ${userLanguage}. Ensure the tone remains brutally honest, high-urgency, and mentor-like, natively adapted to the grammatical structure of ${userLanguage}.
 `;
 }
 

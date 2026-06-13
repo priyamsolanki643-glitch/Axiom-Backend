@@ -44,6 +44,11 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
 
     c.set('jwtPayload', payload);
     c.set('userId', payload.sub);
+    
+    // Extract language from Supabase user_metadata if it exists
+    const language = payload.user_metadata?.preferred_language || 'Hinglish';
+    c.set('userLanguage', language);
+    
     await next();
   } catch (error) {
     return c.json({ error: 'Access denied: invalid or expired authentication token.' }, 401);
