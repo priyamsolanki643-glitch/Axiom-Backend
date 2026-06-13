@@ -69,7 +69,7 @@ export function ExecutionCockpit() {
   async function fetchActiveMission() {
     setLoading(true);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       const res = await fetch(`${baseUrl}/api/v1/interaction/active-mission?userId=test-user`, {
         headers: { "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}` }
       });
@@ -96,7 +96,7 @@ export function ExecutionCockpit() {
         return;
       }
       const diagData = JSON.parse(cachedDiag);
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       
       const res = await fetch(`${baseUrl}/api/v1/interaction/operator/current-tasks`, {
         method: "POST",
@@ -138,7 +138,7 @@ export function ExecutionCockpit() {
       if (!cachedDiag || !mission) return;
       
       const diagData = JSON.parse(cachedDiag);
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
       const payload = {
         input: {
@@ -229,7 +229,7 @@ export function ExecutionCockpit() {
       }));
       historyPayload.push({ role: "user", parts: [{ text }] });
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
         method: "POST",
         headers: { 

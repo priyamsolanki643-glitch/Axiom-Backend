@@ -30,7 +30,7 @@ export default function SimulationSequence() {
           return;
         }
         const diagnosticResult = JSON.parse(cached);
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         const res = await fetch(`${baseUrl}/api/v1/interaction/architect`, {
           method: "POST",
           headers: { 
@@ -60,7 +60,7 @@ export default function SimulationSequence() {
 
   useEffect(() => {
     // Reveal steps one by one to simulate 8-second computation
-    const stepDuration = 8000 / SIMULATION_STEPS.length;
+    const stepDuration = 8080 / SIMULATION_STEPS.length;
     
     if (activeStep < SIMULATION_STEPS.length) {
       const timer = setTimeout(() => {

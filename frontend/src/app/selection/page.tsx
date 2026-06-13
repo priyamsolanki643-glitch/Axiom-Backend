@@ -69,7 +69,7 @@ export default function PathSelection() {
     setIsLocking(true);
     try {
       const targetPath = selectedPath === "Alpha" ? pathAlpha : pathBeta;
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       const payload = {
         userId: "test-user",
         missionName: targetPath?.opportunityUsed || (selectedPath === "Alpha" ? "Asymmetric Upside Strategy" : "Compounding Strategy"),

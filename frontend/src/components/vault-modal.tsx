@@ -125,7 +125,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token || "test-user";
         
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         const headers = { "Authorization": `Bearer ${token}` };
 
         const [missionRes, mirrorRes, marketRes, rivalRes] = await Promise.all([

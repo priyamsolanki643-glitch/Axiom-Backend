@@ -108,7 +108,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
       setIsThinking(true);
       
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
         const res = await fetch(`${baseUrl}/api/v1/threads/${tId}/messages`, {
           headers: { "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}` }
         });
@@ -254,7 +254,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
         parts: [{ text }]
       });
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
         method: "POST",
         headers: { 

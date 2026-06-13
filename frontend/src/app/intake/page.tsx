@@ -51,7 +51,7 @@ export default function IntakeTerminal() {
     setIsProcessing(true);
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
         method: "POST",
         headers: { 
@@ -380,7 +380,7 @@ export default function IntakeTerminal() {
               Processing Core
             </div>
             <div className="text-[12px] text-[#a1a1aa] leading-snug">
-              Telemetry pipeline listening on port 8000.
+              Telemetry pipeline listening on port 8080.
             </div>
           </div>
         </div>
