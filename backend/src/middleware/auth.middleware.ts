@@ -1,21 +1,9 @@
 import { MiddlewareHandler } from 'hono';
-import { verify } from 'hono/jwt';
+import { DbService } from '../services/db.service';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'lumensky-fallback-secret-2026';
 const ALLOW_TEST_USER = process.env.ALLOW_TEST_USER !== 'false';
 
-type JwtPayload = {
-  sub?: string;
-  exp?: number;
-  [key: string]: any;
-};
-
 export const requireAuth: MiddlewareHandler = async (c, next) => {
-  if (!JWT_SECRET) {
-    console.error('AUTH_MIDDLEWARE: JWT_SECRET is missing.');
-    return c.json({ error: 'Server authentication is not configured.' }, 500);
-  }
-
   const authHeader = c.req.header('Authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -36,17 +24,16 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
   }
 
   try {
-    const payload = (await verify(token, JWT_SECRET, 'HS256')) as JwtPayload;
+    const { data: { user }, error } = await DbService.supabase.auth.getUser(token);
 
-    if (!payload?.sub || typeof payload.sub !== 'string') {
+    if (error || !user) {
       return c.json({ error: 'Access denied: invalid authentication token.' }, 401);
     }
 
-    c.set('jwtPayload', payload);
-    c.set('userId', payload.sub);
+    c.set('userId', user.id);
     
     // Extract language from Supabase user_metadata if it exists
-    const language = payload.user_metadata?.preferred_language || 'Hinglish';
+    const language = user.user_metadata?.preferred_language || 'Hinglish';
     c.set('userLanguage', language);
     
     await next();
