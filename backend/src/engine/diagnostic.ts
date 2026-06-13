@@ -141,6 +141,8 @@ export function runCircumstantialDiagnosis(input: DiagnosticInput): DiagnosticOu
     riskTolerance: input.riskTolerance,
     ambitionIndex: 0,
     age: 25,
+    cognitiveDissonanceScore: 0,
+    evolutionStage: 'surrender' as const,
   };
 
   const tempCapabilityEstimate = skills.reduce((sum, s) => sum + s.verifiedLevel, 0) / Math.max(1, skills.length);

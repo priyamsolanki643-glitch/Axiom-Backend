@@ -92,6 +92,7 @@ export interface InfrastructureCluster {
 
 export type EgoLeveragePoint = 'status' | 'money' | 'family' | 'proving_someone_wrong' | 'freedom' | 'impact';
 export type WorkStylePreference = 'deep_work_clusters' | 'high_velocity_sprints' | 'unknown';
+export type MentalEvolutionStage = 'delusion' | 'resistance' | 'surrender' | 'momentum';
 
 export interface PsychometricCluster {
   procrastinationScore: number;       // 0.0 = never, 1.0 = chronic. Engine-assessed.
@@ -103,6 +104,8 @@ export interface PsychometricCluster {
   riskTolerance: number;              // 0.0 (risk-averse) – 1.0 (risk-seeking)
   ambitionIndex: number;              // Declared goal velocity vs current reality
   age: number;                        // Required for age verification (must be 18+)
+  cognitiveDissonanceScore: number;   // 0.0 to 100. Gap between ambition and actual action.
+  evolutionStage: MentalEvolutionStage; // Current psychological stage of the user.
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

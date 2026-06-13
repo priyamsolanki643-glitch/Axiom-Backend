@@ -135,6 +135,10 @@ export interface EmpathyInput {
   // Milestone context
   daysSinceLastMilestone: number;
   milestonesHitTotal: number;
+  
+  // New Sentience Metrics
+  ambitionIndex: number;
+  daysActive: number; // Days since onboarding
 }
 
 export type EmotionalSignal =
@@ -145,7 +149,50 @@ export type EmotionalSignal =
   | 'explicit_celebration'     // "I did it!", "Achievement unlocked"
   | 'avoidance_behavior'       // Short messages, delayed replies
   | 'explicit_distress'        // "I want to give up", "I feel hopeless"
-  | 'dopamine_loop_detected';  // Asking for motivation instead of executing
+  | 'dopamine_loop_detected'   // Asking for motivation instead of executing
+  | 'cognitive_dissonance';    // Flagged when ambition is high but action is zero
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 2.5: SENTIENCE UPGRADE CALCULATORS (Cognitive Dissonance & Evolution)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * COGNITIVE DISSONANCE CALCULATOR (The Bullshit Detector)
+ * Compares Ambition against Execution Consistency.
+ * Grace Period: Returns 0 if user is active for less than 3 days.
+ */
+export function calculateCognitiveDissonance(
+  ambitionIndex: number, 
+  consistencyScore: number, 
+  daysActive: number
+): number {
+  if (daysActive < 3) return 0; // The Grace Period Fix
+
+  // Normalize ambition index (usually 0.5 to 8.0) to a 0-100 scale for comparison
+  const normalizedAmbition = Math.min(100, Math.max(0, (ambitionIndex / 4.0) * 100));
+  
+  // If ambition is way higher than consistency, we have cognitive dissonance
+  const gap = normalizedAmbition - consistencyScore;
+  
+  return gap > 0 ? gap : 0;
+}
+
+/**
+ * MENTAL EVOLUTION STAGE CALCULATOR
+ * Determines the psychological phase of the user.
+ */
+export function calculateEvolutionStage(
+  dissonanceScore: number,
+  consistencyScore: number,
+  daysActive: number
+): 'delusion' | 'resistance' | 'surrender' | 'momentum' {
+  if (daysActive < 3) return 'surrender'; // Default learning phase for new users
+
+  if (dissonanceScore > 50 && consistencyScore < 30) return 'delusion';
+  if (consistencyScore >= 30 && consistencyScore < 60) return 'resistance';
+  if (consistencyScore >= 60 && consistencyScore < 80) return 'surrender'; // Listening to the system
+  return 'momentum'; // Consistency > 80
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3: COMPONENT CALCULATORS
@@ -344,6 +391,16 @@ function buildToneRationale(
   if (input.consistencyScore > 75) {
     parts.push(`Consistency score strong (${input.consistencyScore}/100). Celebrate the momentum before pushing forward.`);
   }
+
+  // Sentience Upgrade Injections
+  const dissonance = calculateCognitiveDissonance(input.ambitionIndex, input.consistencyScore, input.daysActive);
+  const evolution = calculateEvolutionStage(dissonance, input.consistencyScore, input.daysActive);
+
+  if (dissonance > 40) {
+    parts.push(`COGNITIVE DISSONANCE DETECTED (Score: ${dissonance.toFixed(0)}/100). The student's ambition is massive, but their execution is zero. Confront this contradiction directly.`);
+  }
+
+  parts.push(`EVOLUTION STAGE: ${evolution.toUpperCase()}. Adapt your tone to this stage of their psychological journey.`);
 
   return parts.join(' | ');
 }

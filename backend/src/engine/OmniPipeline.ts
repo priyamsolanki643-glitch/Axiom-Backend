@@ -116,6 +116,8 @@ function buildOmniContext(input: OmniPipelineInput): OmniContext {
     detectedEmotionalSignals,
     daysSinceLastMilestone,
     milestonesHitTotal,
+    ambitionIndex: contextMatrix?.psychometric.ambitionIndex ?? 1.0,
+    daysActive: daysSinceLastActivity // Approximate days active, assuming daily login
   };
   const toneVector = computeToneVector(empathyInput);
 

@@ -429,7 +429,12 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
         strategyState: state_context?.strategyState ?? null,
         detectedEmotionalSignals: [] as EmotionalSignal[],
         detectedChaosEvents: [] as ChaosEventType[],
-        daysSinceLastActivity: 0,
+        daysSinceLastActivity: (() => {
+          if (!state_context?.contextMatrix?.onboardingCompletedAt) return 0;
+          const onboarded = new Date(state_context.contextMatrix.onboardingCompletedAt);
+          const diffTime = Math.abs(Date.now() - onboarded.getTime());
+          return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        })(),
         consecutiveCompletionCount: activeMission?.streakDays ?? 0,
         consecutiveFailureCount: activeMission?.streakDays === 0 ? 1 : 0,
         daysSinceLastMilestone: activeMission?.dayNumber ?? 0,
