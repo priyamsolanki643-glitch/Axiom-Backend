@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatViewProps {
   onOpenSidebar: () => void;
@@ -567,8 +569,10 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
                           className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="font-sans text-[15.5px] leading-[1.7] text-white/90 whitespace-pre-wrap break-words overflow-x-auto tracking-wide drop-shadow-sm">
-                            {m.text}
+                          <div className="font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {m.text}
+                            </ReactMarkdown>
                           </div>
 
                           {/* Actions row */}
