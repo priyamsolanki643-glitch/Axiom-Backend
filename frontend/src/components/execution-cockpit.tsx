@@ -316,8 +316,9 @@ export function ExecutionCockpit() {
 
   // Get color for runway band
   const bandColor = mission.lockedPath === "alpha" ? "amber" : "cyan";
-  const consistencyColorClass = mission.consistencyScore >= 75 ? "text-white/80" : mission.consistencyScore >= 50 ? "text-amber-400" : "text-red-400";
-  const consistencyProgressColor = mission.consistencyScore >= 75 ? "#ffffff" : mission.consistencyScore >= 50 ? "#f59e0b" : "#ef4444";
+  const displayScore = mission.consistencyScore === -1 ? 0 : mission.consistencyScore;
+  const consistencyColorClass = displayScore >= 75 ? "text-white/80" : displayScore >= 50 ? "text-amber-400" : "text-red-400";
+  const consistencyProgressColor = displayScore >= 75 ? "#ffffff" : displayScore >= 50 ? "#f59e0b" : "#ef4444";
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row h-screen bg-[#000000] text-white font-sans overflow-hidden relative">
@@ -376,13 +377,13 @@ export function ExecutionCockpit() {
                     stroke={consistencyProgressColor} 
                     strokeWidth="6" 
                     strokeDasharray="276" 
-                    strokeDashoffset={276 - (276 * mission.consistencyScore) / 100} 
+                    strokeDashoffset={276 - (276 * displayScore) / 100} 
                     strokeLinecap="round" 
                     style={{ transition: "stroke-dashoffset 0.8s ease-in-out" }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{mission.consistencyScore}</span>
+                  <span className="text-2xl font-bold text-white">{mission.consistencyScore === -1 ? '?' : displayScore}</span>
                   <span className="text-[8px] font-mono text-[#52525b]">/100</span>
                 </div>
               </div>

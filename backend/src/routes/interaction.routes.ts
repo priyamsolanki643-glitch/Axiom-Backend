@@ -315,7 +315,7 @@ Reply casually in Hinglish — like a smart older bro who's genuinely curious. A
             probabilityHigh: targetPath?.probabilityRangeHigh || (chosenPath === 'alpha' ? 24.0 : 82.5),
             dayNumber: 1,
             totalDays: (targetPath?.timelineMonths || 3) * 30,
-            consistencyScore: 100,
+            consistencyScore: -1,
             streakDays: 0,
             mindsetBrief: targetPath?.firstStepToday || "Start executing immediate discovery steps.",
             strategyContent: targetPath?.description || "Compounding action vector.",
@@ -323,7 +323,7 @@ Reply casually in Hinglish — like a smart older bro who's genuinely curious. A
           };
 
           await DbService.saveMission(missionPayload);
-          await DbService.addConsistencyLog(actualUserId, 100);
+          await DbService.addConsistencyLog(actualUserId, -1);
           
           activeMission = await DbService.getActiveMission(actualUserId);
           isTransitioningToExecution = true;
@@ -407,6 +407,70 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
         // Onboarding is incomplete. Normal onboarding chat prompt.
         systemPrompt = buildFullSystemPrompt('onboarding', {}, userLanguage);
         result = { type: 'chat_response', data: {} };
+      }
+    }
+
+    // ── Intercept for Consistency Onboarding ─────────────────────────────────────
+    if (activeMission && activeMission.consistencyScore === -1) {
+      let extractedScore: number | null = null;
+      
+      if (!isTransitioningToExecution) {
+        const extractPrompt = `
+Analyze the user's message and determine if they have provided a numerical self-assessment of their consistency out of 100.
+If they provided a number, extract it as an integer between 0 and 100.
+If no clear number is provided or if they are dodging the question, return {"score": null}.
+Output ONLY valid JSON. Do not include markdown formatting.
+User message: "${message}"`;
+        
+        try {
+          const extractRes = await LLMService.generateValidatedResponse(actualUserId, extractPrompt, [], [], 3, 1000, true);
+          if (extractRes && extractRes.response_text) {
+            const parsed = JSON.parse(extractRes.response_text);
+            if (typeof parsed.score === 'number' && parsed.score >= 0 && parsed.score <= 100) {
+              extractedScore = parsed.score;
+            }
+          }
+        } catch (e) {
+          console.error("Consistency extraction parse error:", e);
+        }
+      }
+
+      if (extractedScore !== null) {
+        activeMission.consistencyScore = extractedScore;
+        await DbService.saveMission(activeMission);
+        await DbService.addConsistencyLog(actualUserId, extractedScore);
+        
+        // Inform OmniPipeline of this new context implicitly via conversation history
+        conversationHistory.push({ role: 'user', parts: [{ text: `[SYSTEM LOG: User self-assessed initial consistency score as ${extractedScore}/100]` }] });
+      } else {
+        const blockPrompt = `CRITICAL DIRECTIVE: The user's vault has just been created or they haven't provided their initial consistency score yet. 
+You MUST ask them to self-assess their consistency out of 100 before proceeding. Be direct, aggressive, and strict.
+Example: 'Vault ready hai. Aage ka execution main track karunga, but pehle mujhe sach bata—aaj ke din, honestly teri consistency 100 mein se kitni hai? Give me a number.'
+DO NOT talk about anything else or provide any strategy until they provide this number.`;
+        
+        let smartResponse;
+        try {
+          smartResponse = await LLMService.generateSmartResponse(
+            actualUserId,
+            blockPrompt,
+            conversationHistory as any,
+            false,
+            model
+          );
+        } catch (err: any) {
+          smartResponse = { response_text: "Vault ready hai. Par pehle bata, aaj ke din honestly teri consistency 100 mein se kitni hai? Ek number de (0-100) uske baad main aage badhunga." };
+        }
+        
+        await DbService.saveMessage(currentThreadId, actualUserId, 'fp', smartResponse.response_text);
+        
+        return c.json({
+          status: 'success',
+          data: {
+            engine_result: { type: 'chat_response', data: {} },
+            ai_response: { response_text: smartResponse.response_text },
+            thread_id: currentThreadId
+          }
+        });
       }
     }
 
@@ -607,13 +671,13 @@ For example: {"response_text": "{\\"missionName\\":\\"My Goal\\", \\"lockedPath\
                 probabilityHigh: 75.0,
                 dayNumber: 1,
                 totalDays: parsed.totalDays || 90,
-                consistencyScore: 100,
+                consistencyScore: -1,
                 streakDays: 0,
                 mindsetBrief: parsed.mindsetBrief || "Execute the vision.",
                 strategyContent: parsed.strategyContent || "Phase 1 initialized.",
                 chatThreadId: currentThreadId
               });
-              await DbService.addConsistencyLog(actualUserId, 100);
+              await DbService.addConsistencyLog(actualUserId, -1);
             }
           }
         } catch (e) {

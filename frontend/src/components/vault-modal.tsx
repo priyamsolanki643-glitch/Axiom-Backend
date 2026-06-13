@@ -632,7 +632,8 @@ function TabDebt({ missionData }: { missionData?: MissionData }) {
   }
   
   const debtDays = missionData?.debtDays || 0;
-  const consistencyScore = missionData?.consistencyScore || 0;
+  const displayConsistencyScore = missionData?.consistencyScore === -1 ? 0 : (missionData?.consistencyScore || 0);
+  const consistencyText = missionData?.consistencyScore === -1 ? '?' : `${displayConsistencyScore}`;
   const daysToGoal = missionData?.daysToGoal || (missionData?.totalDays ? Math.max(0, missionData.totalDays - (missionData.dayNumber || 0)) : 0);
   const streakDays = missionData?.streakDays || 0;
   const hasDebt = debtDays > 0;
@@ -644,10 +645,10 @@ function TabDebt({ missionData }: { missionData?: MissionData }) {
         <div className="grid grid-cols-3 gap-2 sm:gap-6 w-full max-w-3xl mx-auto">
           <Dial 
             title="CONSISTENCY" 
-            value={`${consistencyScore}`} 
+            value={consistencyText} 
             sub="SCORE" 
             color="#ffffff" 
-            strokeOffset={`${276 - (276 * consistencyScore) / 100}`} 
+            strokeOffset={`${276 - (276 * displayConsistencyScore) / 100}`} 
           />
           <Dial 
             title="BACKLOG DEBT" 
