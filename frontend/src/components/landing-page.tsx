@@ -171,19 +171,19 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           }}
         >
           {/* Headline */}
-          <h1 className="font-display mb-8 flex flex-col items-center w-full max-w-[100vw] overflow-hidden px-2">
+          <h1 className="font-display mb-8 flex flex-col items-center">
             {/* First Line */}
             <div 
-              className="tracking-tight pb-1 text-[#a1a1aa] leading-[1.0]"
-              style={{ fontSize: "clamp(1.7rem, 7.5vw, 5.0rem)", fontWeight: 400 }}
+              className="tracking-tight pb-1 text-[#a1a1aa] leading-[1.0] whitespace-nowrap"
+              style={{ fontSize: "clamp(2.0rem, 10vw, 5.0rem)", fontWeight: 400 }}
             >
               Stop planning.
             </div>
             
             {/* Second Line */}
             <div 
-              className="tracking-tighter pb-2 leading-[1.1]"
-              style={{ fontSize: "clamp(2.2rem, 9.5vw, 7.2rem)", fontWeight: 500, marginTop: "-0.02em" }}
+              className="tracking-tighter pb-2 leading-[1.1] whitespace-nowrap"
+              style={{ fontSize: "clamp(2.8rem, 13vw, 7.2rem)", fontWeight: 500, marginTop: "-0.02em" }}
             >
               <span className="shimmer-text-lumensky god-text-shadow">
                 Start executing.
