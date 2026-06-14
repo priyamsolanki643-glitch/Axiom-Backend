@@ -65,15 +65,11 @@ export function ParticleSphere() {
     let isDragging = false;
     let previousMouse = { x: 0, y: 0 };
 
-    // The Singularity State
-    let isHolding = false;
+    // Antigravity Cursor State
     let touchX = width / 2;
     let touchY = height / 2;
-    let singularityTarget = 0;
-    let singularityStrength = 0;
-    let shockwaveRadius = 0;
-    let shockwaveStrength = 0;
-    let hapticInterval: number | null = null;
+    let isHovering = false; // true when mouse is moving or finger is touching
+    let swarmStrength = 0; // smoothly animates in and out
 
     const getCanvasPos = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
@@ -85,61 +81,42 @@ export function ParticleSphere() {
 
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
-      isHolding = true;
+      isHovering = true;
       const pos = getCanvasPos(e);
       touchX = pos.x;
       touchY = pos.y;
       previousMouse = { x: e.clientX, y: e.clientY };
-      
-      singularityTarget = 1.0;
+    };
 
-      // Ultra-premium subtle haptic tap on touch (Android natively)
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(15); 
-        
-        // Continuous Heartbeat Engine while holding
-        let beatCount = 0;
-        hapticInterval = window.setInterval(() => {
-          beatCount++;
-          // Increase intensity as it builds up
-          const intensity = Math.min(50, 10 + beatCount * 5);
-          navigator.vibrate(intensity);
-        }, 150);
+    const handlePointerMove = (e: PointerEvent) => {
+      isHovering = true;
+      const pos = getCanvasPos(e);
+      touchX = pos.x;
+      touchY = pos.y;
+      
+      if (isDragging) {
+        const deltaX = e.clientX - previousMouse.x;
+        const deltaY = e.clientY - previousMouse.y;
+        velocity.x = deltaX * 0.003; 
+        velocity.y = deltaY * 0.003; 
+        previousMouse = { x: e.clientX, y: e.clientY };
       }
     };
-    const handlePointerMove = (e: PointerEvent) => {
-      if (!isDragging) return;
-      const pos = getCanvasPos(e);
-      touchX = pos.x;
-      touchY = pos.y;
-      const deltaX = e.clientX - previousMouse.x;
-      const deltaY = e.clientY - previousMouse.y;
-      velocity.x = deltaX * 0.003; 
-      velocity.y = deltaY * 0.003; 
-      previousMouse = { x: e.clientX, y: e.clientY };
-    };
+
     const handlePointerUp = () => { 
       isDragging = false; 
-      if (isHolding) {
-        isHolding = false;
-        singularityTarget = 0;
-        
-        // Trigger Explosion Shockwave if it was held long enough
-        if (singularityStrength > 0.2) {
-           shockwaveStrength = singularityStrength;
-           shockwaveRadius = 0;
-           if (typeof navigator !== 'undefined' && navigator.vibrate) {
-             navigator.vibrate([100, 50, 100]); // Big bang haptic
-           }
-        }
-      }
-      if (hapticInterval) {
-        window.clearInterval(hapticInterval);
-        hapticInterval = null;
+      // On mobile, finger lifted means no more hovering. On desktop, mouseleave handles it.
+      if (window.matchMedia("(hover: none)").matches) {
+        isHovering = false;
       }
     };
 
-    // Gyroscope Parallax (Mobile God Level)
+    const handleMouseLeave = () => {
+      isHovering = false;
+      isDragging = false;
+    };
+
+    // Gyroscope Parallax (Mobile)
     let gyroX = 0;
     let gyroY = 0;
     let currentGyroX = 0;
@@ -154,9 +131,11 @@ export function ParticleSphere() {
       }
     };
 
+    // Use window for move/up to catch fast swipes, but canvas for down/leave
     canvas.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('mouseleave', handleMouseLeave);
     
     if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', handleOrientation);
@@ -168,14 +147,14 @@ export function ParticleSphere() {
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Intro Animation (Ease Out Exponential)
+      // Intro Animation
       const elapsed = Date.now() - startTime;
       const progress = Math.min(1, elapsed / 2500); 
       const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
 
-      // Physics Loop
+      // Sphere Rotation Physics
       if (!isDragging) {
-        velocity.x *= 0.95; // Friction
+        velocity.x *= 0.95;
         velocity.y *= 0.92;
         if (Math.abs(velocity.x) < 0.001) velocity.x += (0.0015 - velocity.x) * 0.05;
         if (Math.abs(velocity.y) < 0.0001) velocity.y *= 0.9;
@@ -185,19 +164,13 @@ export function ParticleSphere() {
       rotationX -= velocity.y;
       rotationX = Math.max(-0.6, Math.min(0.6, rotationX));
 
-      // Smoothly interpolate Gyro
+      // Gyro Parallax
       currentGyroX += (gyroX - currentGyroX) * 0.05;
       currentGyroY += (gyroY - currentGyroY) * 0.05;
 
-      // Interpolate Singularity
-      singularityStrength += (singularityTarget - singularityStrength) * 0.05;
-
-      // Update Shockwave Physics
-      if (shockwaveStrength > 0) {
-        shockwaveRadius += 40; // expand rapidly
-        shockwaveStrength *= 0.92; // decay
-        if (shockwaveStrength < 0.01) shockwaveStrength = 0;
-      }
+      // Antigravity Swarm Interpolation
+      const targetSwarm = isHovering ? 1.0 : 0.0;
+      swarmStrength += (targetSwarm - swarmStrength) * 0.05;
 
       const finalRotY = rotationY + currentGyroY;
       const finalRotX = rotationX + currentGyroX;
@@ -232,44 +205,30 @@ export function ParticleSphere() {
         let finalX = width / 2 + x1 * radius * scale;
         let finalY = height / 2 - y1 * radius * scale;
 
-        // 1. The Singularity Warp Math
-        if (singularityStrength > 0.01) {
+        // Antigravity Magnetic Swarm Math
+        if (swarmStrength > 0.01) {
            const dx = finalX - touchX;
            const dy = finalY - touchY;
            const dist = Math.sqrt(dx * dx + dy * dy);
-           const vortexRadius = Math.min(width, height) * 1.5; // Huge influence
+           const pullRadius = Math.min(width, height) * 0.6; // Cursor influence area
            
-           if (dist < vortexRadius) {
-             const normalizedDist = dist / vortexRadius;
-             const pinch = Math.pow(1 - normalizedDist, 2) * singularityStrength;
+           if (dist < pullRadius) {
+             const normalizedDist = dist / pullRadius;
+             // Non-linear gravitational pull towards cursor
+             const pull = Math.pow(1 - normalizedDist, 3) * swarmStrength;
+             
+             // Move particle towards cursor
+             const pullDist = dist * pull * 0.8; 
              const angle = Math.atan2(dy, dx);
-             const swirlAngle = angle + (pinch * 12.0); // Insane Swirl
              
-             // Suck aggressively into center event horizon
-             const newDist = dist * (1 - pinch * 0.95); 
+             // Add a mesmerizing orbital swirl around the cursor
+             const swirl = pull * 2.0; 
              
-             finalX = touchX + Math.cos(swirlAngle) * newDist;
-             finalY = touchY + Math.sin(swirlAngle) * newDist;
+             finalX -= Math.cos(angle - swirl) * pullDist;
+             finalY -= Math.sin(angle - swirl) * pullDist;
              
-             // Blindly bright near the event horizon
-             flowOpacity = Math.max(flowOpacity, pinch * 4.0);
-           }
-        }
-
-        // 2. The Shockwave Math
-        if (shockwaveStrength > 0.01) {
-           const dx = finalX - touchX;
-           const dy = finalY - touchY;
-           const dist = Math.sqrt(dx * dx + dy * dy);
-           const distFromWave = Math.abs(dist - shockwaveRadius);
-           
-           if (distFromWave < 120) {
-              const push = (1 - (distFromWave / 120)) * shockwaveStrength * 250;
-              const angle = Math.atan2(dy, dx);
-              finalX += Math.cos(angle) * push;
-              finalY += Math.sin(angle) * push;
-              // Flash of light at the shockwave rim
-              flowOpacity = Math.max(flowOpacity, push * 0.02);
+             // Illuminate particles caught in the gravity field
+             flowOpacity = Math.max(flowOpacity, pull * 2.5);
            }
         }
 
@@ -304,10 +263,10 @@ export function ParticleSphere() {
       canvas.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('mouseleave', handleMouseLeave);
       if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
         window.removeEventListener('deviceorientation', handleOrientation);
       }
-      if (hapticInterval) window.clearInterval(hapticInterval);
       cancelAnimationFrame(animationId);
     };
   }, []);
