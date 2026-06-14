@@ -62,19 +62,19 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          padding: 16px 42px;
+          gap: 8px;
+          padding: 12px 32px;
           border-radius: 9999px;
           background: #ffffff;
           color: #000000;
           font-family: 'Inter', sans-serif;
           font-weight: 600;
-          font-size: 16px;
+          font-size: 15px;
           letter-spacing: 0.01em;
           border: 1px solid #ffffff;
           box-shadow: 
-            0 0 15px rgba(255, 255, 255, 0.5), /* Sharp inner glow */
-            0 10px 40px rgba(255, 255, 255, 0.3), /* Wide ambient glow */
+            0 0 10px rgba(255, 255, 255, 0.4), /* Sharp inner glow */
+            0 6px 24px rgba(255, 255, 255, 0.15), /* Tight ambient glow */
             inset 0 -2px 4px rgba(0, 0, 0, 0.1); /* Inner depth */
           cursor: pointer;
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
@@ -83,7 +83,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
         .btn-white-pill:active {
           transform: scale(0.95);
-          box-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 5px 20px rgba(255, 255, 255, 0.2);
+          box-shadow: 0 0 6px rgba(255, 255, 255, 0.3), 0 3px 12px rgba(255, 255, 255, 0.1);
         }
 
         .btn-white-pill .arrow-icon {
