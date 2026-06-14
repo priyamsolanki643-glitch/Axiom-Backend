@@ -180,7 +180,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           }}
         >
           {/* Headline */}
-          <h1 className="font-display mb-8 flex flex-col items-center">
+          <h1 className="font-display mb-8 flex flex-col items-center pointer-events-none">
             {/* First Line */}
             <div 
               className="tracking-tight pb-1 text-[#a1a1aa] leading-[1.0] whitespace-nowrap"
@@ -201,7 +201,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           </h1>
 
           {/* Subtext */}
-          <p className="text-[#a1a1aa] text-[15px] sm:text-[17px] leading-snug max-w-[90%] sm:max-w-md mx-auto mb-10 font-sans font-normal opacity-90">
+          <p className="text-[#a1a1aa] text-[15px] sm:text-[17px] leading-snug max-w-[90%] sm:max-w-md mx-auto mb-10 font-sans font-normal opacity-90 pointer-events-none">
             Built for achievers, not procrastinators.<br />
             <span className="text-white/70 font-medium">No fluff. No excuses. No mercy.</span>
           </p>

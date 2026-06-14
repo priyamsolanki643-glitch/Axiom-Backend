@@ -75,11 +75,20 @@ export function ParticleSphere() {
     let shockwaveStrength = 0;
     let hapticInterval: number | null = null;
 
+    const getCanvasPos = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) * (width / rect.width),
+        y: (e.clientY - rect.top) * (height / rect.height)
+      };
+    };
+
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
       isHolding = true;
-      touchX = e.offsetX;
-      touchY = e.offsetY;
+      const pos = getCanvasPos(e);
+      touchX = pos.x;
+      touchY = pos.y;
       previousMouse = { x: e.clientX, y: e.clientY };
       
       singularityTarget = 1.0;
@@ -100,8 +109,9 @@ export function ParticleSphere() {
     };
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
-      touchX = e.offsetX;
-      touchY = e.offsetY;
+      const pos = getCanvasPos(e);
+      touchX = pos.x;
+      touchY = pos.y;
       const deltaX = e.clientX - previousMouse.x;
       const deltaY = e.clientY - previousMouse.y;
       velocity.x = deltaX * 0.003; 
