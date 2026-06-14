@@ -75,6 +75,7 @@ export interface DiagnosticInput {
   pathPreference: 'high_risk_upside' | 'safe_compounding' | 'undecided';
   onboardingText: string;
   detectedFrictionSignalIds: string[];
+  age: number;
 }
 
 export interface DiagnosticOutput {
@@ -140,7 +141,7 @@ export function runCircumstantialDiagnosis(input: DiagnosticInput): DiagnosticOu
     preferredWorkStyle: input.preferredWorkStyle,
     riskTolerance: input.riskTolerance,
     ambitionIndex: 0,
-    age: 25,
+    age: input.age,
   };
 
   const tempCapabilityEstimate = skills.reduce((sum, s) => sum + s.verifiedLevel, 0) / Math.max(1, skills.length);
@@ -170,12 +171,7 @@ export function runCircumstantialDiagnosis(input: DiagnosticInput): DiagnosticOu
   const capabilityVector = runCapabilityVectoring(contextMatrix);
 
   // 3. Run Survivability Audit
-  const rawSurvivability = runSurvivabilityAudit(contextMatrix);
-  // Ensure strategyGenerationUnlocked is always true - NO BLOCKING GATES.
-  const survivabilityAudit = {
-    ...rawSurvivability,
-    strategyGenerationUnlocked: true,
-  };
+  const survivabilityAudit = runSurvivabilityAudit(contextMatrix);
 
   // 4. Friction Profiling
   const frictionProfile = runFrictionProfiling(contextMatrix, input.detectedFrictionSignalIds);

@@ -4,10 +4,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('CRITICAL: SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables are required.');
+  console.error('CRITICAL: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required.');
 }
 
 const isLocalFallback = !supabaseUrl || !supabaseKey;
