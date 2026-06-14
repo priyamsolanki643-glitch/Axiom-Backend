@@ -110,7 +110,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
       
       try {
 const { data: { session } } = await supabase.auth.getSession();
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
         const res = await fetch(`${baseUrl}/api/v1/threads/${tId}/messages`, {
           headers: { "Authorization": `Bearer ${session?.access_token}` }
 
@@ -258,7 +258,7 @@ const { data: { session } } = await supabase.auth.getSession();
       });
 
 const { data: { session } } = await supabase.auth.getSession();
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
 
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
         method: "POST",

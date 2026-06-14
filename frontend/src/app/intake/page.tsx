@@ -52,7 +52,7 @@ export default function IntakeTerminal() {
     
     try {
 const { data: { session } } = await supabase.auth.getSession();
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
 
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
         method: "POST",

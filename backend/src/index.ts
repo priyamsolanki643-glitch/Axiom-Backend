@@ -25,6 +25,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL || '',
   'http://localhost:3000',
   'http://localhost:5173',
+  'https://lumensky.space'
 ].filter(Boolean);
 
 app.use('*', cors({
