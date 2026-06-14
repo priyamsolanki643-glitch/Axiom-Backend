@@ -9,11 +9,11 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
     // Timings optimized for cinematic tension and zero lag
     const t1 = setTimeout(() => setPhase(1), 100); // Quantum core ignition
     const t2 = setTimeout(() => setPhase(2), 700); // Wide-tracking snap-focus text reveal
-    const t3 = setTimeout(() => setPhase(3), 2400); // Shockwave Implosion
+    const t3 = setTimeout(() => setPhase(3), 2400); // Instant exposure blowout (Flash)
     const t4 = setTimeout(() => {
       setPhase(4); // Fade out entire wrapper
       setTimeout(onComplete, 500); // 500ms elegant handover to main app
-    }, 2600); // Shockwave exposure stays for 200ms
+    }, 2600); // Flash exposure stays for 200ms
 
     return () => {
       clearTimeout(t1);
@@ -25,23 +25,21 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
   return (
     <div 
-      className={`fixed inset-0 z-[9999] bg-[#000000] text-white overflow-hidden transition-opacity duration-400 ease-out ${phase === 4 ? 'opacity-0' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[9999] bg-black text-white overflow-hidden transition-opacity duration-400 ease-out ${phase === 4 ? 'opacity-0' : 'opacity-100'}`}
     >
       {/* Background grain texture */}
       <div 
-        className="absolute inset-0 opacity-[0.035] pointer-events-none mix-blend-overlay z-0"
+        className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay z-0"
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
       />
       
       {/* Deep Vignette for absolute center focus */}
-      <div className="absolute inset-0 pointer-events-none z-1" style={{ background: 'radial-gradient(circle at 50% 50%, transparent 20%, rgba(0,0,0,1) 95%)' }} />
+      <div className="absolute inset-0 pointer-events-none z-1" style={{ background: 'radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%)' }} />
 
-      {/* Cinematic Shockwave Layer (Soft white radial glow instead of stark white background) */}
+      {/* Instant Flash Layer (Zero lag pure CSS opacity, replaces heavy scale/blur) */}
       <div 
-        className={`absolute inset-0 z-50 pointer-events-none mix-blend-screen transition-all duration-300 ease-out ${phase >= 3 ? 'opacity-100' : 'opacity-0'}`} 
-      >
-         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl ${phase >= 3 ? 'w-[150vw] h-[150vw] bg-[radial-gradient(circle,rgba(255,255,255,0.25)_0%,rgba(0,0,0,0)_70%)]' : 'w-0 h-0 bg-[radial-gradient(circle,rgba(255,255,255,0.8)_0%,rgba(0,0,0,0)_100%)]'} transition-all duration-300 ease-out`} />
-      </div>
+        className={`absolute inset-0 bg-white z-50 transition-opacity duration-200 ease-in ${phase >= 3 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+      />
 
       <style>{`
         .gyro-container {
@@ -58,7 +56,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         }
         .gyro-container.phase-1 {
           opacity: 1;
-          transform: scale(2.4) translateY(0) rotateX(0deg);
+          transform: scale(2.2) translateY(0) rotateX(0deg);
         }
 
         .gyro-core {
@@ -74,14 +72,14 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           width: 100%;
           height: 100%;
           border-radius: 50%;
-          border: 1px solid rgba(255,255,255,0.04);
-          border-top: 1px solid rgba(255,255,255,0.85);
-          border-right: 1px solid rgba(255,255,255,0.25);
-          box-shadow: inset 0 0 15px rgba(255,255,255,0.01),
-                      -1px 0 4px rgba(255, 255, 255, 0.15),
-                      1px 0 4px rgba(255, 255, 255, 0.3);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-top: 1px solid rgba(255,255,255,0.8);
+          border-right: 1px solid rgba(255,255,255,0.3);
+          box-shadow: inset 0 0 10px rgba(255,255,255,0.02),
+                      -1px 0 3px rgba(255, 255, 255, 0.2), /* Subtle white blur */
+                      1px 0 3px rgba(255, 255, 255, 0.4);  /* Sharp white edge */
         }
-        
+        /* Exact timings from chat-view */
         .ring-1 { animation: spin1 1.8s linear infinite; }
         .ring-2 { animation: spin2 2.4s linear infinite; }
         .ring-3 { animation: spin3 3s linear infinite; }
@@ -91,20 +89,20 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
           position: absolute;
           width: 1.5px;
           height: 1.5px;
-          background: #ffffff;
+          background: #fff;
           border-radius: 50%;
           opacity: 0;
-          box-shadow: 0 0 4px #ffffff;
+          box-shadow: 0 0 4px #fff;
         }
-        .gyro-container.phase-1 .p1 { animation: shoot1 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .gyro-container.phase-1 .p2 { animation: shoot2 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .gyro-container.phase-1 .p3 { animation: shoot3 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .gyro-container.phase-1 .p4 { animation: shoot4 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .gyro-container.phase-1 .p1 { animation: shoot1 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .gyro-container.phase-1 .p2 { animation: shoot2 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .gyro-container.phase-1 .p3 { animation: shoot3 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .gyro-container.phase-1 .p4 { animation: shoot4 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        @keyframes shoot1 { 0% { transform: translate(0,0) scale(1.5); opacity: 1; } 100% { transform: translate(-45px, -60px) scale(0); opacity: 0; } }
-        @keyframes shoot2 { 0% { transform: translate(0,0) scale(1.5); opacity: 1; } 100% { transform: translate(70px, -40px) scale(0); opacity: 0; } }
-        @keyframes shoot3 { 0% { transform: translate(0,0) scale(1.5); opacity: 1; } 100% { transform: translate(-60px, 50px) scale(0); opacity: 0; } }
-        @keyframes shoot4 { 0% { transform: translate(0,0) scale(1.5); opacity: 1; } 100% { transform: translate(55px, 65px) scale(0); opacity: 0; } }
+        @keyframes shoot1 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-40px, -50px) scale(0); opacity: 0; } }
+        @keyframes shoot2 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(60px, -30px) scale(0); opacity: 0; } }
+        @keyframes shoot3 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-50px, 40px) scale(0); opacity: 0; } }
+        @keyframes shoot4 { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(45px, 55px) scale(0); opacity: 0; } }
 
         @keyframes spin1 { 
           0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
@@ -125,26 +123,25 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         }
 
         .lumensky-text {
-          font-family: var(--font-display, 'CameraPlainVariable', sans-serif);
-          font-weight: 600;
-          font-size: 24px;
-          letter-spacing: 0.35em;
-          padding-left: 0.35em;
+          font-family: 'Inter', sans-serif;
+          font-weight: 300;
+          font-size: 22px;
+          letter-spacing: 0.5em; /* Fixed wide tracking */
+          padding-left: 0.5em; /* Optical centering */
           text-transform: uppercase;
           color: #ffffff;
           opacity: 0;
-          transform: translateZ(0) scale(1.8) translateY(10px);
+          transform: translateZ(0) scale(2.0); /* Start scaled up */
           transition: opacity 1.2s ease-out, 
-                      transform 1.6s cubic-bezier(0.25, 1.25, 0.3, 1),
-                      text-shadow 1.2s ease-out;
-          will-change: transform, opacity, text-shadow;
+                      transform 1.6s cubic-bezier(0.25, 1.25, 0.3, 1); /* Premium Rebound Curve */
+          will-change: transform, opacity;
         }
-        
         .lumensky-text.phase-2 {
           opacity: 1;
-          transform: translateZ(0) scale(1) translateY(0);
-          text-shadow: 0 4px 20px rgba(255, 255, 255, 0.4);
+          transform: translateZ(0) scale(1);
         }
+
+
       `}</style>
 
       {/* Absolute Centering Wrapper to guarantee perfect alignment */}
