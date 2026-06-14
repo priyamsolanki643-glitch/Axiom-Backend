@@ -123,7 +123,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
       try {
         const { supabase } = await import('@/utils/supabase/client');
         const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token || "test-user";
+        const token = session?.access_token;
         
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         const headers = { "Authorization": `Bearer ${token}` };

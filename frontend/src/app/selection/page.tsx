@@ -71,7 +71,6 @@ export default function PathSelection() {
       const targetPath = selectedPath === "Alpha" ? pathAlpha : pathBeta;
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       const payload = {
-        userId: "test-user",
         missionName: targetPath?.opportunityUsed || (selectedPath === "Alpha" ? "Asymmetric Upside Strategy" : "Compounding Strategy"),
         lockedPath: selectedPath?.toLowerCase() || "beta",
         probabilityLow: targetPath?.probabilityRangeLow || (selectedPath === "Alpha" ? 18.4 : 74.2),
@@ -82,11 +81,16 @@ export default function PathSelection() {
         chatThreadId: `thread-locked-${selectedPath?.toLowerCase()}-${Date.now()}`
       };
       
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${baseUrl}/api/v1/interaction/lock-trajectory`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
+<<<<<<< Updated upstream
           "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
+=======
+          "Authorization": `Bearer ${session?.access_token}`
+>>>>>>> Stashed changes
         },
         body: JSON.stringify(payload)
       });

@@ -30,12 +30,21 @@ export default function SimulationSequence() {
           return;
         }
         const diagnosticResult = JSON.parse(cached);
+<<<<<<< Updated upstream
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+=======
+        const { data: { session } } = await supabase.auth.getSession();
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+>>>>>>> Stashed changes
         const res = await fetch(`${baseUrl}/api/v1/interaction/architect`, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
+<<<<<<< Updated upstream
             "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || 'test-user'}`
+=======
+            "Authorization": `Bearer ${session?.access_token}`
+>>>>>>> Stashed changes
           },
           body: JSON.stringify({
             contextMatrix: diagnosticResult.contextMatrix,
