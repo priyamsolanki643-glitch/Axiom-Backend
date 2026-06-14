@@ -1,7 +1,9 @@
 import { GoogleGenAI } from '@google/genai';
 
 async function list() {
-  const client = new GoogleGenAI({ apiKey: "AIzaSyCSB9xsxVZWXoFq56PtkeAvT113kpu5nVw" });
+  import 'dotenv/config';
+  const apiKey = process.env.GEMINI_KEYS?.split(',')[0] || '';
+  const client = new GoogleGenAI({ apiKey });
   try {
     const models = await client.models.list();
     for await (const m of models) {

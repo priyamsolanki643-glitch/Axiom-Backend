@@ -555,6 +555,7 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
     isComplete: boolean;
     declaredGoal: string;
     liquidCapital: number;
+    monthlyBurnRate?: number;
     region: string;
     dailyUninterruptedHours: number;
     rawSkillStrings: string[];
@@ -564,6 +565,7 @@ Top Skills: ${capability.calibratedSkills.map((s: any) => s.skillName).join(', '
       isComplete: boolean;
       declaredGoal: string;
       liquidCapital: number;
+      monthlyBurnRate?: number;
       region: string;
       dailyUninterruptedHours: number;
       rawSkillStrings: string[];
@@ -605,6 +607,7 @@ Extract parameters. If any of the 5 items are missing or vague, set isComplete t
           isComplete: { type: Type.BOOLEAN },
           declaredGoal: { type: Type.STRING },
           liquidCapital: { type: Type.NUMBER },
+          monthlyBurnRate: { type: Type.NUMBER },
           region: { type: Type.STRING },
           dailyUninterruptedHours: { type: Type.NUMBER },
           rawSkillStrings: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -636,6 +639,7 @@ Extract parameters. If any of the 5 items are missing or vague, set isComplete t
         isComplete: !!parsed.isComplete,
         declaredGoal: parsed.declaredGoal || '',
         liquidCapital: parsed.liquidCapital || 0,
+        monthlyBurnRate: parsed.monthlyBurnRate,
         region: parsed.region || '',
         dailyUninterruptedHours: parsed.dailyUninterruptedHours || 4,
         rawSkillStrings: Array.isArray(parsed.rawSkillStrings) ? parsed.rawSkillStrings : [],

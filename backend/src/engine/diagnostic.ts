@@ -198,7 +198,7 @@ export function runCircumstantialDiagnosis(input: DiagnosticInput): DiagnosticOu
     frictionProfile,
     circumstanceBrief: {
       runwayDays: socioeconomic.runwayDays,
-      runwayStatusBand: rawSurvivability.runwayBand,
+      runwayStatusBand: survivabilityAudit.runwayBand,
       materialConstraintScore,
       infrastructureViability,
       learningRate: humanCapital.learningRate,

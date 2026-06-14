@@ -16,7 +16,7 @@ interface OtpSession {
   lastSentAt: number;
 }
 
-const otpSessions = new Map<string, OtpSession>();
+import { DbService } from '../services/db.service';
 
 function sha256(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex');
@@ -35,7 +35,7 @@ function isLikelyEmail(value: string): boolean {
 }
 
 function isLikelyPhone(value: string): boolean {
-  return /^\+?[1-9]\d{7,14}$/.test(value.replace(/[\s\-()]/g, ''));
+  return /^\+?[0-9]{10,15}$/.test(value.replace(/[\s\-()]/g, ''));
 }
 
 async function issueJwt(userId: string) {
@@ -67,7 +67,7 @@ authRoutes.post('/otp/send', async (c) => {
 
     const normalizedTarget = normalizeTarget(String(target));
     const now = Date.now();
-    const existing = otpSessions.get(normalizedTarget);
+    const existing = await DbService.getOtpSession(normalizedTarget);
 
     if (type === 'email' && !isLikelyEmail(normalizedTarget)) {
       return c.json({ error: 'Invalid email address.' }, 400);
@@ -90,7 +90,7 @@ authRoutes.post('/otp/send', async (c) => {
     const code = crypto.randomInt(100000, 999999).toString();
     const codeHash = sha256(code);
 
-    otpSessions.set(normalizedTarget, {
+    await DbService.saveOtpSession({
       target: normalizedTarget,
       codeHash,
       expiresAt: now + EXPIRY_MS,
@@ -133,7 +133,7 @@ authRoutes.post('/otp/verify', async (c) => {
 
     const normalizedTarget = normalizeTarget(String(target));
     const normalizedCode = String(code).trim();
-    const session = otpSessions.get(normalizedTarget);
+    const session = await DbService.getOtpSession(normalizedTarget);
 
     if (!session) {
       return c.json({ error: 'No active verification session found. Request a new code.' }, 400);
@@ -142,12 +142,12 @@ authRoutes.post('/otp/verify', async (c) => {
     const now = Date.now();
 
     if (now > session.expiresAt) {
-      otpSessions.delete(normalizedTarget);
+      await DbService.deleteOtpSession(normalizedTarget);
       return c.json({ error: 'Verification code has expired. Please request a new one.' }, 400);
     }
 
     if (session.attempts >= MAX_ATTEMPTS) {
-      otpSessions.delete(normalizedTarget);
+      await DbService.deleteOtpSession(normalizedTarget);
       return c.json({ error: 'Maximum verification attempts exceeded. Session locked.' }, 423);
     }
 
@@ -155,12 +155,12 @@ authRoutes.post('/otp/verify', async (c) => {
 
     if (inputHash !== session.codeHash) {
       session.attempts += 1;
-      otpSessions.set(normalizedTarget, session);
+      await DbService.saveOtpSession(session);
 
       const attemptsLeft = MAX_ATTEMPTS - session.attempts;
 
       if (attemptsLeft <= 0) {
-        otpSessions.delete(normalizedTarget);
+        await DbService.deleteOtpSession(normalizedTarget);
         return c.json({ error: 'Maximum attempts exceeded. Verification session terminated.' }, 423);
       }
 
@@ -170,7 +170,7 @@ authRoutes.post('/otp/verify', async (c) => {
       );
     }
 
-    otpSessions.delete(normalizedTarget);
+    await DbService.deleteOtpSession(normalizedTarget);
 
     const token = await issueJwt(normalizedTarget);
 

@@ -21,9 +21,8 @@ try {
   console.error("Failed to load .env manually:", e);
 }
 
-// Map the rotated client key if available
-if (process.env.AI_PROVIDER_KEY && !process.env.AI_KEYS) {
-  process.env.AI_KEYS = process.env.AI_PROVIDER_KEY;
+if (process.env.AI_PROVIDER_KEY && !process.env.GEMINI_KEYS) {
+  process.env.GEMINI_KEYS = process.env.AI_PROVIDER_KEY;
 }
 
 async function main() {

@@ -20,9 +20,15 @@ process.on('unhandledRejection', (reason) => {
   console.error('CRITICAL UNHANDLED REJECTION:', reason);
 });
 
-// Enable CORS for all routes so Vercel frontend can connect
-app.use('*', cors());
-app.use('*', requireIdempotency);
+// Enable CORS for frontend
+app.use('*', cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000'
+}));
+
+// Apply idempotency specifically to mutating requests, avoiding GET requests
+app.post('*', requireIdempotency);
+app.put('*', requireIdempotency);
+app.patch('*', requireIdempotency);
 
 // Global Error Handler to intercept LLM Quota / 429 Errors
 app.onError((err: any, c) => {
