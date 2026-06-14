@@ -78,8 +78,8 @@ export function ParticleSphere() {
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
       isHolding = true;
-      touchX = e.clientX;
-      touchY = e.clientY;
+      touchX = e.offsetX;
+      touchY = e.offsetY;
       previousMouse = { x: e.clientX, y: e.clientY };
       
       singularityTarget = 1.0;
@@ -100,8 +100,8 @@ export function ParticleSphere() {
     };
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
-      touchX = e.clientX;
-      touchY = e.clientY;
+      touchX = e.offsetX;
+      touchY = e.offsetY;
       const deltaX = e.clientX - previousMouse.x;
       const deltaY = e.clientY - previousMouse.y;
       velocity.x = deltaX * 0.003; 
