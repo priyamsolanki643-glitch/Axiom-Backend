@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
-import { ParticleSphere } from "@/components/particle-sphere";
-import { MagneticButton } from "@/components/magnetic-button";
 
 interface LandingPageProps {
   onLock: () => void;
@@ -18,7 +16,8 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 60);
+    // Elegant ultra-smooth fade in
+    const t = setTimeout(() => setVisible(true), 100);
     return () => clearTimeout(t);
   }, []);
 
@@ -26,7 +25,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
     if (hasSession) {
       if (!isExiting) {
         setIsExiting(true);
-        setTimeout(onLock, 500);
+        setTimeout(onLock, 700); // Wait for exit animation
       }
     } else {
       setAuthMode("signup");
@@ -38,216 +37,172 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
     setIsAuthOpen(false);
     if (!isExiting) {
       setIsExiting(true);
-      setTimeout(onLock, 500);
+      setTimeout(onLock, 700);
     }
   };
 
   return (
-    <div className="lp-root relative min-h-screen bg-black text-white flex flex-col justify-between overflow-hidden select-none font-sans">
+    <div className="lp-root relative min-h-screen bg-[#000000] text-white flex flex-col justify-between overflow-hidden select-none font-sans">
       
-      {/* 3D Animated Circular RGB Dot Background */}
-      <ParticleSphere />
+      {/* ── The Void: Micro-Grain ── */}
+      <div 
+        className="absolute inset-0 opacity-[0.025] pointer-events-none mix-blend-overlay z-0"
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
+      />
+
+      {/* ── The Breathing Eclipse (Center Bottom) ── */}
+      <div className="absolute bottom-[-15vh] left-1/2 -translate-x-1/2 w-[150vw] md:w-[100vw] h-[60vh] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.035)_0%,rgba(0,0,0,0)_60%)] pointer-events-none z-0 animate-eclipse-breathe" />
 
       {/* Standard React CSS Injector */}
       <style>{`
         .lp-root {
           background-color: #000000 !important;
-          background-image: none !important;
         }
 
-        .eclipse-glow {
-          position: absolute;
-          bottom: 5vh;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 80vw;
-          height: 80vw;
-          max-width: 600px;
-          max-height: 600px;
-          background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
-          border-radius: 50%;
-          pointer-events: none;
+        @keyframes eclipseBreathe {
+          0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+          50% { opacity: 0.8; transform: translateX(-50%) scale(1.05); }
+        }
+        .animate-eclipse-breathe {
+          animation: eclipseBreathe 8s ease-in-out infinite;
         }
 
-        .gradient-text-lumensky {
-          color: transparent;
-          background: linear-gradient(to right, #666666 0%, #ffffff 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-        }
-
-        .shimmer-text-lumensky {
-          color: transparent;
-          background: linear-gradient(90deg, #444 0%, #fff 40%, #fff 60%, #444 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          background-clip: text;
-          animation: shimmer 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-          filter: drop-shadow(0px 0px 15px rgba(255, 255, 255, 0.2));
-        }
-        @keyframes shimmer {
-          0%  { background-position: -200% 0; }
-          to  { background-position:  200% 0; }
-        }
-
-        /* Psychological Dominance CTA: Black Pill with Glow */
-        .btn-lumensky-core {
+        /* Obsidian Glass Pill CTA */
+        .btn-obsidian {
           position: relative;
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 12px;
-          padding: 16px 42px;
+          padding: 18px 48px;
           border-radius: 9999px;
-          background: #000000;
+          background: rgba(20, 20, 20, 0.4);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           color: #ffffff;
           font-family: 'Inter', sans-serif;
-          font-weight: 600;
-          font-size: 16px;
-          letter-spacing: 0.02em;
-          border: 1px solid transparent;
+          font-weight: 500;
+          font-size: 17px;
+          letter-spacing: 0.03em;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 
+            inset 0 1px 1px rgba(255, 255, 255, 0.15), /* Inner top highlight */
+            inset 0 -1px 1px rgba(0, 0, 0, 0.5), /* Inner bottom shadow */
+            0 15px 35px rgba(0, 0, 0, 0.5), /* Drop shadow */
+            0 0 20px rgba(255, 255, 255, 0.02); /* Ambient glow */
           cursor: pointer;
-          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          overflow: hidden;
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
           z-index: 10;
-          box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05);
         }
 
-        @keyframes borderSweep {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 200% 50%; }
-        }
-
-        .btn-lumensky-core::before {
-          content: "";
+        .btn-obsidian::after {
+          content: '';
           position: absolute;
           inset: 0;
           border-radius: 9999px;
-          padding: 1.5px;
-          background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.1) 100%);
-          background-size: 200% auto;
-          animation: borderSweep 3s linear infinite;
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
+          box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
+          opacity: 0;
+          transition: opacity 0.4s ease;
         }
 
-        .btn-lumensky-core:active {
-          transform: translateY(2px) scale(0.96);
-          box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        .btn-obsidian:active {
+          transform: scale(0.94);
+          background: rgba(30, 30, 30, 0.6);
+        }
+        .btn-obsidian:active::after {
+          opacity: 1;
         }
 
-        .btn-lumensky-core .arrow-icon {
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        .btn-obsidian .arrow-icon {
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .btn-lumensky-core:hover .arrow-icon {
+        .btn-obsidian:active .arrow-icon {
           transform: translateX(4px);
         }
 
-        .btn-signin-lumensky {
+        /* Ghost Auth Buttons */
+        .btn-ghost-auth {
           background: transparent;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 9999px;
-          cursor: pointer;
-          font-size: 13px;
-          padding: 8px 20px;
-          color: #ffffff;
+          color: #888888;
+          font-size: 14px;
           font-weight: 500;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .btn-signin-lumensky:hover {
-          background: rgba(255, 255, 255, 0.06);
-          border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .btn-login-lumensky {
-          background: #ffffff;
-          border: 1px solid #ffffff;
+          padding: 8px 16px;
           border-radius: 9999px;
-          cursor: pointer;
-          font-size: 13px;
-          padding: 8px 20px;
-          color: #000000;
-          font-weight: 600;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+          transition: color 0.3s ease, background 0.3s ease;
         }
-        .btn-login-lumensky:active {
-          transform: translateY(1px) scale(0.96);
-          box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        .btn-ghost-auth:active {
+          color: #ffffff;
+          background: rgba(255,255,255,0.05);
         }
 
-        /* Mobile Stagger Animations */
-        @keyframes fadeUpIn {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
+        /* Mobile Stagger Animations with God-level blur entrance */
+        @keyframes fadeUpInGod {
+          from { opacity: 0; transform: translateY(24px) scale(0.98); filter: blur(4px); }
+          to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
         }
-        .stagger-1 { animation: fadeUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.1s; opacity: 0; }
-        .stagger-2 { animation: fadeUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.2s; opacity: 0; }
-        .stagger-3 { animation: fadeUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.3s; opacity: 0; }
-        .stagger-4 { animation: fadeUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.4s; opacity: 0; }
+        .stagger-god-1 { animation: fadeUpInGod 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.1s; opacity: 0; }
+        .stagger-god-2 { animation: fadeUpInGod 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.25s; opacity: 0; }
+        .stagger-god-3 { animation: fadeUpInGod 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.4s; opacity: 0; }
+        .stagger-god-4 { animation: fadeUpInGod 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.55s; opacity: 0; }
+        
+        .god-text-shadow {
+          text-shadow: 0 4px 24px rgba(255, 255, 255, 0.25);
+        }
       `}</style>
 
-      {/* ── Header ── */}
+      {/* ── Header (Ultra Minimal) ── */}
       <header 
-        className="flex items-center justify-end px-6 py-5 md:px-12 relative z-10 w-full"
-        style={{
-          transition: "transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms cubic-bezier(0.16, 1, 0.3, 1)",
-          opacity: isExiting ? 0 : (visible ? 1 : 0),
-          transform: isExiting ? "translate3d(0, -20px, 0) scale(0.95)" : (visible ? "translate3d(0, 0, 0) scale(1)" : "translate3d(0, -10px, 0) scale(0.98)"),
-          willChange: "transform, opacity",
-        }}
+        className="flex items-center justify-end px-6 py-6 relative z-10 w-full transition-opacity duration-700"
+        style={{ opacity: visible && !isExiting ? 1 : 0 }}
       >
-        <div className="flex items-center gap-3">
-          <button onClick={() => { setAuthMode("signup"); setIsAuthOpen(true); }} className="btn-signin-lumensky">Sign in</button>
-          <button onClick={() => { setAuthMode("login"); setIsAuthOpen(true); }} className="btn-login-lumensky">Log in</button>
+        <div className="flex items-center gap-1">
+          <button onClick={() => { setAuthMode("signup"); setIsAuthOpen(true); }} className="btn-ghost-auth">Sign in</button>
+          <div className="w-1 h-1 rounded-full bg-[#333]"></div>
+          <button onClick={() => { setAuthMode("login"); setIsAuthOpen(true); }} className="btn-ghost-auth">Log in</button>
         </div>
       </header>
 
       {/* ── Hero Main Content ── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 max-w-4xl mx-auto w-full pointer-events-none">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 max-w-4xl mx-auto w-full">
         <div 
-          className="flex flex-col items-center w-full relative pointer-events-auto"
+          className="flex flex-col items-center w-full relative"
           style={{
-            transition: "transform 600ms cubic-bezier(0.16, 1, 0.3, 1), opacity 600ms cubic-bezier(0.16, 1, 0.3, 1)",
+            transition: "transform 800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 800ms cubic-bezier(0.16, 1, 0.3, 1)",
             opacity: isExiting ? 0 : (visible ? 1 : 0),
-            transform: isExiting ? "scale(0.85) translate3d(0, -60px, 0)" : (visible ? "scale(1) translate3d(0, 0, 0)" : "scale(0.95) translate3d(0, 20px, 0)"),
+            transform: isExiting ? "scale(0.9) translateY(-40px)" : (visible ? "scale(1) translateY(0)" : "scale(0.95) translateY(20px)"),
             willChange: "transform, opacity",
           }}
         >
           {/* Headline */}
-          <h1 className="text-white font-medium font-display mb-6 flex flex-col items-center">
-            {/* First Line - Stop planning. */}
+          <h1 className="font-display mb-8 flex flex-col items-center">
+            {/* First Line */}
             <div 
-              className="stagger-1 tracking-tighter pb-1 text-white/95 leading-[1.1] whitespace-nowrap"
-              style={{ fontSize: "clamp(1.8rem, 9.5vw, 5.0rem)", fontWeight: 400 }}
+              className="stagger-god-1 tracking-tight pb-1 text-[#a1a1aa] leading-[1.0] whitespace-nowrap"
+              style={{ fontSize: "clamp(2.0rem, 10vw, 5.0rem)", fontWeight: 400 }}
             >
               Stop planning.
             </div>
             
-            {/* Second Line - Start executing. */}
+            {/* Second Line */}
             <div 
-              className="stagger-2 shimmer-text-lumensky tracking-tighter pb-2 md:pb-4 leading-[1.15] whitespace-nowrap"
-              style={{ fontSize: "clamp(2.5rem, 12vw, 6.8rem)", fontWeight: 600, marginTop: "-0.05em" }}
+              className="stagger-god-2 god-text-shadow text-white tracking-tighter pb-2 leading-[1.1] whitespace-nowrap"
+              style={{ fontSize: "clamp(2.8rem, 13vw, 7.2rem)", fontWeight: 500, marginTop: "-0.02em" }}
             >
               Start executing.
             </div>
           </h1>
 
           {/* Subtext */}
-          <p className="stagger-3 text-[#a1a1aa] text-[14px] sm:text-[16px] md:text-[19px] leading-relaxed max-w-xl mx-auto mb-10 px-2 font-sans font-normal tracking-wide">
+          <p className="stagger-god-3 text-[#71717a] text-[15px] sm:text-[17px] md:text-[20px] leading-relaxed max-w-[500px] mx-auto mb-14 px-4 font-sans font-normal tracking-wide">
             A strategist and executioner that converts your ambition into raw, immutable daily action. No fluff. No excuses. No mercy.
           </p>
 
           {/* Centered CTA Row */}
-          <div className="stagger-4 flex justify-center w-full mt-2">
-            <div className="eclipse-glow"></div>
-            <MagneticButton strength={25} onClick={handleStart}>
-              <button className="btn-lumensky-core group">
-                <span>Get started</span>
-                <ArrowRight size={18} className="arrow-icon opacity-100" />
-              </button>
-            </MagneticButton>
+          <div className="stagger-god-4 flex justify-center w-full relative">
+            <button className="btn-obsidian group" onClick={handleStart}>
+              <span>Get started</span>
+              <ArrowRight size={20} className="arrow-icon text-white/70 group-active:text-white" />
+            </button>
           </div>
         </div>
       </main>
@@ -255,7 +210,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
       {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} onSuccess={handleAuthSuccess} initialMode={authMode} />}
 
       {/* ── Empty/Hidden Clean Footer ── */}
-      <footer className="px-6 py-6 md:px-12 relative z-10 h-10 w-full" />
+      <footer className="h-12 w-full" />
     </div>
   );
 }
