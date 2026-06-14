@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 export function ParticleSphere() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -8,145 +8,116 @@ export function ParticleSphere() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-
-    // Handle Resize
+    let width = canvas.width = canvas.offsetWidth;
+    let height = canvas.height = canvas.offsetHeight;
+    
+    // Handle resize
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
     };
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
 
-    // Particle Configuration
-    const particleCount = 800; // Total number of dots
-    const sphereRadius = Math.max(width, height) * 0.8; // Massive radius to fully cover the text area
-    const particles: { x: number; y: number; z: number; color: string }[] = [];
+    const particles: {x: number, y: number, z: number, phase: number}[] = [];
+    const numParticles = 2500; // High density for the Tron look
+    const radius = Math.min(width, height) * 0.45;
 
-    // Generate sleek, professional monochromatic/neural colors
-    const colors = ["#ffffff", "#a1a1aa", "#52525b", "#27272a"];
-
-    // Distribute points evenly on a sphere using Golden Ratio (Fibonacci sphere)
-    const phi = Math.PI * (3 - Math.sqrt(5)); // golden angle
-    for (let i = 0; i < particleCount; i++) {
-      const y = 1 - (i / (particleCount - 1)) * 2; // y goes from 1 to -1
-      const radiusAtY = Math.sqrt(1 - y * y); // radius at y
-      const theta = phi * i; // golden angle increment
-
-      const x = Math.cos(theta) * radiusAtY;
-      const z = Math.sin(theta) * radiusAtY;
-
+    // Fibonacci sphere distribution for uniform dot placement
+    const phi = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < numParticles; i++) {
+      const y = 1 - (i / (numParticles - 1)) * 2;
+      const r = Math.sqrt(1 - y * y);
+      const theta = phi * i;
       particles.push({
-        x: x * sphereRadius,
-        y: y * sphereRadius,
-        z: z * sphereRadius,
-        color: colors[Math.floor(Math.random() * colors.length)]
+        x: Math.cos(theta) * r,
+        y: y,
+        z: Math.sin(theta) * r,
+        phase: Math.random() * Math.PI * 2 // For twinkling
       });
     }
 
-    let animationFrameId: number;
-    let rotationX = 0;
     let rotationY = 0;
-    let targetSpeedX = 0.001;
-    let targetSpeedY = 0.002;
-    let currentSpeedX = 0.001;
-    let currentSpeedY = 0.002;
+    const rotationX = 0.2; // Slight tilt to see the poles
 
-    // Mouse Interaction for Speed
-    const handleMouseMove = (e: MouseEvent) => {
-      // Normalize mouse from -1 to 1
-      const nx = (e.clientX / width) * 2 - 1;
-      const ny = (e.clientY / height) * 2 - 1;
-      
-      // Speed multiplier (moving mouse changes the rotation speed)
-      targetSpeedX = 0.001 + (ny * 0.015);
-      targetSpeedY = 0.002 + (nx * 0.015);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
+    let animationId: number;
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
+      rotationY += 0.0015; // Slow elegant spin
 
-      // Center canvas
-      const cx = width / 2;
-      const cy = height / 2;
-
-      // Smoothly interpolate speed
-      currentSpeedX += (targetSpeedX - currentSpeedX) * 0.05;
-      currentSpeedY += (targetSpeedY - currentSpeedY) * 0.05;
-
-      // Apply rotation
-      rotationX += currentSpeedX;
-      rotationY += currentSpeedY;
-
-      const cosX = Math.cos(rotationX);
-      const sinX = Math.sin(rotationX);
       const cosY = Math.cos(rotationY);
       const sinY = Math.sin(rotationY);
+      const cosX = Math.cos(rotationX);
+      const sinX = Math.sin(rotationX);
 
-      // Sort particles by Z-index to draw back-to-front (fake 3D depth)
+      // We sort particles by Z depth to draw back-to-front (painters algorithm)
+      // This is crucial for 3D blending
       const projected = particles.map(p => {
-        // Rotate around X
-        const y1 = p.y * cosX - p.z * sinX;
-        const z1 = p.y * sinX + p.z * cosX;
+        // Rotate around Y axis
+        let x1 = p.x * cosY - p.z * sinY;
+        let z1 = p.z * cosY + p.x * sinY;
+        
+        // Rotate around X axis
+        let y1 = p.y * cosX - z1 * sinX;
+        let z2 = z1 * cosX + p.y * sinX;
 
-        // Rotate around Y
-        const x2 = p.x * cosY + z1 * sinY;
-        const z2 = -p.x * sinY + z1 * cosY;
-
-        // Perspective projection
-        const fov = 600; // Wider field of view for massive sphere
-        const scale = fov / (fov + z2 + sphereRadius * 1.5); 
-
-        return {
-          x: x2 * scale + cx,
-          y: y1 * scale + cy,
-          z: z2,
-          scale: scale,
-          color: p.color
-        };
+        return { x: x1, y: y1, z: z2, phase: p.phase };
       });
 
-      // Sort by Z (furthest first)
       projected.sort((a, b) => b.z - a.z);
 
-      // Draw dots
+      const time = Date.now() * 0.001;
+
       projected.forEach(p => {
-        const size = Math.max(0.5, 3 * p.scale); 
-        const maxZ = sphereRadius;
-        const minZ = -sphereRadius;
-        const normalizedZ = (p.z - minZ) / (maxZ - minZ); 
-        const opacity = Math.max(0.05, 1 - (normalizedZ * 0.85)); 
+        // Project 3D to 2D
+        const perspective = 400;
+        const scale = perspective / (perspective + p.z * radius);
+        const x2D = width / 2 + p.x * radius * scale;
+        const y2D = height / 2 + p.y * radius * scale;
+
+        // Calculate size and opacity based on Z depth
+        const size = Math.max(0.5, 1.2 * scale);
+        
+        // Z goes from -1 (front) to 1 (back)
+        const zNormalized = (p.z + 1) / 2; // 0 (front) to 1 (back)
+        
+        // Base opacity
+        let opacity = Math.max(0.05, 0.45 - (zNormalized * 0.4)); 
+        
+        // Twinkle effect (Tron spheres shimmer)
+        const twinkle = Math.sin(time * 2 + p.phase);
+        if (twinkle > 0.8 && zNormalized < 0.5) {
+            opacity += 0.3; // bright twinkle on front dots
+        }
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = opacity;
+        ctx.arc(x2D, y2D, size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.fill();
-        ctx.globalAlpha = 1;
       });
 
-      animationFrameId = requestAnimationFrame(render);
+      animationId = requestAnimationFrame(render);
     };
 
     render();
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationId);
     };
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none z-0"
-      style={{ opacity: 0.8 }}
+    <canvas 
+      ref={canvasRef} 
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] max-w-[900px] max-h-[900px] pointer-events-none z-0"
+      style={{
+        maskImage: 'radial-gradient(circle at center, black 40%, transparent 70%)',
+        WebkitMaskImage: 'radial-gradient(circle at center, black 40%, transparent 70%)',
+      }}
     />
   );
 }
