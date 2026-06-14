@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
 import { supabase } from "@/utils/supabase/client";
+import { 
   Layers, Check, X, 
   CornerDownLeft, AlertTriangle, RefreshCw 
 } from "lucide-react";
+import { ParticleSphere } from "./particle-sphere";
 
 interface Task {
   id: string;
@@ -324,8 +325,13 @@ export function ExecutionCockpit() {
     <div className="flex-1 flex flex-col lg:flex-row h-screen bg-[#000000] text-white font-sans overflow-hidden relative">
       
       {/* Background glowing gradients */}
-      <div className="pointer-events-none absolute top-10 left-10 w-[400px] h-[400px] rounded-full bg-indigo-950/10 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-10 right-10 w-[400px] h-[400px] rounded-full bg-purple-950/10 blur-[120px]" />
+      <div className="pointer-events-none absolute top-10 left-10 w-[400px] h-[400px] rounded-full bg-indigo-950/10 blur-[120px] z-0" />
+      <div className="pointer-events-none absolute bottom-10 right-10 w-[400px] h-[400px] rounded-full bg-purple-950/10 blur-[120px] z-0" />
+
+      {/* God Level Ambient Particle Field */}
+      <div className="fixed inset-0 z-0 pointer-events-none mix-blend-screen opacity-30">
+        <ParticleSphere />
+      </div>
 
       {/* LEFT COLUMN: Cockpit Control Center */}
       <div className="w-full lg:w-[62%] h-full border-r border-[#151515] flex flex-col justify-between p-4 md:p-6 lg:p-8 overflow-y-auto no-scrollbar relative z-10">
