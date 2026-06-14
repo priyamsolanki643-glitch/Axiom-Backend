@@ -111,7 +111,7 @@ export function ParticleSphere() {
       const projParticles = particles.map(project);
       
       const drawParticles = (pts: any[]) => {
-        ctx.fillStyle = 'rgba(235, 31, 41, 1.0)'; // Tron Red base
+        ctx.fillStyle = 'rgba(255, 255, 255, 1.0)'; // Clean White
         pts.forEach(p => {
           const size = Math.max(0.6, 1.8 * p.scale);
           const zNormalized = (p.z + 1) / 2;
@@ -125,63 +125,6 @@ export function ParticleSphere() {
 
       // Draw Back Particles
       drawParticles(projParticles.filter(p => p.z > 0));
-
-      // Calculate the 3 Gyro Rings dynamically based on time
-      // Ring 1: rotateX(70deg) rotateY(time*speed)
-      // Ring 2: rotateX(45deg) rotateY(120deg) rotateZ(time)
-      // Ring 3: rotateX(60deg) rotateY(240deg) rotateZ(time)
-      const ringsToDraw = [
-        { rx: 70 * Math.PI/180, ry: 0, rz: time * 2.0 },
-        { rx: 45 * Math.PI/180, ry: 120 * Math.PI/180, rz: time * 1.5 },
-        { rx: 60 * Math.PI/180, ry: 240 * Math.PI/180, rz: time * 2.5 }
-      ].map(rot => {
-        const crx = Math.cos(rot.rx), srx = Math.sin(rot.rx);
-        const cry = Math.cos(rot.ry), sry = Math.sin(rot.ry);
-        const crz = Math.cos(rot.rz), srz = Math.sin(rot.rz);
-        
-        // Apply rotations to base ring points
-        return ringBasePts.map(pt => {
-          // Z
-          let x1 = pt.x * crz - pt.y * srz;
-          let y1 = pt.x * srz + pt.y * crz;
-          // X
-          let y2 = y1 * crx - pt.z * srx;
-          let z1 = y1 * srx + pt.z * crx;
-          // Y
-          let x2 = x1 * cry + z1 * sry;
-          let z2 = -x1 * sry + z1 * cry;
-          return project({ x: x2, y: y2, z: z2 });
-        });
-      });
-
-      // Draw Gyro Rings
-      ctx.lineWidth = 1.5;
-      ringsToDraw.forEach(projLine => {
-        // Find avg Z for the ring to do basic depth fading
-        const avgZ = projLine.reduce((sum, v) => sum + v.z, 0) / projLine.length;
-        const zNorm = (avgZ + 1) / 2;
-        
-        // Orbit rings are white to stand out inside the red Tron sphere
-        ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 + (0.7 * (1 - zNorm))})`;
-        ctx.beginPath();
-        projLine.forEach((v, i) => {
-          if (i === 0) ctx.moveTo(v.x, v.y);
-          else ctx.lineTo(v.x, v.y);
-        });
-        ctx.stroke();
-      });
-
-      // Draw Center Gyro Core (Pulse)
-      const centerProj = project({x:0, y:0, z:0});
-      const coreSize = 3.0 * centerProj.scale * (0.8 + 0.2 * Math.sin(time * 4));
-      ctx.beginPath();
-      ctx.arc(centerProj.x, centerProj.y, coreSize, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + 0.6 * Math.sin(time * 4)})`;
-      ctx.fill();
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = "white";
-      ctx.fill(); // double fill for glow
-      ctx.shadowBlur = 0; // reset
 
       // Draw Front Particles
       drawParticles(projParticles.filter(p => p.z <= 0));
@@ -200,7 +143,7 @@ export function ParticleSphere() {
   return (
     <canvas 
       ref={canvasRef} 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] max-w-[800px] max-h-[800px] pointer-events-none z-0 mix-blend-screen opacity-90"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vw] max-w-[650px] max-h-[650px] pointer-events-none z-0 mix-blend-screen opacity-90"
     />
   );
 }
