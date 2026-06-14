@@ -172,10 +172,11 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         <div 
           className="flex flex-col items-center w-full relative z-10"
           style={{
-            transition: "transform 800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 800ms cubic-bezier(0.16, 1, 0.3, 1)",
+            transition: "transform 1000ms cubic-bezier(0.16, 1, 0.3, 1), opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1), filter 1000ms ease-out",
             opacity: isExiting ? 0 : (visible ? 1 : 0),
             transform: isExiting ? "scale(0.9) translateY(-40px)" : (visible ? "scale(1) translateY(0)" : "scale(0.95) translateY(20px)"),
-            willChange: "transform, opacity",
+            filter: visible && !isExiting ? "blur(0px)" : "blur(12px)",
+            willChange: "transform, opacity, filter",
           }}
         >
           {/* Headline */}

@@ -68,6 +68,10 @@ export function ParticleSphere() {
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
       previousMouse = { x: e.clientX, y: e.clientY };
+      // Ultra-premium subtle haptic tap on touch (Android natively)
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(15); 
+      }
     };
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
@@ -79,9 +83,33 @@ export function ParticleSphere() {
     };
     const handlePointerUp = () => { isDragging = false; };
 
+    // Gyroscope Parallax (Mobile God Level)
+    let gyroX = 0;
+    let gyroY = 0;
+    let currentGyroX = 0;
+    let currentGyroY = 0;
+
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      if (e.gamma !== null && e.beta !== null) {
+        // gamma: left/right tilt (-90 to 90) -> maps to Y rotation
+        // beta: front/back tilt (-180 to 180) -> maps to X rotation
+        // Assume holding angle is ~40 degrees beta
+        const tiltY = Math.max(-45, Math.min(45, e.gamma));
+        const tiltX = Math.max(-45, Math.min(45, e.beta - 40));
+        
+        gyroY = (tiltY / 45) * 0.7; // Max parallax offset 0.7 rad
+        gyroX = (tiltX / 45) * 0.7;
+      }
+    };
+
     canvas.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
+    
+    // Using global window for device orientation
+    if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', handleOrientation);
+    }
 
     const startTime = Date.now();
     let animationId: number;
@@ -108,10 +136,18 @@ export function ParticleSphere() {
       // Clamp X tilt so it doesn't flip entirely upside down
       rotationX = Math.max(-0.6, Math.min(0.6, rotationX));
 
-      const cosY = Math.cos(rotationY);
-      const sinY = Math.sin(rotationY);
-      const cosX = Math.cos(rotationX);
-      const sinX = Math.sin(rotationX);
+      // Smoothly interpolate Gyro
+      currentGyroX += (gyroX - currentGyroX) * 0.05;
+      currentGyroY += (gyroY - currentGyroY) * 0.05;
+
+      // Final Render Rotations = Base Physics + Gyro Parallax
+      const finalRotY = rotationY + currentGyroY;
+      const finalRotX = rotationX + currentGyroX;
+
+      const cosY = Math.cos(finalRotY);
+      const sinY = Math.sin(finalRotY);
+      const cosX = Math.cos(finalRotX);
+      const sinX = Math.sin(finalRotX);
       const time = Date.now() * 0.0005;
 
       const project = (p: typeof particles[0]) => {
@@ -177,6 +213,9 @@ export function ParticleSphere() {
       canvas.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
+        window.removeEventListener('deviceorientation', handleOrientation);
+      }
       cancelAnimationFrame(animationId);
     };
   }, []);
