@@ -65,23 +65,69 @@ export function ParticleSphere() {
     let isDragging = false;
     let previousMouse = { x: 0, y: 0 };
 
+    // The Singularity State
+    let isHolding = false;
+    let touchX = width / 2;
+    let touchY = height / 2;
+    let singularityTarget = 0;
+    let singularityStrength = 0;
+    let shockwaveRadius = 0;
+    let shockwaveStrength = 0;
+    let hapticInterval: number | null = null;
+
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
+      isHolding = true;
+      touchX = e.clientX;
+      touchY = e.clientY;
       previousMouse = { x: e.clientX, y: e.clientY };
+      
+      singularityTarget = 1.0;
+
       // Ultra-premium subtle haptic tap on touch (Android natively)
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(15); 
+        
+        // Continuous Heartbeat Engine while holding
+        let beatCount = 0;
+        hapticInterval = window.setInterval(() => {
+          beatCount++;
+          // Increase intensity as it builds up
+          const intensity = Math.min(50, 10 + beatCount * 5);
+          navigator.vibrate(intensity);
+        }, 150);
       }
     };
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
+      touchX = e.clientX;
+      touchY = e.clientY;
       const deltaX = e.clientX - previousMouse.x;
       const deltaY = e.clientY - previousMouse.y;
-      velocity.x = deltaX * 0.003; // horizontal swipe rotates Y axis
-      velocity.y = deltaY * 0.003; // vertical swipe rotates X axis
+      velocity.x = deltaX * 0.003; 
+      velocity.y = deltaY * 0.003; 
       previousMouse = { x: e.clientX, y: e.clientY };
     };
-    const handlePointerUp = () => { isDragging = false; };
+    const handlePointerUp = () => { 
+      isDragging = false; 
+      if (isHolding) {
+        isHolding = false;
+        singularityTarget = 0;
+        
+        // Trigger Explosion Shockwave if it was held long enough
+        if (singularityStrength > 0.2) {
+           shockwaveStrength = singularityStrength;
+           shockwaveRadius = 0;
+           if (typeof navigator !== 'undefined' && navigator.vibrate) {
+             navigator.vibrate([100, 50, 100]); // Big bang haptic
+           }
+        }
+      }
+      if (hapticInterval) {
+        window.clearInterval(hapticInterval);
+        hapticInterval = null;
+      }
+    };
 
     // Gyroscope Parallax (Mobile God Level)
     let gyroX = 0;
@@ -91,13 +137,9 @@ export function ParticleSphere() {
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
       if (e.gamma !== null && e.beta !== null) {
-        // gamma: left/right tilt (-90 to 90) -> maps to Y rotation
-        // beta: front/back tilt (-180 to 180) -> maps to X rotation
-        // Assume holding angle is ~40 degrees beta
         const tiltY = Math.max(-45, Math.min(45, e.gamma));
         const tiltX = Math.max(-45, Math.min(45, e.beta - 40));
-        
-        gyroY = (tiltY / 45) * 0.7; // Max parallax offset 0.7 rad
+        gyroY = (tiltY / 45) * 0.7; 
         gyroX = (tiltX / 45) * 0.7;
       }
     };
@@ -106,7 +148,6 @@ export function ParticleSphere() {
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
     
-    // Using global window for device orientation
     if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
       window.addEventListener('deviceorientation', handleOrientation);
     }
@@ -126,24 +167,30 @@ export function ParticleSphere() {
       if (!isDragging) {
         velocity.x *= 0.95; // Friction
         velocity.y *= 0.92;
-        // Constant baseline rotation so it never truly stops
         if (Math.abs(velocity.x) < 0.001) velocity.x += (0.0015 - velocity.x) * 0.05;
         if (Math.abs(velocity.y) < 0.0001) velocity.y *= 0.9;
       }
 
       rotationY -= velocity.x;
       rotationX -= velocity.y;
-      // Clamp X tilt so it doesn't flip entirely upside down
       rotationX = Math.max(-0.6, Math.min(0.6, rotationX));
 
       // Smoothly interpolate Gyro
       currentGyroX += (gyroX - currentGyroX) * 0.05;
       currentGyroY += (gyroY - currentGyroY) * 0.05;
 
-      // Final Render Rotations = Base Physics + Gyro Parallax
+      // Interpolate Singularity
+      singularityStrength += (singularityTarget - singularityStrength) * 0.05;
+
+      // Update Shockwave Physics
+      if (shockwaveStrength > 0) {
+        shockwaveRadius += 40; // expand rapidly
+        shockwaveStrength *= 0.92; // decay
+        if (shockwaveStrength < 0.01) shockwaveStrength = 0;
+      }
+
       const finalRotY = rotationY + currentGyroY;
       const finalRotX = rotationX + currentGyroX;
-
       const cosY = Math.cos(finalRotY);
       const sinY = Math.sin(finalRotY);
       const cosX = Math.cos(finalRotX);
@@ -151,7 +198,6 @@ export function ParticleSphere() {
       const time = Date.now() * 0.0005;
 
       const project = (p: typeof particles[0]) => {
-        // Apply explosion assembly factor
         const currX = p.origX + p.randX * (1 - easeProgress);
         const currY = p.origY + p.randY * (1 - easeProgress);
         const currZ = p.origZ + p.randZ * (1 - easeProgress);
@@ -171,17 +217,53 @@ export function ParticleSphere() {
         
         flowOpacity = 0.05; 
         if (noise > 0.1) flowOpacity += Math.min(0.85, (noise - 0.1) * 2.5); 
-        
-        // During assembly, fade everything in smoothly
         flowOpacity *= easeProgress;
 
-        return {
-          x: width / 2 + x1 * radius * scale,
-          y: height / 2 - y1 * radius * scale, 
-          z: z2,
-          scale,
-          flowOpacity
-        };
+        let finalX = width / 2 + x1 * radius * scale;
+        let finalY = height / 2 - y1 * radius * scale;
+
+        // 1. The Singularity Warp Math
+        if (singularityStrength > 0.01) {
+           const dx = finalX - touchX;
+           const dy = finalY - touchY;
+           const dist = Math.sqrt(dx * dx + dy * dy);
+           const vortexRadius = Math.min(width, height) * 1.5; // Huge influence
+           
+           if (dist < vortexRadius) {
+             const normalizedDist = dist / vortexRadius;
+             const pinch = Math.pow(1 - normalizedDist, 2) * singularityStrength;
+             const angle = Math.atan2(dy, dx);
+             const swirlAngle = angle + (pinch * 12.0); // Insane Swirl
+             
+             // Suck aggressively into center event horizon
+             const newDist = dist * (1 - pinch * 0.95); 
+             
+             finalX = touchX + Math.cos(swirlAngle) * newDist;
+             finalY = touchY + Math.sin(swirlAngle) * newDist;
+             
+             // Blindly bright near the event horizon
+             flowOpacity = Math.max(flowOpacity, pinch * 4.0);
+           }
+        }
+
+        // 2. The Shockwave Math
+        if (shockwaveStrength > 0.01) {
+           const dx = finalX - touchX;
+           const dy = finalY - touchY;
+           const dist = Math.sqrt(dx * dx + dy * dy);
+           const distFromWave = Math.abs(dist - shockwaveRadius);
+           
+           if (distFromWave < 120) {
+              const push = (1 - (distFromWave / 120)) * shockwaveStrength * 250;
+              const angle = Math.atan2(dy, dx);
+              finalX += Math.cos(angle) * push;
+              finalY += Math.sin(angle) * push;
+              // Flash of light at the shockwave rim
+              flowOpacity = Math.max(flowOpacity, push * 0.02);
+           }
+        }
+
+        return { x: finalX, y: finalY, z: z2, scale, flowOpacity };
       };
 
       const projParticles = particles.map(project);
@@ -193,13 +275,12 @@ export function ParticleSphere() {
           const zNormalized = (p.z + 1) / 2;
           const depthOpacity = Math.max(0.05, 0.6 - (zNormalized * 0.4));
           
-          ctx.globalAlpha = depthOpacity * p.flowOpacity;
+          ctx.globalAlpha = Math.min(1.0, depthOpacity * p.flowOpacity);
           ctx.fillRect(p.x, p.y, size, size);
         });
         ctx.globalAlpha = 1.0;
       };
 
-      // Ensure proper 3D rendering order (Back to Front)
       drawParticles(projParticles.filter(p => p.z > 0));
       drawParticles(projParticles.filter(p => p.z <= 0));
 
@@ -216,6 +297,7 @@ export function ParticleSphere() {
       if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
         window.removeEventListener('deviceorientation', handleOrientation);
       }
+      if (hapticInterval) window.clearInterval(hapticInterval);
       cancelAnimationFrame(animationId);
     };
   }, []);
