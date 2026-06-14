@@ -148,6 +148,33 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         .god-text-shadow {
           text-shadow: 0 4px 24px rgba(255, 255, 255, 0.25);
         }
+
+        .shimmer-text-lumensky {
+          color: transparent;
+          background: linear-gradient(90deg, #666 0%, #fff 40%, #fff 60%, #666 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: shimmer 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes shimmer {
+          0%  { background-position: -200% 0; }
+          to  { background-position:  200% 0; }
+        }
+
+        .btn-eclipse-glow {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 140px;
+          height: 60px;
+          background: rgba(255, 255, 255, 0.15);
+          filter: blur(25px);
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 1;
+        }
       `}</style>
 
       {/* ── Header (Ultra Minimal) ── */}
@@ -185,7 +212,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
             
             {/* Second Line */}
             <div 
-              className="stagger-god-2 god-text-shadow text-white tracking-tighter pb-2 leading-[1.1] whitespace-nowrap"
+              className="stagger-god-2 shimmer-text-lumensky god-text-shadow tracking-tighter pb-2 leading-[1.1] whitespace-nowrap"
               style={{ fontSize: "clamp(2.8rem, 13vw, 7.2rem)", fontWeight: 500, marginTop: "-0.02em" }}
             >
               Start executing.
@@ -199,7 +226,8 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
           {/* Centered CTA Row */}
           <div className="stagger-god-4 flex justify-center w-full relative">
-            <button className="btn-obsidian group" onClick={handleStart}>
+            <div className="btn-eclipse-glow"></div>
+            <button className="btn-obsidian group" onClick={handleStart} style={{ zIndex: 10 }}>
               <span>Get started</span>
               <ArrowRight size={20} className="arrow-icon text-white/70 group-active:text-white" />
             </button>
