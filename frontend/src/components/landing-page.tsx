@@ -67,57 +67,62 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           animation: eclipseBreathe 8s ease-in-out infinite;
         }
 
-        /* Obsidian Glass Pill CTA */
-        .btn-obsidian {
+        /* White Glass Pill CTA */
+        .btn-white-pill {
           position: relative;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 12px;
-          padding: 18px 48px;
+          gap: 10px;
+          padding: 16px 42px;
           border-radius: 9999px;
-          background: rgba(20, 20, 20, 0.4);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          color: #ffffff;
+          background: #ffffff;
+          color: #000000;
           font-family: 'Inter', sans-serif;
-          font-weight: 500;
-          font-size: 17px;
-          letter-spacing: 0.03em;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          font-weight: 600;
+          font-size: 16px;
+          letter-spacing: 0.01em;
+          border: 1px solid #ffffff;
           box-shadow: 
-            inset 0 1px 1px rgba(255, 255, 255, 0.15), /* Inner top highlight */
-            inset 0 -1px 1px rgba(0, 0, 0, 0.5), /* Inner bottom shadow */
-            0 15px 35px rgba(0, 0, 0, 0.5), /* Drop shadow */
-            0 0 20px rgba(255, 255, 255, 0.02); /* Ambient glow */
+            0 8px 30px rgba(255, 255, 255, 0.25), /* Glow */
+            inset 0 -2px 4px rgba(0, 0, 0, 0.1); /* Inner depth */
           cursor: pointer;
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
           z-index: 10;
         }
 
-        .btn-obsidian::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 9999px;
-          box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
-          opacity: 0;
-          transition: opacity 0.4s ease;
+        .btn-white-pill:active {
+          transform: scale(0.95);
+          box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
         }
 
-        .btn-obsidian:active {
-          transform: scale(0.94);
-          background: rgba(30, 30, 30, 0.6);
+        .btn-white-pill .arrow-icon {
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          color: #000000;
         }
-        .btn-obsidian:active::after {
-          opacity: 1;
-        }
-
-        .btn-obsidian .arrow-icon {
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .btn-obsidian:active .arrow-icon {
+        .btn-white-pill:active .arrow-icon {
           transform: translateX(4px);
+        }
+
+        .btn-white-pill-sm {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 24px;
+          border-radius: 9999px;
+          background: #ffffff;
+          color: #000000;
+          font-family: 'Inter', sans-serif;
+          font-weight: 600;
+          font-size: 14px;
+          border: 1px solid #ffffff;
+          box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+          cursor: pointer;
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-white-pill-sm:active {
+          transform: scale(0.95);
         }
 
         /* Ghost Auth Buttons */
@@ -126,7 +131,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           color: #888888;
           font-size: 14px;
           font-weight: 500;
-          padding: 8px 16px;
+          padding: 10px 16px;
           border-radius: 9999px;
           transition: color 0.3s ease, background 0.3s ease;
         }
@@ -152,35 +157,21 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           to  { background-position:  200% 0; }
         }
 
-        .btn-eclipse-glow {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 140px;
-          height: 60px;
-          background: rgba(255, 255, 255, 0.15);
-          filter: blur(25px);
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 1;
-        }
       `}</style>
 
-      {/* ── Header (Ultra Minimal) ── */}
+      {/* ── Header (Ultra Minimal, Absolute for perfect center alignment) ── */}
       <header 
-        className="flex items-center justify-end px-6 py-6 relative z-10 w-full transition-opacity duration-700"
+        className="absolute top-0 left-0 right-0 flex items-center justify-end px-6 py-6 z-20 transition-opacity duration-700"
         style={{ opacity: visible && !isExiting ? 1 : 0 }}
       >
-        <div className="flex items-center gap-1">
-          <button onClick={() => { setAuthMode("signup"); setIsAuthOpen(true); }} className="btn-ghost-auth">Sign in</button>
-          <div className="w-1 h-1 rounded-full bg-[#333]"></div>
-          <button onClick={() => { setAuthMode("login"); setIsAuthOpen(true); }} className="btn-ghost-auth">Log in</button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { setAuthMode("signup"); setIsAuthOpen(true); }} className="btn-ghost-auth">Sign up</button>
+          <button onClick={() => { setAuthMode("login"); setIsAuthOpen(true); }} className="btn-white-pill-sm">Log in</button>
         </div>
       </header>
 
       {/* ── Hero Main Content ── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 max-w-4xl mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 w-full min-h-screen">
         <div 
           className="flex flex-col items-center w-full relative"
           style={{
@@ -213,16 +204,15 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
           {/* Subtext */}
           <p className="text-[#a1a1aa] text-[15px] sm:text-[17px] leading-snug max-w-[90%] sm:max-w-md mx-auto mb-10 font-sans font-normal opacity-90">
-            Built to make achievers, not procrastinators.<br />
+            Built for achievers, not procrastinators.<br />
             <span className="text-white/70 font-medium">No fluff. No excuses. No mercy.</span>
           </p>
 
           {/* Centered CTA Row */}
           <div className="flex justify-center w-full relative">
-            <div className="btn-eclipse-glow"></div>
-            <button className="btn-obsidian group" onClick={handleStart} style={{ zIndex: 10 }}>
+            <button className="btn-white-pill group" onClick={handleStart}>
               <span>Get started</span>
-              <ArrowRight size={20} className="arrow-icon text-white/70 group-active:text-white" />
+              <ArrowRight size={20} className="arrow-icon" />
             </button>
           </div>
         </div>
@@ -230,8 +220,6 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
       {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} onSuccess={handleAuthSuccess} initialMode={authMode} />}
 
-      {/* ── Empty/Hidden Clean Footer ── */}
-      <footer className="h-12 w-full" />
     </div>
   );
 }
