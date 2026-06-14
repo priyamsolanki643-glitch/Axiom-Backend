@@ -55,21 +55,14 @@ export function ParticleSphere() {
       });
     }
 
-    // 2. Exact TRON Inverted Pyramid
-    const pyramidVerts = [
-      { x: 0.35, y: 0.3, z: 0.35 },
-      { x: -0.35, y: 0.3, z: 0.35 },
-      { x: -0.35, y: 0.3, z: -0.35 },
-      { x: 0.35, y: 0.3, z: -0.35 },
-      { x: 0, y: -0.7, z: 0 }
-    ];
-    const pyramidFaces = [
-      [0, 1, 2, 3], // Top Base
-      [0, 1, 4],    // Front Face
-      [1, 2, 4],    // Left Face
-      [2, 3, 4],    // Back Face
-      [3, 0, 4]     // Right Face
-    ];
+    // 2. Exact Flash Screen Orbit/Gyro Rings
+    const numRingPts = 64;
+    const ringRadius = 0.35;
+    const ringBasePts: {x: number, y: number, z: number}[] = [];
+    for (let i = 0; i <= numRingPts; i++) {
+      const a = (i / numRingPts) * Math.PI * 2;
+      ringBasePts.push({ x: Math.cos(a) * ringRadius, y: 0, z: Math.sin(a) * ringRadius });
+    }
 
     let rotationY = 0;
     const rotationX = 0.15;
@@ -96,15 +89,13 @@ export function ParticleSphere() {
         
         let flowOpacity = 1.0;
         if (p.origX !== undefined) {
-           // Flowing 3D continents simulation (Motion Noise)
            const n1 = Math.sin(p.origX * 3.5 + time) * Math.cos(p.origY * 3.5 + time) * Math.sin(p.origZ * 3.5);
            const n2 = Math.sin(p.origX * 7.0 - time) * Math.cos(p.origY * 7.0 + time) * Math.sin(p.origZ * 7.0);
            const noise = n1 * 0.7 + n2 * 0.3;
            
-           // Base faint visibility with moving dense bright continents
-           flowOpacity = 0.05; // very faint background grid
+           flowOpacity = 0.05; 
            if (noise > 0.1) {
-             flowOpacity += Math.min(0.85, (noise - 0.1) * 2.5); // flowing bright patches
+             flowOpacity += Math.min(0.85, (noise - 0.1) * 2.5); 
            }
         }
 
@@ -126,7 +117,6 @@ export function ParticleSphere() {
           const zNormalized = (p.z + 1) / 2;
           const depthOpacity = Math.max(0.05, 0.6 - (zNormalized * 0.4));
           
-          // Combine depth fading with the flowing noise continents
           ctx.globalAlpha = depthOpacity * p.flowOpacity;
           ctx.fillRect(p.x, p.y, size, size);
         });
@@ -136,32 +126,62 @@ export function ParticleSphere() {
       // Draw Back Particles
       drawParticles(projParticles.filter(p => p.z > 0));
 
-      // Project & Draw Pyramid
-      const projPyramidVerts = pyramidVerts.map(project);
-      const faces = pyramidFaces.map(faceIndices => {
-        const faceVerts = faceIndices.map(i => projPyramidVerts[i]);
-        const avgZ = faceVerts.reduce((sum, v) => sum + v.z, 0) / faceVerts.length;
-        return { faceVerts, avgZ };
+      // Calculate the 3 Gyro Rings dynamically based on time
+      // Ring 1: rotateX(70deg) rotateY(time*speed)
+      // Ring 2: rotateX(45deg) rotateY(120deg) rotateZ(time)
+      // Ring 3: rotateX(60deg) rotateY(240deg) rotateZ(time)
+      const ringsToDraw = [
+        { rx: 70 * Math.PI/180, ry: 0, rz: time * 2.0 },
+        { rx: 45 * Math.PI/180, ry: 120 * Math.PI/180, rz: time * 1.5 },
+        { rx: 60 * Math.PI/180, ry: 240 * Math.PI/180, rz: time * 2.5 }
+      ].map(rot => {
+        const crx = Math.cos(rot.rx), srx = Math.sin(rot.rx);
+        const cry = Math.cos(rot.ry), sry = Math.sin(rot.ry);
+        const crz = Math.cos(rot.rz), srz = Math.sin(rot.rz);
+        
+        // Apply rotations to base ring points
+        return ringBasePts.map(pt => {
+          // Z
+          let x1 = pt.x * crz - pt.y * srz;
+          let y1 = pt.x * srz + pt.y * crz;
+          // X
+          let y2 = y1 * crx - pt.z * srx;
+          let z1 = y1 * srx + pt.z * crx;
+          // Y
+          let x2 = x1 * cry + z1 * sry;
+          let z2 = -x1 * sry + z1 * cry;
+          return project({ x: x2, y: y2, z: z2 });
+        });
       });
-      faces.sort((a, b) => b.avgZ - a.avgZ);
 
-      faces.forEach(face => {
+      // Draw Gyro Rings
+      ctx.lineWidth = 1.5;
+      ringsToDraw.forEach(projLine => {
+        // Find avg Z for the ring to do basic depth fading
+        const avgZ = projLine.reduce((sum, v) => sum + v.z, 0) / projLine.length;
+        const zNorm = (avgZ + 1) / 2;
+        
+        // Orbit rings are white to stand out inside the red Tron sphere
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 + (0.7 * (1 - zNorm))})`;
         ctx.beginPath();
-        face.faceVerts.forEach((v, i) => {
+        projLine.forEach((v, i) => {
           if (i === 0) ctx.moveTo(v.x, v.y);
           else ctx.lineTo(v.x, v.y);
         });
-        ctx.closePath();
-        
-        const zNorm = (face.avgZ + 1) / 2;
-        // Solid semi-transparent face fill
-        ctx.fillStyle = `rgba(235, 31, 41, ${0.1 + (0.15 * (1 - zNorm))})`;
-        ctx.fill();
-        // Bright glowing edges
-        ctx.lineWidth = 1.2;
-        ctx.strokeStyle = `rgba(255, 60, 60, ${0.4 + (0.6 * (1 - zNorm))})`;
         ctx.stroke();
       });
+
+      // Draw Center Gyro Core (Pulse)
+      const centerProj = project({x:0, y:0, z:0});
+      const coreSize = 3.0 * centerProj.scale * (0.8 + 0.2 * Math.sin(time * 4));
+      ctx.beginPath();
+      ctx.arc(centerProj.x, centerProj.y, coreSize, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + 0.6 * Math.sin(time * 4)})`;
+      ctx.fill();
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "white";
+      ctx.fill(); // double fill for glow
+      ctx.shadowBlur = 0; // reset
 
       // Draw Front Particles
       drawParticles(projParticles.filter(p => p.z <= 0));
