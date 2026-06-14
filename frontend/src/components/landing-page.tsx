@@ -146,6 +146,48 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           0%  { background-position: -200% 0; }
           to  { background-position:  200% 0; }
         }
+
+        /* Tron 3D Sphere */
+        .tron-sphere {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 90vw;
+          height: 90vw;
+          max-width: 800px;
+          max-height: 800px;
+          border-radius: 50%;
+          background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 60%);
+          box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.02);
+          z-index: 0;
+          pointer-events: none;
+          overflow: hidden;
+          perspective: 800px;
+          mask-image: radial-gradient(circle at center, black 20%, transparent 65%);
+          -webkit-mask-image: radial-gradient(circle at center, black 20%, transparent 65%);
+        }
+
+        .tron-sphere-grid {
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background-image: 
+            radial-gradient(rgba(255, 255, 255, 0.6) 1.5px, transparent 1.5px),
+            linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+          background-size: 28px 28px, 56px 56px, 56px 56px;
+          background-position: 0 0, 14px 14px, 14px 14px;
+          animation: spinTron3D 50s linear infinite;
+        }
+
+        @keyframes spinTron3D {
+          0% { transform: rotateX(55deg) rotateZ(0deg) scale(1.2); }
+          50% { transform: rotateX(55deg) rotateZ(180deg) scale(1.4); }
+          100% { transform: rotateX(55deg) rotateZ(360deg) scale(1.2); }
+        }
       `}</style>
 
       {/* ── Header (Flow-based alignment) ── */}
@@ -161,8 +203,14 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
 
       {/* ── Hero Main Content ── */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 max-w-4xl mx-auto w-full">
+        
+        {/* The Tron Sphere */}
+        <div className="tron-sphere">
+          <div className="tron-sphere-grid" />
+        </div>
+
         <div 
-          className="flex flex-col items-center w-full relative"
+          className="flex flex-col items-center w-full relative z-10"
           style={{
             transition: "transform 800ms cubic-bezier(0.16, 1, 0.3, 1), opacity 800ms cubic-bezier(0.16, 1, 0.3, 1)",
             opacity: isExiting ? 0 : (visible ? 1 : 0),
