@@ -1,12 +1,6 @@
 import { MiddlewareHandler } from 'hono';
 import { DbService } from '../services/db.service';
 
-<<<<<<< HEAD
-const ALLOW_TEST_USER = process.env.ALLOW_TEST_USER !== 'false';
-=======
-const JWT_SECRET = process.env.JWT_SECRET || 'lumensky-fallback-secret-2026';
->>>>>>> backend
-
 export const requireAuth: MiddlewareHandler = async (c, next) => {
   const authHeader = c.req.header('Authorization');
 

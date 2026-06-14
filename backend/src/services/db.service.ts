@@ -4,11 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-<<<<<<< HEAD
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-=======
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
->>>>>>> backend
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('CRITICAL: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required.');
