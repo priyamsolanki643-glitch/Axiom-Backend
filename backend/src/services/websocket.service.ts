@@ -80,7 +80,7 @@ export class WebSocketService {
         let userId = '';
 
         if (isLocalFallback) {
-          userId = (query['x-device-id'] as string) || 'test-user';
+          userId = (query['x-device-id'] as string) || 'local-dev-user';
         } else {
           const token = query['token'] as string;
 

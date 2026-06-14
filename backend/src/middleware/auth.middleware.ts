@@ -2,7 +2,6 @@ import { MiddlewareHandler } from 'hono';
 import { verify } from 'hono/jwt';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'lumensky-fallback-secret-2026';
-const ALLOW_TEST_USER = process.env.ALLOW_TEST_USER !== 'false';
 
 type JwtPayload = {
   sub?: string;
@@ -28,12 +27,7 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
     return c.json({ error: 'Access denied: missing authentication token.' }, 401);
   }
 
-  if (ALLOW_TEST_USER && token === 'test-user') {
-    c.set('jwtPayload', { sub: 'test-user', role: 'dev-test-user' });
-    c.set('userId', 'test-user');
-    await next();
-    return;
-  }
+
 
   try {
     const payload = (await verify(token, JWT_SECRET, 'HS256')) as JwtPayload;
