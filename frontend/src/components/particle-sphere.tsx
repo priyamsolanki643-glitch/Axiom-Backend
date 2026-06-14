@@ -143,7 +143,7 @@ export function ParticleSphere() {
   return (
     <canvas 
       ref={canvasRef} 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vw] max-w-[650px] max-h-[650px] pointer-events-none z-0 mix-blend-screen opacity-90"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] sm:w-[100vw] sm:h-[100vw] max-w-[750px] max-h-[750px] pointer-events-none z-0 mix-blend-screen opacity-90"
     />
   );
 }
