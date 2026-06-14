@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import * as url from 'url';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const isLocalFallback = !supabaseUrl || !supabaseKey;
 
@@ -80,7 +80,7 @@ export class WebSocketService {
         let userId = '';
 
         if (isLocalFallback) {
-          userId = (query['x-device-id'] as string) || 'test-user';
+          userId = (query['x-device-id'] as string) || 'local-dev-user';
         } else {
           const token = query['token'] as string;
 

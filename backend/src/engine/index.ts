@@ -198,6 +198,10 @@ export async function transitionToExecution(
     lockedState
   );
 
+  if (!day1Sprint) {
+    throw new Error('Critical Engine Error: Failed to generate Day 1 task sprint.');
+  }
+
   const taskOutputText = day1Sprint ? day1Sprint.tasks.map(t => `${t.title}: ${t.description}`).join(' ') : '';
   const legalAuditReport = runLegalAudit(
     runtime.contextMatrix,
@@ -291,7 +295,7 @@ export function processUnlockRequest(input: UnlockRequestInput): {
     updatedState = {
       ...updatedState,
       status: validationResult.nextState,
-      consistencyScore: Math.max(0, updatedState.consistencyScore - validationResult.consistencyPenalty),
+      consistencyScore: Math.max(0, updatedState.consistencyScore - (validationResult.consistencyPenalty ?? 0)),
       unlockGranted: true,
       unlockReason: validationResult.unlockReason,
       lastUnlockRequest: new Date().toISOString(),

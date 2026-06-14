@@ -259,18 +259,19 @@ Reply casually in Hinglish — like a smart older bro who's genuinely curious. A
           console.log(`MESSAGE: User selected path '${chosenPath}'. Locking trajectory in chat.`);
           
           const geoLower = (extraction.region || '').toLowerCase();
-          let geographyTier: 'tier1_city' | 'tier2_city' | 'tier3_city' = 'tier2_city';
-          if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_city';
+          let geographyTier: 'tier1_metro' | 'tier2_city' | 'tier3_semi_urban' | 'rural' = 'tier2_city';
+          if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_metro';
           else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) geographyTier = 'tier2_city';
-          else geographyTier = 'tier3_city';
+          else geographyTier = 'tier3_semi_urban';
 
           const onboardingInput = {
             userId: actualUserId,
+            age: 22,
             geographyTier: geographyTier as any,
-            country: geoLower.includes("india") ? "IN" : "US",
+            country: geoLower.includes("india") ? "India" : "United States",
             region: extraction.region || 'Unknown',
             liquidCapital: extraction.liquidCapital || 5000,
-            monthlyBurnRate: Math.max(3000, Math.floor((extraction.liquidCapital || 5000) / 4)),
+            monthlyBurnRate: extraction.monthlyBurnRate ?? 5000,
             hasDebt: false,
             debtMonthlyObligation: 0,
             familyDependencyScore: 1.0,
@@ -355,18 +356,19 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
         } else {
           // Onboarding complete, but user hasn't made a choice yet. Present simulated paths.
           const geoLower = (extraction.region || '').toLowerCase();
-          let geographyTier: 'tier1_city' | 'tier2_city' | 'tier3_city' = 'tier2_city';
-          if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_city';
+          let geographyTier: 'tier1_metro' | 'tier2_city' | 'tier3_semi_urban' | 'rural' = 'tier2_city';
+          if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_metro';
           else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) geographyTier = 'tier2_city';
-          else geographyTier = 'tier3_city';
+          else geographyTier = 'tier3_semi_urban';
 
           const onboardingInput = {
             userId: actualUserId,
+            age: 22,
             geographyTier: geographyTier as any,
-            country: geoLower.includes("india") ? "IN" : "US",
+            country: geoLower.includes("india") ? "India" : "United States",
             region: extraction.region || 'Unknown',
             liquidCapital: extraction.liquidCapital || 5000,
-            monthlyBurnRate: Math.max(3000, Math.floor((extraction.liquidCapital || 5000) / 4)),
+            monthlyBurnRate: extraction.monthlyBurnRate ?? 5000,
             hasDebt: false,
             debtMonthlyObligation: 0,
             familyDependencyScore: 1.0,

@@ -5,7 +5,7 @@ import * as path from 'path';
 import { LLMService } from './llm.service';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const isLocalFallback = !supabaseUrl || !supabaseKey;
 

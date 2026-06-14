@@ -4,7 +4,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const supabaseUrl = process.env.SUPABASE_URL;
+<<<<<<< HEAD
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+=======
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+>>>>>>> backend
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('CRITICAL: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required.');
@@ -716,6 +720,61 @@ export class DbService {
     } catch (error) {
        console.error("getB2bCohortAnalytics DB Error:", error);
        throw error;
+    }
+  }
+
+  // ==========================================
+  // OTP Session Management
+  // ==========================================
+  
+  static async saveOtpSession(session: any): Promise<void> {
+    if (isLocalFallback) return;
+    try {
+      await supabase.from('otp_sessions').upsert({
+        target: session.target,
+        code_hash: session.codeHash,
+        expires_at: session.expiresAt,
+        attempts: session.attempts,
+        last_sent_at: session.lastSentAt
+      });
+    } catch (error) {
+      console.error('saveOtpSession DB Error:', error);
+    }
+  }
+
+  static async getOtpSession(target: string): Promise<any | null> {
+    if (isLocalFallback) return null;
+    try {
+      const { data, error } = await supabase
+        .from('otp_sessions')
+        .select('*')
+        .eq('target', target)
+        .single();
+        
+      if (error || !data) return null;
+      
+      return {
+        target: data.target,
+        codeHash: data.code_hash,
+        expiresAt: data.expires_at,
+        attempts: data.attempts,
+        lastSentAt: data.last_sent_at
+      };
+    } catch (error) {
+      console.error('getOtpSession DB Error:', error);
+      return null;
+    }
+  }
+
+  static async deleteOtpSession(target: string): Promise<void> {
+    if (isLocalFallback) return;
+    try {
+      await supabase
+        .from('otp_sessions')
+        .delete()
+        .eq('target', target);
+    } catch (error) {
+      console.error('deleteOtpSession DB Error:', error);
     }
   }
 }

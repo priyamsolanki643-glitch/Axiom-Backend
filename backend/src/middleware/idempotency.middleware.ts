@@ -56,6 +56,11 @@ export const requireIdempotency = async (c: Context, next: Next) => {
         'X-Idempotency-Key': idempotencyKey
       };
 
+      if (idempotencyCache.size >= 5000) {
+        const firstKey = idempotencyCache.keys().next().value;
+        if (firstKey) idempotencyCache.delete(firstKey);
+      }
+
       idempotencyCache.set(idempotencyKey, {
         status: c.res.status,
         body,
