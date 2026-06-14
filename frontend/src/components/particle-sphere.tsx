@@ -14,90 +14,137 @@ export function ParticleSphere() {
     let width = canvas.width = canvas.offsetWidth;
     let height = canvas.height = canvas.offsetHeight;
     
-    // Handle resize
     const handleResize = () => {
       width = canvas.width = canvas.offsetWidth;
       height = canvas.height = canvas.offsetHeight;
     };
     window.addEventListener('resize', handleResize);
 
-    const particles: {x: number, y: number, z: number, phase: number}[] = [];
-    const numParticles = 2500; // High density for the Tron look
+    // TRON Exact Design Elements
+    const particles: {x: number, y: number, z: number}[] = [];
     const radius = Math.min(width, height) * 0.45;
 
-    // Fibonacci sphere distribution for uniform dot placement
-    const phi = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < numParticles; i++) {
-      const y = 1 - (i / (numParticles - 1)) * 2;
-      const r = Math.sqrt(1 - y * y);
-      const theta = phi * i;
-      particles.push({
-        x: Math.cos(theta) * r,
-        y: y,
-        z: Math.sin(theta) * r,
-        phase: Math.random() * Math.PI * 2 // For twinkling
-      });
+    // 1. Latitude/Longitude Grid for the Sphere (like Tron)
+    const rows = 45;
+    const cols = 70;
+    for (let i = 0; i <= rows; i++) {
+      const phi = (i / rows) * Math.PI; // 0 to PI
+      for (let j = 0; j < cols; j++) {
+        const theta = (j / cols) * Math.PI * 2; // 0 to 2PI
+        // Add some noise and gaps to make it look organic like Tron
+        if (Math.random() > 0.15) {
+          particles.push({
+            x: Math.sin(phi) * Math.cos(theta),
+            y: Math.cos(phi),
+            z: Math.sin(phi) * Math.sin(theta)
+          });
+        }
+      }
     }
 
-    let rotationY = 0;
-    const rotationX = 0.2; // Slight tilt to see the poles
+    // 2. The Inner Inverted Pyramid (Tron Diamond)
+    const pyramidVerts = [
+      { x: 0.35, y: 0.3, z: 0.35 },   // Top Front Right
+      { x: -0.35, y: 0.3, z: 0.35 },  // Top Front Left
+      { x: -0.35, y: 0.3, z: -0.35 }, // Top Back Left
+      { x: 0.35, y: 0.3, z: -0.35 },  // Top Back Right
+      { x: 0, y: -0.7, z: 0 }         // Sharp Bottom Point
+    ];
+    const pyramidFaces = [
+      [0, 1, 2, 3], // Top Base
+      [0, 1, 4],    // Front Face
+      [1, 2, 4],    // Left Face
+      [2, 3, 4],    // Back Face
+      [3, 0, 4]     // Right Face
+    ];
 
+    let rotationY = 0;
+    const rotationX = 0.15; // Tilt to see the top of the pyramid
     let animationId: number;
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
-      rotationY += 0.0015; // Slow elegant spin
+      rotationY -= 0.003; // Rotate exactly like Tron
 
       const cosY = Math.cos(rotationY);
       const sinY = Math.sin(rotationY);
       const cosX = Math.cos(rotationX);
       const sinX = Math.sin(rotationX);
 
-      // We sort particles by Z depth to draw back-to-front (painters algorithm)
-      // This is crucial for 3D blending
-      const projected = particles.map(p => {
-        // Rotate around Y axis
+      // Helper function to project 3D to 2D
+      const project = (p: {x: number, y: number, z: number}) => {
+        // Rotate Y
         let x1 = p.x * cosY - p.z * sinY;
         let z1 = p.z * cosY + p.x * sinY;
-        
-        // Rotate around X axis
+        // Rotate X
         let y1 = p.y * cosX - z1 * sinX;
         let z2 = z1 * cosX + p.y * sinX;
 
-        return { x: x1, y: y1, z: z2, phase: p.phase };
+        const perspective = radius * 3.5;
+        const scale = perspective / (perspective + z2 * radius);
+        return {
+          x: width / 2 + x1 * radius * scale,
+          y: height / 2 - y1 * radius * scale, // Y goes up in 3D, down in Canvas
+          z: z2,
+          scale
+        };
+      };
+
+      // Project Sphere Particles
+      const projParticles = particles.map(project);
+      
+      // Separate into back and front
+      const backParticles = projParticles.filter(p => p.z > 0);
+      const frontParticles = projParticles.filter(p => p.z <= 0);
+
+      const drawParticles = (pts: any[]) => {
+        pts.forEach(p => {
+          const size = Math.max(0.4, 1.2 * p.scale);
+          const zNormalized = (p.z + 1) / 2; // 0 to 1
+          const opacity = Math.max(0.05, 0.7 - (zNormalized * 0.5));
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+          // Tron Red color
+          ctx.fillStyle = `rgba(235, 31, 41, ${opacity})`;
+          ctx.fill();
+        });
+      };
+
+      // Project Pyramid
+      const projPyramidVerts = pyramidVerts.map(project);
+
+      // Draw Back Particles
+      drawParticles(backParticles);
+
+      // Draw Inner Pyramid
+      // Calculate face depth and sort
+      const faces = pyramidFaces.map(faceIndices => {
+        const faceVerts = faceIndices.map(i => projPyramidVerts[i]);
+        const avgZ = faceVerts.reduce((sum, v) => sum + v.z, 0) / faceVerts.length;
+        return { faceVerts, avgZ };
       });
+      faces.sort((a, b) => b.avgZ - a.avgZ); // Painter's algorithm (back to front)
 
-      projected.sort((a, b) => b.z - a.z);
-
-      const time = Date.now() * 0.001;
-
-      projected.forEach(p => {
-        // Project 3D to 2D
-        const perspective = radius * 3; // Keep camera far enough to avoid warping
-        const scale = perspective / (perspective + p.z * radius);
-        const x2D = width / 2 + p.x * radius * scale;
-        const y2D = height / 2 + p.y * radius * scale;
-
-        // Calculate size and opacity based on Z depth
-        const size = Math.max(0.5, 1.2 * scale);
-        
-        // Z goes from -1 (front) to 1 (back)
-        const zNormalized = (p.z + 1) / 2; // 0 (front) to 1 (back)
-        
-        // Base opacity
-        let opacity = Math.max(0.05, 0.45 - (zNormalized * 0.4)); 
-        
-        // Twinkle effect (Tron spheres shimmer)
-        const twinkle = Math.sin(time * 2 + p.phase);
-        if (twinkle > 0.8 && zNormalized < 0.5) {
-            opacity += 0.3; // bright twinkle on front dots
-        }
-
+      faces.forEach(face => {
         ctx.beginPath();
-        ctx.arc(x2D, y2D, size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        face.faceVerts.forEach((v, i) => {
+          if (i === 0) ctx.moveTo(v.x, v.y);
+          else ctx.lineTo(v.x, v.y);
+        });
+        ctx.closePath();
+        
+        // Tron red styling for the diamond
+        // Transparent filled body with bright glowing edges
+        const zNorm = (face.avgZ + 1) / 2;
+        ctx.fillStyle = `rgba(235, 31, 41, ${0.1 + (0.15 * (1 - zNorm))})`;
         ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = `rgba(255, 60, 60, ${0.4 + (0.6 * (1 - zNorm))})`;
+        ctx.stroke();
       });
+
+      // Draw Front Particles
+      drawParticles(frontParticles);
 
       animationId = requestAnimationFrame(render);
     };
@@ -113,7 +160,7 @@ export function ParticleSphere() {
   return (
     <canvas 
       ref={canvasRef} 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] max-w-[900px] max-h-[900px] pointer-events-none z-0"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] max-w-[800px] max-h-[800px] pointer-events-none z-0 mix-blend-screen opacity-90"
     />
   );
 }
