@@ -137,11 +137,11 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
         <div className="px-6 py-4 md:px-8 md:pb-8">
           <div className="mb-8 mt-2">
             <h2 className="text-[26px] font-semibold text-white tracking-tight mb-2 font-display">
-              {step === "otp" ? "Verify your identity." : (mode === "signup" ? "Create an account." : "Welcome back.")}
+              {step === "otp" ? "Check your email." : (mode === "signup" ? "Create an account." : "Welcome back.")}
             </h2>
             <p className="text-[15px] text-[#a1a1aa] leading-relaxed">
               {step === "otp" 
-                ? `We sent a 6-digit code to ${email}`
+                ? `We sent a confirmation link to ${email}. Click the link to log in instantly. If you received a 6-digit code instead, enter it below.`
                 : (mode === "signup" ? "Enter your details to start executing." : "Enter your email to log in.")}
             </p>
           </div>
