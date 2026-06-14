@@ -145,7 +145,7 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           background-size: 200% auto;
           -webkit-background-clip: text;
           background-clip: text;
-          animation: shimmer 4s linear infinite;
+          animation: shimmer 2.5s linear infinite;
         }
         @keyframes shimmer {
           0%  { background-position: -200% 0; }
@@ -212,8 +212,10 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
           </h1>
 
           {/* Subtext */}
-          <p className="text-[#71717a] text-[15px] sm:text-[17px] md:text-[20px] leading-relaxed max-w-[500px] mx-auto mb-14 px-4 font-sans font-normal tracking-wide">
-            A strategist and executioner that converts your ambition into raw, immutable daily action. No fluff. No excuses. No mercy.
+          <p className="text-[#a1a1aa] text-[14px] sm:text-[16px] leading-snug max-w-[85%] sm:max-w-md mx-auto mb-12 font-sans font-normal opacity-90">
+            A strategist and executioner that converts your ambition into raw, immutable daily action.
+            <br className="hidden sm:block" />
+            <span className="block mt-2 text-white/60 font-medium">No fluff. No excuses. No mercy.</span>
           </p>
 
           {/* Centered CTA Row */}
