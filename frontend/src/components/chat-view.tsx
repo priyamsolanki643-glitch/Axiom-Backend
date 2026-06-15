@@ -40,6 +40,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -445,8 +446,10 @@ const { data: { session } } = await supabase.auth.getSession();
     router.push("/gate");
   };
 
-  const copyToClipboard = (txt: string) => {
+  const copyToClipboard = (id: string, txt: string) => {
     navigator.clipboard.writeText(txt);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleRetry = useCallback(() => {
@@ -746,7 +749,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row for user */}
                           <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 right-0 bg-black text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50" 
+                              ? "absolute top-[calc(100%+8px)] right-0 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100 z-50" 
                               : "hidden opacity-0"
                           }`}>
                             <button 
@@ -756,10 +759,10 @@ const { data: { session } } = await supabase.auth.getSession();
                               <Edit className="size-4" />
                             </button>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }} 
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.id, m.text); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
-                              <Copy className="size-4" />
+                              {copiedId === m.id ? <Check className="size-4 text-green-400" /> : <Copy className="size-4" />}
                             </button>
                           </div>
                         </div>
@@ -778,7 +781,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row */}
                           <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 left-0 bg-black text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50" 
+                              ? "absolute top-[calc(100%+8px)] left-0 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100 z-50" 
                               : "hidden opacity-0"
                           }`}>
                             <button 
@@ -788,10 +791,10 @@ const { data: { session } } = await supabase.auth.getSession();
                               <RefreshCw className="size-4" />
                             </button>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }}
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.id, m.text); }}
                               className="p-1 hover:text-white cursor-pointer transition-colors"
                             >
-                              <Copy className="size-4" />
+                              {copiedId === m.id ? <Check className="size-4 text-green-400" /> : <Copy className="size-4" />}
                             </button>
                             <button className="p-1 hover:text-white cursor-pointer transition-colors">
                               <ThumbsUp className="size-4" />
