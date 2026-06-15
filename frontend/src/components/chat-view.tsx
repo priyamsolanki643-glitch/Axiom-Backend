@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault } from "lucide-react";
+import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault, Square } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -46,6 +46,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Initialize anonymous id
   useEffect(() => {
@@ -338,6 +339,12 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     setFilePreviews([]);
     setIsThinking(true);
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const activeMessages = overrideMessages ?? baseMessages;
       const historyPayload = activeMessages.map((m) => ({
@@ -356,6 +363,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
         method: "POST",
+        signal: controller.signal,
         headers: { 
           "Content-Type": "application/json",
           "Authorization": session?.access_token ? `Bearer ${session.access_token}` : "",
@@ -402,8 +410,13 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       }
 
       setMessages((prev) => [...prev, { id: String(Date.now()), role: "fp", text: reply }]);
-    } catch (err: any) {
-      console.error("CRITICAL FETCH ERROR:", err);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('Generation stopped by user');
+        setIsThinking(false);
+        return;
+      }
+      console.error("CRITICAL FETCH ERROR:", error);
       setMessages((prev) => [
         ...prev,
         { id: String(Date.now()), role: "fp", text: "Connection error. Strategy engine offline." },
@@ -1001,11 +1014,27 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
               </button>
 
               <button
-                onClick={() => handleSend()}
-                disabled={!input.trim() && selectedFiles.length === 0}
-                className="action-icon-btn size-10 rounded-full grid place-items-center bg-white text-black hover:scale-[1.05] active:scale-90 disabled:bg-white/10 disabled:text-white/30 transition-all cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                onClick={() => {
+                  if (isThinking) {
+                    abortControllerRef.current?.abort();
+                  } else {
+                    handleSend();
+                  }
+                }}
+                disabled={!isThinking && (!input.trim() && selectedFiles.length === 0)}
+                className={`action-icon-btn size-10 rounded-full grid place-items-center transition-all cursor-pointer ${
+                  isThinking 
+                    ? "bg-[#2a2a2a] text-white hover:bg-white/20 active:scale-90"
+                    : (!input.trim() && selectedFiles.length === 0)
+                      ? "bg-white/10 text-white/30"
+                      : "bg-white text-black hover:scale-[1.05] active:scale-90 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                }`}
               >
-                <ArrowUp className="size-[20px] stroke-[2.5]" />
+                {isThinking ? (
+                  <Square className="size-[14px] fill-white" />
+                ) : (
+                  <ArrowUp className="size-[20px] stroke-[2.5]" />
+                )}
               </button>
             </div>
           </div>
