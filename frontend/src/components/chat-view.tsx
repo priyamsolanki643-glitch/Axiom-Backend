@@ -38,6 +38,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [isThinking, setIsThinking] = useState(false);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -347,6 +348,7 @@ const { data: { session } } = await supabase.auth.getSession();
         // Push an empty message first
         setMessages((prev) => [...prev, { id: newMsgId, role: "fp", text: "" }]);
         setIsThinking(false);
+        setIsStreaming(true);
 
         while (!done) {
           const { value, done: doneReading } = await reader.read();
@@ -403,6 +405,7 @@ const { data: { session } } = await supabase.auth.getSession();
       ]);
     } finally {
       setIsThinking(false);
+      setIsStreaming(false);
       inputRef.current?.focus();
     }
   }, [input, isThinking, messages, selectedFiles, filePreviews]);
@@ -463,8 +466,24 @@ const { data: { session } } = await supabase.auth.getSession();
   return (
     <div className="flex-1 flex flex-col min-w-0 relative h-screen bg-[#000000] text-white font-sans overflow-hidden">
       
+      <svg width="0" height="0" className="absolute pointer-events-none">
+        <filter id="liquid-spill">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -6" result="liquid" />
+          <feComposite in="SourceGraphic" in2="liquid" operator="atop" />
+        </filter>
+      </svg>
+
       {/* CSS Animation definitions for smooth message reveals */}
       <style>{`
+        .liquid-streaming-text {
+          filter: url(#liquid-spill);
+          animation: pulseBleed 0.6s infinite alternate;
+        }
+        @keyframes pulseBleed {
+          0% { text-shadow: 0 0 2px rgba(255,255,255,0.4); opacity: 0.85; }
+          100% { text-shadow: 0 0 12px rgba(255,255,255,0.7); opacity: 1; }
+        }
         /* Smooth message entrance transition */
         .animate-message-reveal {
           opacity: 0;
@@ -711,7 +730,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
+                          <div className={`font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide ${isStreaming && m.id === messages[messages.length - 1]?.id ? "liquid-streaming-text" : ""}`}>
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {m.text}
                             </ReactMarkdown>
