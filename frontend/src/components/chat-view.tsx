@@ -605,14 +605,6 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
         {/* Header Actions */}
         <div className="flex items-center gap-1 md:gap-2 -mr-1">
-          {onOpenVault && (
-            <button 
-              onClick={onOpenVault}
-              className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer"
-            >
-              <Vault className="size-5 md:size-6" />
-            </button>
-          )}
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
             className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(255, 255, 255,0.6)]"
