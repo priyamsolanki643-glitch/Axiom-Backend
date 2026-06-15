@@ -907,13 +907,8 @@ const { data: { session } } = await supabase.auth.getSession();
           style={{ animationDelay: "550ms" }}
         >
           
-          {/* God-Level Ethereal Floating Capsule */}
-          <div className={`input-console-transition relative flex items-center gap-1.5 md:gap-3 bg-black/60 backdrop-blur-3xl rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-all duration-500 overflow-visible ${isThinking ? "border-transparent" : "border-white/20 hover:border-white/40 shadow-[0_8px_32px_rgba(255,255,255,0.05)]"}`}>
-            
-            {/* Subtle inner glow when active */}
-            {!isThinking && (
-              <div className="absolute inset-0 rounded-[32px] pointer-events-none shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]" />
-            )}
+          {/* Sleek Apple-inspired floating capsule without glow */}
+          <div className={`input-console-transition flex items-center gap-1.5 md:gap-3 bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-colors duration-300 ${isThinking ? "border-transparent" : "border-white/40"}`}>
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
