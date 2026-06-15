@@ -436,12 +436,24 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     let lastUserIndex = -1;
     
     if (messageId && typeof messageId === "string" && messageId.trim().length > 0) {
-      const aiIndex = messages.findIndex(m => m.id === messageId);
-      if (aiIndex > 0) {
-        lastUserIndex = aiIndex - 1;
-        lastUserMessage = messages[lastUserIndex];
+      const msgIndex = messages.findIndex(m => m.id === messageId);
+      if (msgIndex >= 0) {
+        if (messages[msgIndex].role === "user") {
+          lastUserIndex = msgIndex;
+          lastUserMessage = messages[lastUserIndex];
+        } else {
+          // If it's an AI message, find the preceding user message
+          for (let i = msgIndex - 1; i >= 0; i--) {
+            if (messages[i].role === "user") {
+              lastUserIndex = i;
+              lastUserMessage = messages[i];
+              break;
+            }
+          }
+        }
       }
     } else {
+      // Find the last user message globally
       for (let i = messages.length - 1; i >= 0; i--) {
         if (messages[i].role === "user") {
           lastUserMessage = messages[i];
@@ -453,11 +465,13 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     
     if (!lastUserMessage) return;
     
-    const newMessages = messages.slice(0, lastUserIndex + 1);
+    // Slice off the user message and everything after it.
+    // handleSend will append a fresh user message with the same text.
+    const newMessages = messages.slice(0, lastUserIndex);
     setMessages(newMessages);
     
     handleSend(lastUserMessage.text, true, newMessages);
-  }, [messages, handleSend, editingMessageId]);
+  }, [messages, handleSend]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
