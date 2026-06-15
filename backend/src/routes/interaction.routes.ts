@@ -122,7 +122,7 @@ interactionRoutes.post('/message', zValidator('json', messageSchema), async (c) 
 
       // Build a tight context-aware system prompt for the greeting
       const greetingSystemPrompt = activeMission
-        ? `You are Lumensky — a brutally honest, warm, Hinglish-speaking AI buddy helping students achieve their goals.
+        ? `You are Lumensky — a brutally honest, warm, ${userLanguage}-speaking AI buddy helping students achieve their goals.
 
 The student just said "${message}" to you.
 
@@ -132,12 +132,12 @@ Their current status:
 - Day ${activeMission.dayNumber} of ${activeMission.totalDays}
 - Active Path: ${activeMission.lockedPath || 'In progress'}
 
-Reply naturally in Hinglish — like a smart older bro checking in. Reference their actual numbers. Ask ONE sharp question or give ONE sharp nudge. 2-4 lines max. No markdown. No "Hey bhai" as opener every time — vary it.`
-        : `You are Lumensky — a brutally honest, warm, Hinglish-speaking AI buddy helping students figure out their path in life.
+Reply naturally in ${userLanguage} — like a smart older bro checking in. Reference their actual numbers. Ask ONE sharp question or give ONE sharp nudge. 2-4 lines max. No markdown. No "Hey bhai" as opener every time — vary it.`
+        : `You are Lumensky — a brutally honest, warm, ${userLanguage}-speaking AI buddy helping students figure out their path in life.
 
 The student just said "${message}" to greet you. They haven't set their goal yet.
 
-Reply casually in Hinglish — like a smart older bro who's genuinely curious. Ask what's going on in their life or what they want to achieve. 2-3 lines max. No markdown. Vary your opener — not always "Hey bhai".`;
+Reply casually in ${userLanguage} — like a smart older bro who's genuinely curious. Ask what's going on in their life or what they want to achieve. 2-3 lines max. No markdown. Vary your opener — not always "Hey bhai".`;
 
       let responseText = "";
       try {
@@ -215,12 +215,12 @@ Reply casually in Hinglish — like a smart older bro who's genuinely curious. A
       
       const critiqueResult = processCritiqueMessage({
         userId: actualUserId,
-        userRuntime: state_context || {},
+        userRuntime: activeMission.userRuntime,
         userMessage: message,
-        tasksCompletedToDate: activeMission.dayNumber,
-        tasksAttemptedToDate: activeMission.dayNumber,
-        consecutiveFailureCount: activeMission.streakDays === 0 ? 1 : 0
-      });
+        tasksCompletedToDate: Math.floor(activeMission.consistencyScore / 10),
+        tasksAttemptedToDate: Math.floor(activeMission.consistencyScore / 10) + activeMission.consecutiveFailureCount,
+        consecutiveFailureCount: activeMission.consecutiveFailureCount,
+      }, userLanguage);
 
       systemPrompt = critiqueResult.systemPrompt;
       result = { type: 'critique_response', data: critiqueResult };
@@ -304,8 +304,8 @@ Reply casually in Hinglish — like a smart older bro who's genuinely curious. A
             detectedFrictionSignalIds: [] as string[]
           };
 
-          const simulationData = await processOnboarding(onboardingInput);
-          const executionResult = await transitionToExecution(simulationData.userRuntime, chosenPath);
+          const simulationData = await processOnboarding(onboardingInput, userLanguage);
+          const executionResult = await transitionToExecution(simulationData.userRuntime, chosenPath, userLanguage);
           
           const targetPath = chosenPath === 'alpha' ? simulationData.pathPresentation.pathAlpha : simulationData.pathPresentation.pathBeta;
           const missionPayload = {
@@ -401,7 +401,7 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
             detectedFrictionSignalIds: [] as string[]
           };
 
-          const simulationData = await processOnboarding(onboardingInput);
+          const simulationData = await processOnboarding(onboardingInput, userLanguage);
           systemPrompt = buildFullSystemPrompt('simulation', simulationData.userRuntime, userLanguage);
           result = { type: 'onboarding_complete', data: simulationData };
         }

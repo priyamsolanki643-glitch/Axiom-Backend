@@ -48,6 +48,7 @@ export async function processOperatorTaskUpdate(
   matrix: ContextMatrix,
   capabilityVector: CapabilityVector,
   frictionProfile: FrictionProfile,
+  userLanguage: string = 'Hinglish'
 ): Promise<OperatorOutput> {
   const { userRuntime, outcome, failureExplanation, reportedEarnings } = input;
   const currentState = userRuntime.strategyState;
@@ -169,7 +170,7 @@ export async function processOperatorTaskUpdate(
     failureDiagnostic,
     nextDayTaskSprint,
     milestoneGateResult,
-    systemPrompt: buildFullSystemPrompt('execution', updatedRuntime),
+    systemPrompt: buildFullSystemPrompt('execution', updatedRuntime, userLanguage),
     recalibrationOccurred,
   };
 }
@@ -184,6 +185,7 @@ export function processOperatorCritique(input: {
   tasksCompletedToDate: number;
   tasksAttemptedToDate: number;
   consecutiveFailureCount: number;
+  userLanguage?: string;
 }): {
   responseType: string;
   engineResponse: string | null;
@@ -191,7 +193,7 @@ export function processOperatorCritique(input: {
   consistencyDelta: number;
   dopamineLoopDetected: boolean;
 } {
-  const { userRuntime, userMessage, consecutiveFailureCount } = input;
+  const { userRuntime, userMessage, consecutiveFailureCount, userLanguage = 'Hinglish' } = input;
 
   // 1. Dopamine loop interceptor
   const dopamineCheck = detectDopamineLoop(userMessage);
@@ -200,7 +202,7 @@ export function processOperatorCritique(input: {
     return {
       responseType: 'dopamine_loop_interrupt',
       engineResponse: `Dopamine seeking detected. Theoretical discussions do not advance consistency. Reference current task: "${userRuntime.currentTaskSprint?.tasks[0]?.title || 'Daily sprint task'}". Log completion or execute.`,
-      systemPrompt: buildFullSystemPrompt('critique', userRuntime),
+      systemPrompt: buildFullSystemPrompt('critique', userRuntime, userLanguage),
       consistencyDelta: 0,
       dopamineLoopDetected: true,
     };
@@ -222,7 +224,7 @@ export function processOperatorCritique(input: {
       return {
         responseType: 'state_lock_enforcement',
         engineResponse: `Strategy change request rejected. Strategy remains locked. Present objective data to verify path failure. Otherwise, continue execution.`,
-        systemPrompt: buildFullSystemPrompt('critique', userRuntime),
+        systemPrompt: buildFullSystemPrompt('critique', userRuntime, userLanguage),
         consistencyDelta: 0,
         dopamineLoopDetected: false,
       };
@@ -239,7 +241,7 @@ export function processOperatorCritique(input: {
     return {
       responseType: 'reality_check',
       engineResponse: realityCheck,
-      systemPrompt: buildFullSystemPrompt('critique', userRuntime),
+      systemPrompt: buildFullSystemPrompt('critique', userRuntime, userLanguage),
       consistencyDelta: 0,
       dopamineLoopDetected: false,
     };
@@ -249,7 +251,7 @@ export function processOperatorCritique(input: {
   return {
     responseType: 'ai_generated',
     engineResponse: null,
-    systemPrompt: buildFullSystemPrompt('critique', userRuntime),
+    systemPrompt: buildFullSystemPrompt('critique', userRuntime, userLanguage),
     consistencyDelta: 0,
     dopamineLoopDetected: false,
   };
