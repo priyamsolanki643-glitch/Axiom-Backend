@@ -11,7 +11,7 @@ RUN npm install
 COPY . .
 
 # Compile TypeScript
-RUN npx tsc --skipLibCheck || true
+RUN npx tsc --skipLibCheck
 
 # Cloud Run sets PORT=8080 — expose it
 EXPOSE 8080
