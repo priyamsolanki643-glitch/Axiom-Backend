@@ -857,7 +857,7 @@ const { data: { session } } = await supabase.auth.getSession();
         >
           
           {/* Sleek Apple-inspired floating capsule without glow */}
-          <div className={`input-console-transition flex items-center gap-1.5 md:gap-3 bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-colors duration-300 ${(!input.trim() && selectedFiles.length === 0) ? "border-transparent" : "border-white/40"}`}>
+          <div className={`input-console-transition flex items-center gap-1.5 md:gap-3 bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-colors duration-300 ${isThinking ? "border-transparent" : "border-white/40"}`}>
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
