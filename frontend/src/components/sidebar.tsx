@@ -20,9 +20,10 @@ interface SidebarProps {
   onSignOut: () => void;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
+  isAnonymous?: boolean;
 }
 
-export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen }: SidebarProps) {
+export function Sidebar({ onOpenVault, onSignOut, isOpen, setIsOpen, isAnonymous }: SidebarProps) {
   const [activeItem, setActiveItem] = useState("trajectory");
   const [touchStart, setTouchStart] = useState(0);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -405,15 +406,15 @@ const { data: { session } } = await supabase.auth.getSession();
               <div className="flex items-center gap-2.5 min-w-0">
                 {/* Profile letter avatar */}
                 <div className="size-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                  <span className="text-[11px] font-bold text-white text-transform uppercase">{userName.charAt(0)}</span>
+                  <span className="text-[11px] font-bold text-white text-transform uppercase">{isAnonymous ? 'A' : userName.charAt(0)}</span>
                 </div>
                 {isOpen && (
                   <div className="flex flex-col min-w-0 text-left">
                     <span className="font-sans text-[12px] text-white font-semibold truncate leading-tight">
-                      {userName}
+                      {isAnonymous ? "Anonymous Guest" : userName}
                     </span>
                     <span className="font-sans text-[10px] text-[#666666] mt-0.5 leading-none">
-                      Free plan
+                      {isAnonymous ? "Sign up to save progress" : "Free plan"}
                     </span>
                   </div>
                 )}

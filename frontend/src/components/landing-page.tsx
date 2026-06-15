@@ -9,9 +9,10 @@ import { MagneticButton } from "@/components/magnetic-button";
 interface LandingPageProps {
   onLock: () => void;
   hasSession: boolean;
+  onAnonymous?: () => void;
 }
 
-export function LandingPage({ onLock, hasSession }: LandingPageProps) {
+export function LandingPage({ onLock, hasSession, onAnonymous }: LandingPageProps) {
   const [isExiting, setIsExiting] = useState(false);
   const [visible, setVisible] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -30,8 +31,13 @@ export function LandingPage({ onLock, hasSession }: LandingPageProps) {
         setTimeout(onLock, 700); // Wait for exit animation
       }
     } else {
-      setAuthMode("signup");
-      setIsAuthOpen(true);
+      if (onAnonymous && !isExiting) {
+        setIsExiting(true);
+        setTimeout(onAnonymous, 700);
+      } else {
+        setAuthMode("signup");
+        setIsAuthOpen(true);
+      }
     }
   };
 

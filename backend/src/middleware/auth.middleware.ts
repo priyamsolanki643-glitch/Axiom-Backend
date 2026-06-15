@@ -4,6 +4,14 @@ import { DbService } from '../services/db.service';
 export const requireAuth: MiddlewareHandler = async (c, next) => {
   const authHeader = c.req.header('Authorization');
 
+  const anonId = c.req.header('X-Anonymous-Id');
+  if (anonId && (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.includes('undefined'))) {
+    c.set('userId', `anon_${anonId}`);
+    c.set('userLanguage', 'Hinglish');
+    await next();
+    return;
+  }
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return c.json({ error: 'Access denied: missing authentication token.' }, 401);
   }

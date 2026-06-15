@@ -203,6 +203,8 @@ export class DbService {
   }
 
   static async getActiveMission(userId: string): Promise<any | null> {
+    if (userId.startsWith('anon_')) return null;
+
     if (isLocalFallback) {
       const data = readLocalDb();
       return data.missions.find((m) => m.user_id === userId) || null;
@@ -393,6 +395,10 @@ export class DbService {
   }
 
   static async createChatThread(userId: string, title: string): Promise<any> {
+    if (userId.startsWith('anon_')) {
+      return { id: `anon_${Date.now()}`, user_id: userId, title, created_at: new Date().toISOString() };
+    }
+
     const payload = {
       user_id: userId,
       title,
@@ -419,6 +425,8 @@ export class DbService {
   }
 
   static async updateThreadTitle(threadId: string, title: string): Promise<void> {
+    if (threadId.startsWith('anon_')) return;
+
     if (isLocalFallback) {
       const data = readLocalDb();
       const thread = data.chat_threads.find((t: any) => t.id === threadId);
@@ -432,6 +440,8 @@ export class DbService {
   }
 
   static async getChatThreads(userId: string): Promise<any[]> {
+    if (userId.startsWith('anon_')) return [];
+
     if (isLocalFallback) {
       const data = readLocalDb();
       return data.chat_threads
@@ -488,6 +498,8 @@ export class DbService {
   }
 
   static async saveMessage(threadId: string, userId: string, role: string, content: string): Promise<any> {
+    if (userId.startsWith('anon_') || threadId.startsWith('anon_')) return { id: `anon_msg_${Date.now()}` };
+
     const payload = {
       thread_id: threadId,
       user_id: userId,

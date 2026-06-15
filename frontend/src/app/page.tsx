@@ -12,6 +12,7 @@ import { Archive } from "lucide-react";
 
 export default function EntryPoint() {
   const [isLocked, setIsLocked] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [hasActiveMission, setHasActiveMission] = useState(false);
   const [isVaultOpen, setIsVaultOpen] = useState(false);
@@ -159,7 +160,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
   }
 
   if (!showSplash && !isLocked) {
-    return <LandingPage onLock={verifyAndLock} hasSession={hasSession} />;
+    return <LandingPage onLock={verifyAndLock} onAnonymous={() => { setIsAnonymous(true); setIsLocked(true); }} hasSession={hasSession} />;
   }
 
   return (
@@ -181,13 +182,20 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         onSignOut={async () => {
           await supabase.auth.signOut();
           setIsLocked(false);
+          setIsAnonymous(false);
         }}
+        isAnonymous={isAnonymous}
       />
       
       <ChatView
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onOpenVault={() => setIsVaultOpen(true)}
         onOpenFocusMode={() => setIsFocusModeOpen(true)}
+        isAnonymous={isAnonymous}
+        onRequireAuth={() => {
+          setIsLocked(false);
+          setIsAnonymous(false);
+        }}
       />
       
       {isVaultOpen && <VaultModal onClose={() => setIsVaultOpen(false)} />}

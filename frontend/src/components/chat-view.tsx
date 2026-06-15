@@ -12,6 +12,8 @@ interface ChatViewProps {
   onOpenSidebar: () => void;
   onOpenVault: () => void;
   onOpenFocusMode?: () => void;
+  isAnonymous?: boolean;
+  onRequireAuth?: () => void;
 }
 
 interface Message {
@@ -23,7 +25,7 @@ interface Message {
 
 
 
-export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatViewProps) {
+export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonymous, onRequireAuth }: ChatViewProps) {
   const router = useRouter();
   const [simulationData, setSimulationData] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -39,6 +41,18 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Initialize anonymous id
+  useEffect(() => {
+    if (isAnonymous && typeof window !== "undefined") {
+      if (!localStorage.getItem("fp_anon_id")) {
+        localStorage.setItem("fp_anon_id", crypto.randomUUID());
+      }
+      if (!localStorage.getItem("fp_anon_count")) {
+        localStorage.setItem("fp_anon_count", "0");
+      }
+    }
+  }, [isAnonymous]);
 
   const placeholders = [
     "Help me achieve my goal...",
@@ -226,6 +240,16 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
   const handleSend = useCallback(async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
     if (!text && selectedFiles.length === 0) return;
+
+    if (isAnonymous) {
+      const currentCount = parseInt(localStorage.getItem("fp_anon_count") || "0");
+      if (currentCount >= 3) {
+        if (onRequireAuth) onRequireAuth();
+        return;
+      }
+      localStorage.setItem("fp_anon_count", String(currentCount + 1));
+    }
+
     if (isThinking) return;
 
     const filesPayload = selectedFiles.map((file, idx) => ({
@@ -266,8 +290,8 @@ const { data: { session } } = await supabase.auth.getSession();
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-"Authorization": `Bearer ${session?.access_token}` 
-
+          "Authorization": session?.access_token ? `Bearer ${session.access_token}` : "",
+          ...(isAnonymous ? { "X-Anonymous-Id": localStorage.getItem("fp_anon_id") || "anon" } : {})
         },
         body: JSON.stringify({
           message: text,
