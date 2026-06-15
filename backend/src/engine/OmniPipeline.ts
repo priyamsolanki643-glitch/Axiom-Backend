@@ -329,6 +329,13 @@ export function evaluateDeepPathTrigger(
   const crossedCrisisTier = cachedScore >= 30 && score < 30;
   if (crossedEliteTier || crossedCrisisTier) return 'consistency_threshold';
 
+  // Strategy lock / unlock threshold
+  const currentActivePath = input.strategyState?.lockedPath?.opportunityUsed ?? 'Awaiting path selection';
+  const cachedActivePath = cachedContext.userSnapshot.activePath;
+  if (currentActivePath !== cachedActivePath) {
+    return currentActivePath === 'Awaiting path selection' ? 'unlock_approved' : 'strategy_locked';
+  }
+
   // Fast Path — cache is valid, no trigger conditions met
   return null;
 }

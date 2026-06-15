@@ -223,7 +223,7 @@ export function processOperatorCritique(input: {
     if (looksLikeUnlockAttempt) {
       return {
         responseType: 'state_lock_enforcement',
-        engineResponse: `Strategy change request rejected. Strategy remains locked. Present objective data to verify path failure. Otherwise, continue execution.`,
+        engineResponse: `Strategy change request rejected. Strategy remains locked. If you have encountered a genuine external blocker (technical error, dependency failure), please provide the specific error or data. Otherwise, continue execution.`,
         systemPrompt: buildFullSystemPrompt('critique', userRuntime, userLanguage),
         consistencyDelta: 0,
         dopamineLoopDetected: false,

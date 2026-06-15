@@ -18,7 +18,7 @@ const globalCooldownMap = new Map<string, number>();
 // ─────────────────────────────────────────────────────────────────────────────
 export async function executeWithRotation(
   payload: any,
-  maxRetries = 15
+  maxRetries = 5
 ): Promise<any> {
   const keys = [
     ...(process.env.AI_KEYS ? process.env.AI_KEYS.split(',') : []),
@@ -103,9 +103,9 @@ export async function executeWithRotation(
       const message = getErrorMessage(err);
       console.warn(`[LLM] Failed | attempt=${attempt} | model=${actualModel} | key=${keyIndex + 1} | error=${message}`);
 
-      if (isModelError(message)) {
-        console.warn(`[LLM] Invalid model: ${actualModel}, aborting`);
-        break;
+      if (isModelError(message) || message.includes('400') || message.includes('401') || message.includes('unauthorized')) {
+        console.error(`[LLM] Fatal Error: ${message}`);
+        throw new Error(`Fatal LLM Error: ${message}`);
       }
 
       if (isQuotaError(message)) {
