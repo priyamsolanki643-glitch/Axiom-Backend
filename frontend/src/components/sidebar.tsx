@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Archive, LogOut, MoreVertical, Trash2 } from "lucide-react";
+import { Plus, Search, Archive, LogOut, MoreVertical, Trash2, Atom } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 
 interface ChatThread {
@@ -163,36 +163,7 @@ const { data: { session } } = await supabase.auth.getSession();
         <div className="p-4 shrink-0 flex flex-col gap-4">
           <div className="flex items-center justify-between h-8">
             <div className="flex items-center gap-3">
-              {/* Lumensky Static Gyro Logo */}
-              <div className="shrink-0 relative w-6 h-6 flex items-center justify-center mr-1" style={{ perspective: '120px' }}>
-                <style>{`
-                  .gyro-ring-static {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    border-radius: 50%;
-                    border: 1px solid transparent;
-                    border-top: 1.5px solid rgba(255,255,255,1);
-                    border-right: 1px solid rgba(255,255,255,0.4);
-                    border-left: 0.5px solid rgba(255,255,255,0.1);
-                  }
-                  .rs-1 { transform: rotateX(65deg) rotateY(0deg) rotateZ(45deg); }
-                  .rs-2 { transform: rotateX(0deg) rotateY(65deg) rotateZ(45deg); }
-                  .rs-3 { transform: rotateX(45deg) rotateY(45deg) rotateZ(45deg); }
-                  .gyro-core-static {
-                    position: absolute;
-                    width: 3px;
-                    height: 3px;
-                    background: #fff;
-                    border-radius: 50%;
-                    box-shadow: 0 0 4px rgba(255,255,255,0.8);
-                  }
-                `}</style>
-                <div className="gyro-ring-static rs-1"></div>
-                <div className="gyro-ring-static rs-2"></div>
-                <div className="gyro-ring-static rs-3"></div>
-                <div className="gyro-core-static"></div>
-              </div>
+              <Atom className="shrink-0 size-[22px] mr-1.5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
               {isOpen && (
                 <span className="font-sans font-bold text-[14px] text-white tracking-[0.15em] uppercase">
                   LUMENSKY

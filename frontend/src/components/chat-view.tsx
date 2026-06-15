@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault, Square } from "lucide-react";
+import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault, Square, Atom } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -709,16 +709,15 @@ const { data: { session } } = await supabase.auth.getSession();
                               <Edit className="size-4" />
                             </button>
                             <button 
+                              className="p-1 hover:text-white transition-colors" 
+                            >
+                              <Mic className="size-4" />
+                            </button>
+                            <button 
                               onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
                               <Copy className="size-4" />
-                            </button>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }} 
-                              className="p-1 hover:text-white transition-colors" 
-                            >
-                              <RefreshCw className="size-4" />
                             </button>
                           </div>
                         </div>
@@ -740,6 +739,9 @@ const { data: { session } } = await supabase.auth.getSession();
                               ? "absolute top-full mt-2 left-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
                               : "opacity-0 md:group-hover:opacity-100 pt-2 scale-95 md:scale-100"
                           }`}>
+                            <button className="p-1 hover:text-white cursor-pointer transition-colors">
+                              <Mic className="size-4" />
+                            </button>
                             <button 
                               onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }}
                               className="p-1 hover:text-white cursor-pointer transition-colors"
@@ -751,12 +753,6 @@ const { data: { session } } = await supabase.auth.getSession();
                               className="p-1 hover:text-white cursor-pointer transition-colors"
                             >
                               <RefreshCw className="size-4" />
-                            </button>
-                            <button className="p-1 hover:text-white cursor-pointer transition-colors">
-                              <ThumbsUp className="size-4" />
-                            </button>
-                            <button className="p-1 hover:text-white cursor-pointer transition-colors">
-                              <ThumbsDown className="size-4" />
                             </button>
                           </div>
                         </div>
@@ -838,12 +834,7 @@ const { data: { session } } = await supabase.auth.getSession();
                         animation: shimmerText 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
                       }
                     `}</style>
-                    <div className="gyro-container">
-                      <div className="gyro-ring ring-1"></div>
-                      <div className="gyro-ring ring-2"></div>
-                      <div className="gyro-ring ring-3"></div>
-                      <div className="gyro-core"></div>
-                    </div>
+                    <Atom className="size-[22px] animate-spin text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" style={{ animationDuration: '3s' }} />
                     {/* Rotating status text */}
                     <span 
                       key={loadingPhraseIndex} 
