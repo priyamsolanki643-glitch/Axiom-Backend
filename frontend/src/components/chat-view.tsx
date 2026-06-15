@@ -657,7 +657,7 @@ const { data: { session } } = await supabase.auth.getSession();
                       {isUser ? (
                         /* User message: Dark bubble with optional files */
                         <div 
-                          className="relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto"
+                          className={`relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto transition-all duration-300 ${activeMessageId === m.id ? 'mb-12' : 'mb-0'}`}
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
                           <div className="bg-white/[0.04] /[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
@@ -713,7 +713,7 @@ const { data: { session } } = await supabase.auth.getSession();
                       ) : (
                         /* Lumensky message: Bubbleless raw text */
                         <div 
-                          className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
+                          className={`relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto transition-all duration-300 ${activeMessageId === m.id ? 'mb-12' : 'mb-0'}`}
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
                           <div className="prose animate-decrypt overscroll-y-auto prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
