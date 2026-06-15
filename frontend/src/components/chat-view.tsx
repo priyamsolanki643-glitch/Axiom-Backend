@@ -437,7 +437,7 @@ const { data: { session } } = await supabase.auth.getSession();
       setIsStreaming(false);
       inputRef.current?.focus();
     }
-  }, [input, isThinking, messages, selectedFiles, filePreviews]);
+  }, [input, isThinking, messages, selectedFiles, filePreviews, editingMessageId, isAnonymous, onRequireAuth, threadId]);
 
   const proceedToSimulation = () => {
     if (!simulationData) return;
@@ -697,20 +697,20 @@ const { data: { session } } = await supabase.auth.getSession();
                               value={editText}
                               onChange={(e) => setEditText(e.target.value)}
                               autoFocus
-                              rows={Math.max(2, editText.split('\\n').length)}
-                              className="w-full bg-[#0c0c0e]/80 backdrop-blur-3xl border border-white/20 text-white p-4 rounded-3xl resize-none outline-none focus:border-white/50 focus:shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all overflow-hidden text-[15px] leading-[1.6]"
+                              rows={Math.max(1, editText.split('\n').length)}
+                              className="w-full bg-[#0c0c0e]/80 backdrop-blur-3xl border border-white/20 text-white px-5 py-3 rounded-[24px] resize-none outline-none focus:border-white/50 focus:shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all overflow-hidden text-[15px] leading-[1.5] min-h-[48px]"
                             />
-                            <div className="flex justify-end gap-3 mt-4">
+                            <div className="flex justify-end gap-2 mt-3">
                               <button 
                                 onClick={() => setEditingMessageId(null)} 
-                                className="px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-[#a1a1aa] hover:text-white transition-colors text-sm font-medium"
+                                className="px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 text-[#a1a1aa] hover:text-white transition-colors text-sm font-medium"
                               >
                                 Cancel
                               </button>
                               <button 
                                 onClick={() => handleSend(editText)} 
                                 disabled={!editText.trim()}
-                                className="px-6 py-2.5 rounded-2xl bg-white text-black hover:scale-[1.03] active:scale-95 transition-transform text-sm font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100"
+                                className="px-5 py-2 rounded-2xl bg-white text-black hover:scale-[1.03] active:scale-95 transition-transform text-sm font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100"
                               >
                                 Save & Submit
                               </button>
@@ -747,10 +747,10 @@ const { data: { session } } = await supabase.auth.getSession();
                             )}
                           </div>
                           {/* Actions row for user */}
-                          <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] ${
+                          <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] origin-top-right ${
                             activeMessageId === m.id 
-                              ? "absolute top-[calc(100%+8px)] right-0 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100 z-50" 
-                              : "hidden opacity-0"
+                              ? "mt-2 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100" 
+                              : "hidden opacity-0 scale-95"
                           }`}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); setEditingMessageId(m.id); setEditText(m.text); setActiveMessageId(null); }} 
@@ -779,10 +779,10 @@ const { data: { session } } = await supabase.auth.getSession();
                           </div>
 
                           {/* Actions row */}
-                          <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] ${
+                          <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] origin-top-left ${
                             activeMessageId === m.id 
-                              ? "absolute top-[calc(100%+8px)] left-0 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100 z-50" 
-                              : "hidden opacity-0"
+                              ? "mt-2 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100 w-max" 
+                              : "hidden opacity-0 scale-95"
                           }`}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }}
