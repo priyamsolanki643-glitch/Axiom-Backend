@@ -599,10 +599,10 @@ const { data: { session } } = await supabase.auth.getSession();
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
       <header 
-        className="reveal-chat-item absolute top-0 inset-x-0 h-14 flex items-center justify-between px-6 bg-transparent z-50 pointer-events-none"
+        className="reveal-chat-item h-14 shrink-0 flex items-center justify-between px-6 bg-transparent backdrop-blur-xl z-20 sticky top-0"
         style={{ animationDelay: "0ms" }}
       >
-        <div className="flex items-center gap-3 pointer-events-auto">
+        <div className="flex items-center gap-3">
           {/* Menu trigger */}
           <button
             onClick={onOpenSidebar}
@@ -624,7 +624,7 @@ const { data: { session } } = await supabase.auth.getSession();
       </header>
 
       {/* ── Message stream area ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar relative z-10 pt-16 pb-36">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar relative z-10">
         <div className="max-w-[720px] mx-auto px-4 md:px-8 h-full flex flex-col justify-between">
           
           {isLoadingThread ? (
@@ -901,14 +901,14 @@ const { data: { session } } = await supabase.auth.getSession();
       </div>
 
       {/* ── Input Box (Trajectory Forge copy) ── */}
-      <div className="absolute bottom-0 inset-x-0 shrink-0 px-4 md:px-8 pb-6 pt-2 pointer-events-none z-50">
+      <div className="shrink-0 px-4 md:px-8 pb-6 pt-2 bg-[#000000] relative z-10">
         <div 
           className="reveal-chat-item max-w-[720px] w-full mx-auto"
           style={{ animationDelay: "550ms" }}
         >
           
           {/* God-Level Ethereal Floating Capsule */}
-          <div className={`input-console-transition pointer-events-auto relative flex items-center gap-1.5 md:gap-3 bg-[#0f0f11] rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-all duration-500 overflow-visible ${isThinking ? "border-transparent" : "border-white/20 hover:border-white/40 shadow-[0_8px_32px_rgba(255,255,255,0.05)]"}`}>
+          <div className={`input-console-transition relative flex items-center gap-1.5 md:gap-3 bg-black/60 backdrop-blur-3xl rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-all duration-500 overflow-visible ${isThinking ? "border-transparent" : "border-white/20 hover:border-white/40 shadow-[0_8px_32px_rgba(255,255,255,0.05)]"}`}>
             
             {/* Subtle inner glow when active */}
             {!isThinking && (
