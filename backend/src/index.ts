@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { interactionRoutes } from './routes/interaction.routes';
+import { streamRoutes } from './routes/stream.routes';
 import { authRoutes } from './routes/auth.routes';
 import { threadRoutes } from './routes/thread.routes';
 import { DbService } from './services/db.service';
@@ -103,6 +104,7 @@ app.get('/api/test-ai', async (c) => {
 
 // Mount specific domains
 app.route('/api/v1/interaction', interactionRoutes);
+app.route('/api/v1/interaction', streamRoutes);
 app.route('/api/v1/auth', authRoutes);
 app.route('/api/v1/threads', threadRoutes);
 

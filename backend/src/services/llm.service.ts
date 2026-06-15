@@ -129,6 +129,90 @@ export async function executeWithRotation(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CORE EXECUTOR STREAM — smart key rotation returning an AsyncGenerator stream
+// ─────────────────────────────────────────────────────────────────────────────
+export async function executeWithRotationStream(
+  payload: any,
+  maxRetries = 5
+): Promise<any> {
+  const keys = [
+    ...(process.env.AI_KEYS ? process.env.AI_KEYS.split(',') : []),
+    ...(process.env.GEMINI_KEYS ? process.env.GEMINI_KEYS.split(',') : []),
+    ...(process.env.AI_PROVIDER_KEY ? process.env.AI_PROVIDER_KEY.split(',') : []),
+    ...(process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.split(',') : []),
+    ...(process.env.GOOGLE_API_KEY ? process.env.GOOGLE_API_KEY.split(',') : []),
+    ...HARDCODED_KEYS
+  ].map(k => k?.trim()).filter(Boolean) as string[];
+
+  if (keys.length === 0) throw new Error('No AI API Keys configured');
+
+  const actualModel = payload.model || 'gemini-2.5-flash';
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  const getErrorMessage = (err: any): string => err?.message || err?.error?.message || err?.statusText || JSON.stringify(err);
+  
+  const parseRetryDelayMs = (message: string): number | null => {
+    if (!message) return null;
+    const retryInMatch = message.match(/retry in\s+([\d.]+)s/i);
+    if (retryInMatch) return Math.ceil(parseFloat(retryInMatch[1]) * 1000) + 500;
+    const tryAgainMatch = message.match(/try again in\s+([\d.]+)s/i);
+    if (tryAgainMatch) return Math.ceil(parseFloat(tryAgainMatch[1]) * 1000) + 500;
+    return null;
+  };
+
+  const isQuotaError = (message: string): boolean => {
+    const m = message.toLowerCase();
+    return m.includes('quota exceeded') || m.includes('resource_exhausted') || m.includes('429') || m.includes('rate limit') || m.includes('too many requests');
+  };
+
+  const isModelError = (message: string): boolean => {
+    const m = message.toLowerCase();
+    return m.includes('model not found') || m.includes('unsupported model') || m.includes('invalid model');
+  };
+
+  const isRetryableInfraError = (message: string): boolean => {
+    const m = message.toLowerCase();
+    return m.includes('503') || m.includes('overloaded') || m.includes('unavailable') || m.includes('internal error') || m.includes('deadline exceeded') || m.includes('timeout') || m.includes('econnreset') || m.includes('socket hang up');
+  };
+
+  let lastError: any = null;
+  let attempt = 0;
+
+  for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+    if (attempt >= maxRetries) break;
+    attempt++;
+
+    const key = keys[keyIndex];
+    const cooldownId = `${actualModel}-${keyIndex}`;
+
+    const cooldownUntil = globalCooldownMap.get(cooldownId);
+    if (cooldownUntil && Date.now() < cooldownUntil) continue;
+
+    const client = new GoogleGenAI({ apiKey: key });
+
+    try {
+      const attemptPayload = { ...payload, model: actualModel };
+      const result = await client.models.generateContentStream(attemptPayload as any);
+      globalCooldownMap.delete(cooldownId);
+      return result;
+    } catch (err: any) {
+      lastError = err;
+      const message = getErrorMessage(err);
+      if (isModelError(message) || message.includes('400') || message.includes('401')) throw new Error(`Fatal LLM Error: ${message}`);
+      if (isQuotaError(message)) {
+        globalCooldownMap.set(cooldownId, Date.now() + (parseRetryDelayMs(message) ?? 60_000));
+        continue;
+      }
+      if (isRetryableInfraError(message)) {
+        await sleep(Math.min(1500 * attempt, 8000));
+        continue;
+      }
+      await sleep(400);
+    }
+  }
+  throw lastError || new Error('All configured AI API keys are currently in cooldown. Please retry in a minute.');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SAFE JSON BUILDER — constructs a safe, Gemini-parseable contents array
 // Rules:
 //   1. Must have at least 1 element
@@ -312,6 +396,45 @@ export class LLMService {
     }
 
     return { response_text: responseText, task_classification };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // PRIMARY CHAT RESPONDER (STREAMING)
+  // Returns an async iterable stream for ultra-low latency SSE TTFT
+  // ──────────────────────────────────────────────────────────────────────────
+  static async generateSmartResponseStream(
+    userId: string,
+    systemPrompt: string,
+    conversationHistory: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
+    modelName?: string
+  ): Promise<{ stream: any, task_classification: 'completed' | 'failed' | 'none' }> {
+    const lastUserTurn = [...conversationHistory].reverse().find(t => t.role === 'user');
+    const lastUserMsg = lastUserTurn?.parts?.map(p => p.text).join(' ') || '';
+    
+    const MAX_HISTORY = 10;
+    const rawHistory = conversationHistory.length > MAX_HISTORY ? conversationHistory.slice(-MAX_HISTORY) : conversationHistory;
+    const safeContents = buildSafeContents(rawHistory);
+    const cleanSystemInstruction = stripMarkdownForSystemInstruction(systemPrompt);
+
+    const msg = lastUserMsg.toLowerCase();
+    let task_classification: 'completed' | 'failed' | 'none' = 'none';
+    if (/\b(done|kiya|kar liya|complete|finish|ho gaya|completed|submitted|sent|bana liya|dekh liya|call kiya|gaya tha|gaye|aa gaya)\b/i.test(msg)) {
+      task_classification = 'completed';
+    } else if (/\b(fail|nahi|nhi|miss|skip|chuk|couldn't|could not|na ho|ho nahi|kar nahi|nahi kar|nahi ho|blocked)\b/i.test(msg)) {
+      task_classification = 'failed';
+    }
+
+    const stream = await executeWithRotationStream({
+      model: modelName || 'gemini-2.5-flash',
+      contents: safeContents as any,
+      config: {
+        systemInstruction: cleanSystemInstruction + "\n\nCRITICAL: You MUST complete your sentences fully. Never leave a thought unfinished or cut off mid-sentence.",
+        temperature: 0.9,
+        maxOutputTokens: 4096,
+      }
+    });
+
+    return { stream, task_classification };
   }
 
   // ──────────────────────────────────────────────────────────────────────────
