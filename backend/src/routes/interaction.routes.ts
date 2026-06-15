@@ -1303,3 +1303,17 @@ interactionRoutes.get('/api/v1/analytics/cohort-health', async (c) => {
     return c.json({ error: "Failed to fetch cohort analytics" }, 500);
   }
 });
+
+// VIRAL ENGINE: REALITY ROAST
+interactionRoutes.post('/roast', async (c) => {
+  try {
+    const { routine } = await c.req.json();
+    if (!routine) return c.json({ error: "Routine is required" }, 400);
+
+    const result = await LLMService.generateRealityRoast(routine);
+    return c.json({ status: 'success', data: result });
+  } catch (error: any) {
+    console.error('Roast API Error:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});

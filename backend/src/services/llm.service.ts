@@ -792,4 +792,52 @@ Extract parameters. If any of the 5 items are missing or vague, set isComplete t
       return SAFE_FALLBACK;
     }
   }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // VIRAL ENGINE: REALITY ROAST
+  // ──────────────────────────────────────────────────────────────────────────
+  static async generateRealityRoast(routineText: string): Promise<{ roast: string, averageScore: number }> {
+    const prompt = `
+You are Lumensky, an elite, brutal, but deeply caring older brother/accountability AI.
+The user has submitted their daily routine/excuse: "${routineText}"
+
+Your task is to provide a single, highly human, brutal, and disappointing reality check paragraph.
+- Speak in authentic Hinglish.
+- Do NOT use robotic bullet points or lists.
+- Be straight up about how their current routine guarantees failure while others on the Alpha Path succeed.
+- Sound like a disappointed older brother who knows they can do better but is fed up with their BS.
+- Also assign an 'averageScore' between 50 and 99 representing how "average" their routine is.
+
+Return the response STRICTLY as a JSON object:
+{
+  "roast": "...",
+  "averageScore": 85
+}
+Do not use markdown blocks for the JSON.
+    `.trim();
+
+    try {
+      const response = await executeWithRotation({
+        model: 'gemini-2.5-flash',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }] as any,
+        config: {
+          temperature: 0.7
+        }
+      });
+      
+      const rawText = response.text;
+      if (!rawText) throw new Error('Empty roast response');
+      const parsed = cleanAndParseJSON(rawText);
+      return {
+        roast: parsed.roast || "Bhai, system fail ho gaya lekin teri failure usse bhi badi hai. Wapas aa.",
+        averageScore: parsed.averageScore || 90
+      };
+    } catch (err: any) {
+      console.error('[generateRealityRoast] Error:', err.message);
+      return {
+        roast: "System glitch. Par tu lucky hai ki bach gaya aaj. Execute tomorrow.",
+        averageScore: 99
+      };
+    }
+  }
 }
