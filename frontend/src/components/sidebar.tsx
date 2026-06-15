@@ -152,7 +152,7 @@ const { data: { session } } = await supabase.auth.getSession();
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl  overflow-hidden ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl overflow-y-auto no-scrollbar ${
           isOpen ? "w-[260px] translate-x-0 opacity-100" : "w-0 -translate-x-full opacity-0"
         }`}
       >
@@ -269,7 +269,7 @@ const { data: { session } } = await supabase.auth.getSession();
         </div>
 
         {/* ── Scrollable History List ── */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-3 py-4 flex flex-col gap-4 min-h-0">
+        <div className="flex-1 px-3 py-4 flex flex-col gap-4">
           {isOpen && (
             <>
               {/* History List */}
