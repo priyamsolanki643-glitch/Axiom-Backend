@@ -24,8 +24,18 @@ export function GyroLogo({ className = "", size = 24 }: { className?: string; si
           transform-style: preserve-3d;
           box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.1);
         }
-        .${sizeClass} .ring-1 { border-color: rgba(255,255,255,0.8); animation: miniSpin1 2s linear infinite; }
-        .${sizeClass} .ring-2 { border-color: rgba(255,255,255,0.4); animation: miniSpin2 2.5s linear infinite; }
+        .${sizeClass} .ring::before {
+          content: '';
+          position: absolute;
+          top: -1px; left: 50%;
+          width: 2px; height: ${Math.max(4, size * 0.15)}px;
+          background: #fff;
+          box-shadow: 0 0 10px 2px rgba(255,255,255,0.8);
+          border-radius: 4px;
+          transform: translateX(-50%);
+        }
+        .${sizeClass} .ring-1 { border-color: rgba(255,255,255,0.2); animation: miniSpin1 2s linear infinite; }
+        .${sizeClass} .ring-2 { border-color: rgba(255,255,255,0.2); animation: miniSpin2 2.5s linear infinite; }
         .${sizeClass} .ring-3 { border-color: rgba(255,255,255,0.2); animation: miniSpin3 3s linear infinite; }
         .${sizeClass} .core {
           position: absolute;
