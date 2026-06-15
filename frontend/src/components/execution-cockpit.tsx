@@ -8,7 +8,7 @@ import {
   Layers, Check, X, 
   CornerDownLeft, AlertTriangle, RefreshCw 
 } from "lucide-react";
-import { supabase } from "@/utils/supabase/client";
+import { ParticleSphere } from "@/components/particle-sphere";
 
 
 interface Task {
