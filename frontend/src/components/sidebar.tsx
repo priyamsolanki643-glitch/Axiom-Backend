@@ -150,7 +150,7 @@ const { data: { session } } = await supabase.auth.getSession();
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-[100dvh] transition-all duration-300 bg-black/40 backdrop-blur-2xl border-r border-white/5 overflow-hidden ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-[100dvh] transition-all duration-300 bg-black/40 backdrop-blur-2xl overflow-hidden ${
           isOpen ? "w-[260px] translate-x-0 opacity-100" : "w-0 -translate-x-full opacity-0"
         }`}
       >
@@ -163,35 +163,40 @@ const { data: { session } } = await supabase.auth.getSession();
         <div className="p-4 shrink-0 flex flex-col gap-4">
           <div className="flex items-center justify-between h-8">
             <div className="flex items-center gap-3">
-              {/* Lumensky Static Gyro Logo */}
+              {/* Lumensky Animated Gyro Logo (from Splash Screen) */}
               <div className="shrink-0 relative w-6 h-6 flex items-center justify-center mr-1" style={{ perspective: '120px' }}>
                 <style>{`
-                  .gyro-ring-static {
+                  .gyro-core-splash {
+                    position: absolute;
+                    width: 3px;
+                    height: 3px;
+                    background: #ffffff;
+                    border-radius: 50%;
+                    animation: corePulseSplash 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+                  }
+                  .gyro-ring-splash {
                     position: absolute;
                     width: 100%;
                     height: 100%;
                     border-radius: 50%;
-                    border: 1px solid transparent;
-                    border-top: 1.5px solid rgba(255,255,255,1);
-                    border-right: 1px solid rgba(255,255,255,0.4);
-                    border-left: 0.5px solid rgba(255,255,255,0.1);
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-top: 1px solid rgba(255,255,255,0.8);
+                    border-right: 1px solid rgba(255,255,255,0.3);
+                    box-shadow: inset 0 0 10px rgba(255,255,255,0.02), -1px 0 3px rgba(255, 255, 255, 0.2), 1px 0 3px rgba(255, 255, 255, 0.4);
                   }
-                  .rs-1 { transform: rotateX(65deg) rotateY(0deg) rotateZ(45deg); }
-                  .rs-2 { transform: rotateX(0deg) rotateY(65deg) rotateZ(45deg); }
-                  .rs-3 { transform: rotateX(45deg) rotateY(45deg) rotateZ(45deg); }
-                  .gyro-core-static {
-                    position: absolute;
-                    width: 3px;
-                    height: 3px;
-                    background: #fff;
-                    border-radius: 50%;
-                    box-shadow: 0 0 4px rgba(255,255,255,0.8);
-                  }
+                  .rs-1-splash { animation: spin1Splash 1.8s linear infinite; }
+                  .rs-2-splash { animation: spin2Splash 2.4s linear infinite; }
+                  .rs-3-splash { animation: spin3Splash 3s linear infinite; }
+
+                  @keyframes spin1Splash { 0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } }
+                  @keyframes spin2Splash { 0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); } 100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } }
+                  @keyframes spin3Splash { 0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); } 100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } }
+                  @keyframes corePulseSplash { 0% { transform: scale(0.5); opacity: 0.3; box-shadow: 0 0 2px rgba(255,255,255,0.1); } 100% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,1); } }
                 `}</style>
-                <div className="gyro-ring-static rs-1"></div>
-                <div className="gyro-ring-static rs-2"></div>
-                <div className="gyro-ring-static rs-3"></div>
-                <div className="gyro-core-static"></div>
+                <div className="gyro-ring-splash rs-1-splash"></div>
+                <div className="gyro-ring-splash rs-2-splash"></div>
+                <div className="gyro-ring-splash rs-3-splash"></div>
+                <div className="gyro-core-splash"></div>
               </div>
               {isOpen && (
                 <span className="font-sans font-bold text-[14px] text-white tracking-[0.15em] uppercase">

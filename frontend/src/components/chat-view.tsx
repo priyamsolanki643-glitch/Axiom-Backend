@@ -497,10 +497,11 @@ const { data: { session } } = await supabase.auth.getSession();
         /* Input area transitions */
         .input-console-transition {
           transition: border-color 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
+          border: 1px solid rgba(255, 255, 255, 0.15);
         }
         
         .input-console-transition:focus-within {
-          border-color: rgba(255, 255, 255, 0.25) !important;
+          border-color: transparent !important;
           transform: translateY(-2px);
           background-color: rgba(15, 15, 15, 0.9) !important;
         }
@@ -658,11 +659,11 @@ const { data: { session } } = await supabase.auth.getSession();
                               </div>
                             )}
                           </div>
-                          {/* Actions row for user */}
-                          <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] ${
+                                            {/* Actions row for user */}
+                          <div className={`flex items-center justify-end gap-3 transition-all duration-300 text-white/50 ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 right-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
-                              : "opacity-0 md:group-hover:opacity-100 mt-1.5 scale-95 md:scale-100"
+                              ? "absolute top-full mt-2 right-0 bg-black border border-gray-600 text-white px-4 py-2 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
+                              : "opacity-0 scale-95 md:scale-100 pointer-events-none"
                           }`}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
@@ -699,8 +700,8 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row */}
                           <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 left-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
-                              : "opacity-0 md:group-hover:opacity-100 pt-2 scale-95 md:scale-100"
+                              ? "absolute top-full mt-2 left-0 bg-black border border-gray-600 text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
+                              : "opacity-0 scale-95 md:scale-100 pointer-events-none"
                           }`}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }}
@@ -747,40 +748,32 @@ const { data: { session } } = await supabase.auth.getSession();
                         position: absolute;
                         width: 4px;
                         height: 4px;
-                        background: #fff;
+                      .gyro-core-splash {
+                        position: absolute;
+                        width: 3px;
+                        height: 3px;
+                        background: #ffffff;
                         border-radius: 50%;
-                        animation: corePulse 1.5s ease-in-out infinite alternate;
+                        animation: corePulseSplash 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
                       }
-                      .gyro-ring {
+                      .gyro-ring-splash {
                         position: absolute;
                         width: 100%;
                         height: 100%;
                         border-radius: 50%;
-                        border: 1px solid transparent;
-                        border-top: 2px solid rgba(255,255,255,1);
-                        border-right: 1.5px solid rgba(255,255,255,0.4);
-                        border-left: 1px solid rgba(255,255,255,0.1);
+                        border: 1px solid rgba(255,255,255,0.06);
+                        border-top: 1px solid rgba(255,255,255,0.8);
+                        border-right: 1px solid rgba(255,255,255,0.3);
+                        box-shadow: inset 0 0 10px rgba(255,255,255,0.02), -1px 0 3px rgba(255, 255, 255, 0.2), 1px 0 3px rgba(255, 255, 255, 0.4);
                       }
-                      .ring-1 { animation: spin1 1.8s linear infinite; }
-                      .ring-2 { animation: spin2 2.4s linear infinite; }
-                      .ring-3 { animation: spin3 3s linear infinite; }
+                      .rs-1-splash { animation: spin1Splash 1.8s linear infinite; }
+                      .rs-2-splash { animation: spin2Splash 2.4s linear infinite; }
+                      .rs-3-splash { animation: spin3Splash 3s linear infinite; }
 
-                      @keyframes spin1 { 
-                        0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
-                        100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } 
-                      }
-                      @keyframes spin2 { 
-                        0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); }
-                        100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } 
-                      }
-                      @keyframes spin3 { 
-                        0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
-                        100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } 
-                      }
-                      @keyframes corePulse {
-                        0% { transform: scale(0.8); opacity: 0.6; box-shadow: 0 0 2px rgba(255,255,255,0.4); }
-                        100% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 6px rgba(255,255,255,0.8); }
-                      }
+                      @keyframes spin1Splash { 0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } }
+                      @keyframes spin2Splash { 0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); } 100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } }
+                      @keyframes spin3Splash { 0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); } 100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } }
+                      @keyframes corePulseSplash { 0% { transform: scale(0.5); opacity: 0.3; box-shadow: 0 0 2px rgba(255,255,255,0.1); } 100% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,1); } }
                       
                       @keyframes shimmerText {
                         0% { background-position: -200% center; }
@@ -800,11 +793,11 @@ const { data: { session } } = await supabase.auth.getSession();
                         animation: shimmerText 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
                       }
                     `}</style>
-                    <div className="gyro-container">
-                      <div className="gyro-ring ring-1"></div>
-                      <div className="gyro-ring ring-2"></div>
-                      <div className="gyro-ring ring-3"></div>
-                      <div className="gyro-core"></div>
+                    <div className="gyro-container" style={{ width: '24px', height: '24px', transform: 'scale(1)', perspective: '120px' }}>
+                      <div className="gyro-ring-splash rs-1-splash"></div>
+                      <div className="gyro-ring-splash rs-2-splash"></div>
+                      <div className="gyro-ring-splash rs-3-splash"></div>
+                      <div className="gyro-core-splash"></div>
                     </div>
                     {/* Rotating status text */}
                     <span 
