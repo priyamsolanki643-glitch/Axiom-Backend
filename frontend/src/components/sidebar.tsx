@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Plus, Search, Archive, LogOut, MoreVertical, Trash2, Atom, Target } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 
+import { GyroLogo } from "./gyro-logo";
+
 interface ChatThread {
   id: string;
   title: string;
@@ -162,8 +164,8 @@ const { data: { session } } = await supabase.auth.getSession();
         {/* ── Top Brand Header ── */}
         <div className="p-4 shrink-0 flex flex-col gap-4">
           <div className="flex items-center justify-between h-8">
-            <div className="flex items-center gap-3">
-              <Atom className="shrink-0 size-[22px] mr-1.5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+            <div className="flex items-center">
+              <GyroLogo size={22} className="mr-2" />
               {isOpen && (
                 <span className="font-sans font-bold text-[14px] text-white tracking-[0.15em] uppercase">
                   LUMENSKY

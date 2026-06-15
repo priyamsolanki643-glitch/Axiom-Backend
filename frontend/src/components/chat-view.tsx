@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault, Square, Atom } from "lucide-react";
+import { GyroLogo } from "./gyro-logo";
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 interface ChatViewProps {
@@ -830,7 +831,7 @@ const { data: { session } } = await supabase.auth.getSession();
                         animation: shimmerText 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
                       }
                     `}</style>
-                    <Atom className="size-[22px] animate-spin text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" style={{ animationDuration: '3s' }} />
+                    <GyroLogo size={22} />
                     {/* Rotating status text */}
                     <span 
                       key={loadingPhraseIndex} 
