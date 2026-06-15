@@ -772,7 +772,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="font-sans prose prose-invert prose-p:leading-[1.7] prose-p:text-[15.5px] prose-p:mb-4 prose-p:text-white/85 prose-p:font-[300] prose-p:tracking-[0.02em] prose-li:my-1 prose-ul:my-3 prose-headings:font-display prose-headings:font-semibold prose-headings:tracking-wide text-[16px] max-w-3xl break-words">
+                          <div className="font-sans prose prose-invert prose-p:leading-[1.65] prose-p:text-[15.5px] prose-p:my-2 prose-p:text-white/85 prose-p:font-[300] prose-p:tracking-[0.02em] prose-li:my-1 prose-ul:my-3 prose-headings:font-display prose-headings:font-semibold prose-headings:tracking-wide text-[16px] max-w-3xl break-words">
                             <ReactMarkdown>
                               {m.text}
                             </ReactMarkdown>
