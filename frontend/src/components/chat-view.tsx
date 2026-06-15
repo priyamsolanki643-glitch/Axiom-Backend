@@ -30,6 +30,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
   const [threadId, setThreadId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
@@ -95,6 +96,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
       setMessages([]);
       setInput("");
       setIsThinking(false);
+      setIsLoadingThread(false);
       setThreadId(null);
     };
 
@@ -106,14 +108,14 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode }: ChatVi
       setThreadId(tId);
       setMessages([]);
       setInput("");
-      setIsThinking(true);
+      setIsThinking(false);
+      setIsLoadingThread(true);
       
       try {
-const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
         const res = await fetch(`${baseUrl}/api/v1/threads/${tId}/messages`, {
           headers: { "Authorization": `Bearer ${session?.access_token}` }
-
         });
         const data = await res.json();
         
@@ -127,7 +129,7 @@ const { data: { session } } = await supabase.auth.getSession();
       } catch (err) {
         console.error("Failed to load thread messages", err);
       } finally {
-        setIsThinking(false);
+        setIsLoadingThread(false);
       }
     };
 
@@ -371,7 +373,7 @@ const { data: { session } } = await supabase.auth.getSession();
     }
   };
 
-  const isInitial = messages.length === 0;
+  const isInitial = messages.length === 0 && !isLoadingThread;
 
   return (
     <div className="flex-1 flex flex-col min-w-0 relative h-screen bg-[#000000] text-white font-sans overflow-hidden">
@@ -453,6 +455,17 @@ const { data: { session } } = await supabase.auth.getSession();
         .animate-placeholder {
           animation: placeholderFadeUp 3s ease-in-out infinite;
         }
+
+        /* Skeleton loading animation */
+        @keyframes skeletonPulse {
+          0%, 100% { opacity: 0.04; }
+          50% { opacity: 0.08; }
+        }
+        .skeleton-line {
+          background: white;
+          border-radius: 8px;
+          animation: skeletonPulse 1.5s ease-in-out infinite;
+        }
       `}</style>
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
@@ -485,7 +498,41 @@ const { data: { session } } = await supabase.auth.getSession();
       <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar relative z-10">
         <div className="max-w-[760px] mx-auto px-4 md:px-8 h-full flex flex-col justify-between">
           
-          {isInitial ? (
+          {isLoadingThread ? (
+            /* Skeleton Loading State for old thread */
+            <div className="py-6 space-y-8 animate-message-reveal">
+              {/* Skeleton: user message right-aligned */}
+              <div className="flex justify-end">
+                <div className="max-w-[65%] space-y-2">
+                  <div className="skeleton-line h-[18px] w-[220px] ml-auto" />
+                  <div className="skeleton-line h-[18px] w-[160px] ml-auto" />
+                </div>
+              </div>
+              {/* Skeleton: AI message left-aligned */}
+              <div className="flex justify-start">
+                <div className="max-w-[80%] space-y-2.5">
+                  <div className="skeleton-line h-[16px] w-[300px]" />
+                  <div className="skeleton-line h-[16px] w-[260px]" />
+                  <div className="skeleton-line h-[16px] w-[340px]" />
+                  <div className="skeleton-line h-[16px] w-[200px]" />
+                </div>
+              </div>
+              {/* Skeleton: another user message */}
+              <div className="flex justify-end">
+                <div className="max-w-[65%] space-y-2">
+                  <div className="skeleton-line h-[18px] w-[180px] ml-auto" />
+                </div>
+              </div>
+              {/* Skeleton: another AI response */}
+              <div className="flex justify-start">
+                <div className="max-w-[80%] space-y-2.5">
+                  <div className="skeleton-line h-[16px] w-[280px]" />
+                  <div className="skeleton-line h-[16px] w-[320px]" />
+                  <div className="skeleton-line h-[16px] w-[240px]" />
+                </div>
+              </div>
+            </div>
+          ) : isInitial ? (
             /* Minimalist Empty State */
             <div className="flex-1 flex flex-col items-center justify-center py-12">
               <div 
