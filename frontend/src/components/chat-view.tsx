@@ -304,16 +304,32 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       type: file.type,
     }));
 
+    let baseMessages = messages;
+    let isEditMode = false;
+
+    if (editingMessageId && !isRetry) {
+      const editIndex = messages.findIndex(m => m.id === editingMessageId);
+      if (editIndex !== -1) {
+        baseMessages = messages.slice(0, editIndex);
+        isEditMode = true;
+      }
+      setEditingMessageId(null);
+      setEditInput("");
+    }
+
     if (!isRetry) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: String(Date.now()),
-          role: "user",
-          text,
-          files: filesPayload,
-        },
-      ]);
+      setMessages((prev) => {
+        const source = isEditMode ? baseMessages : prev;
+        return [
+          ...source,
+          {
+            id: String(Date.now()),
+            role: "user",
+            text,
+            files: filesPayload,
+          },
+        ];
+      });
     }
     
     setInput("");
@@ -322,7 +338,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     setIsThinking(true);
 
     try {
-      const activeMessages = overrideMessages ?? messages;
+      const activeMessages = overrideMessages ?? baseMessages;
       const historyPayload = activeMessages.map((m) => ({
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: m.text }]
@@ -395,7 +411,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       setIsThinking(false);
       inputRef.current?.focus();
     }
-  }, [input, isThinking, messages, selectedFiles, filePreviews]);
+  }, [input, isThinking, messages, selectedFiles, filePreviews, editingMessageId]);
 
   const proceedToSimulation = () => {
     if (!simulationData) return;
@@ -436,21 +452,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     setMessages(newMessages);
     
     handleSend(lastUserMessage.text, true, newMessages);
-  }, [messages, handleSend]);
-
-  const handleSaveEdit = (id: string) => {
-    const messageIndex = messages.findIndex(m => m.id === id);
-    if (messageIndex === -1) return;
-    
-    const newMessages = messages.slice(0, messageIndex + 1);
-    newMessages[newMessages.length - 1].text = editInput;
-    
-    setMessages(newMessages);
-    setEditingMessageId(null);
-    setEditInput("");
-    
-    handleSend(editInput, true, newMessages);
-  };
+  }, [messages, handleSend, editingMessageId]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -665,55 +667,73 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                           className={`relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto transition-all duration-300 ${activeMessageId === m.id ? 'mb-12' : 'mb-0'}`}
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="bg-white/[0.04] /[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
-                            {m.text && <div>{m.text}</div>}
-                            {m.files && m.files.length > 0 && (
-                              <div className="flex flex-wrap gap-2 pt-1">
-                                {m.files.map((file, fIdx) => (
-                                  <a
-                                    key={fIdx}
-                                    href={file.url}
-                                    download={file.name}
-                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-xs text-[#a1a1aa] hover:text-white max-w-full"
-                                  >
-                                    {file.type.startsWith("image/") ? (
-                                      <img src={file.url} alt="attached file" className="max-h-[140px] rounded-lg object-cover" />
-                                    ) : (
-                                      <>
-                                        <Paperclip className="size-3.5" />
-                                        <span className="truncate max-w-[140px]">{file.name}</span>
-                                      </>
-                                    )}
-                                  </a>
-                                ))}
+                          {editingMessageId === m.id ? (
+                            <div className="bg-[#1a1a1a] rounded-2xl p-4 w-full flex flex-col gap-3 border border-white/10 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                              <textarea
+                                value={editInput}
+                                onChange={(e) => setEditInput(e.target.value)}
+                                className="w-full bg-transparent text-white text-[15px] outline-none resize-none no-scrollbar min-h-[80px]"
+                                autoFocus
+                                placeholder="Edit your message..."
+                              />
+                              <div className="flex justify-end gap-2 mt-1">
+                                <button onClick={() => setEditingMessageId(null)} className="px-4 py-1.5 text-sm text-[#a1a1aa] hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full cursor-pointer">Cancel</button>
+                                <button onClick={() => handleSend(editInput)} className="px-4 py-1.5 text-sm bg-white text-black hover:bg-gray-200 transition-colors rounded-full font-semibold cursor-pointer">Save & Send</button>
                               </div>
-                            )}
-                          </div>
-                                            {/* Actions row for user */}
-                          <div className={`flex items-center justify-end gap-3 transition-all duration-300 text-white/50 ${
-                            activeMessageId === m.id 
-                              ? "absolute top-full mt-2 right-0 bg-black border border-gray-600 text-white px-4 py-2 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
-                              : "opacity-0 scale-95 md:scale-100 pointer-events-none"
-                          }`}>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
-                              className="p-1 hover:text-white transition-colors" 
-                            >
-                              <Edit className="size-4" />
-                            </button>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }} 
-                              className="p-1 hover:text-white transition-colors" 
-                            >
-                              <Copy className="size-4" />
-                            </button>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }} 
-                              className="p-1 hover:text-white transition-colors" 
-                            >
-                              <RefreshCw className="size-4" />
-                            </button>
-                          </div>
+                            </div>
+                          ) : (
+                            <div className="bg-white/[0.04] /[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
+                              {m.text && <div>{m.text}</div>}
+                              {m.files && m.files.length > 0 && (
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                  {m.files.map((file, fIdx) => (
+                                    <a
+                                      key={fIdx}
+                                      href={file.url}
+                                      download={file.name}
+                                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-xs text-[#a1a1aa] hover:text-white max-w-full"
+                                    >
+                                      {file.type.startsWith("image/") ? (
+                                        <img src={file.url} alt="attached file" className="max-h-[140px] rounded-lg object-cover" />
+                                      ) : (
+                                        <>
+                                          <Paperclip className="size-3.5" />
+                                          <span className="truncate max-w-[140px]">{file.name}</span>
+                                        </>
+                                      )}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {/* Actions row for user */}
+                          {editingMessageId !== m.id && (
+                            <div className={`flex items-center justify-end gap-3 transition-all duration-300 text-white/50 ${
+                              activeMessageId === m.id 
+                                ? "absolute top-full mt-2 right-0 bg-black border border-gray-600 text-white px-4 py-2 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
+                                : "opacity-0 scale-95 md:scale-100 pointer-events-none"
+                            }`}>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setEditingMessageId(m.id); setEditInput(m.text); setActiveMessageId(null); }} 
+                                className="p-1 hover:text-white cursor-pointer transition-colors" 
+                              >
+                                <Edit className="size-4" />
+                              </button>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }} 
+                                className="p-1 hover:text-white transition-colors" 
+                              >
+                                <Copy className="size-4" />
+                              </button>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }} 
+                                className="p-1 hover:text-white transition-colors" 
+                              >
+                                <RefreshCw className="size-4" />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         /* Lumensky message: Bubbleless raw text */
