@@ -440,9 +440,9 @@ export class DbService {
   }
 
   static async getThreadById(threadId: string): Promise<any> {
-    if (useLocalMockDB) {
+    if (isLocalFallback) {
       const data = readLocalDb();
-      return data.threads.find((t: any) => t.id === threadId) || null;
+      return data.chat_threads.find((t: any) => t.id === threadId) || null;
     }
     try {
       const { data, error } = await supabase

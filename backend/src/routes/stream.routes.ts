@@ -54,7 +54,7 @@ streamRoutes.post('/message/stream', zValidator('json', messageSchema), async (c
 
   try {
     const activeMissionPromise = DbService.getActiveMission(actualUserId);
-    const similarMemoriesPromise = VectorService.searchSimilarMemories(message, 2, 0.5).catch(() => []);
+    const similarMemoriesPromise = VectorService.searchSimilarMemories(message, 2, 0.5).catch(() => [] as any[]);
     
     let currentThreadId = thread_id;
     if (!currentThreadId) {
