@@ -50,7 +50,7 @@ export function LandingPage({ onLock, hasSession, onAnonymous }: LandingPageProp
   };
 
   return (
-    <div className="lp-root relative min-h-screen bg-[#000000] text-white flex flex-col justify-between overflow-hidden select-none font-sans">
+    <div className="lp-root relative min-h-[100dvh] bg-[#000000] text-white flex flex-col justify-between overflow-hidden select-none font-sans">
       
       {/* ── The Void: Micro-Grain ── */}
       <div 

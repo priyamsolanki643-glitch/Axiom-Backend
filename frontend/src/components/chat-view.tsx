@@ -29,6 +29,8 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const router = useRouter();
   const [simulationData, setSimulationData] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const messagesRef = useRef(messages);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
@@ -149,6 +151,47 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
     window.addEventListener("new-thread", handleNewThread);
     window.addEventListener("load-thread", handleLoadThread);
+    
+    const handleSyncAnonymousThread = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+
+        const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
+        
+        // Use a background call to sync messages
+        if (messagesRef.current.length > 0) {
+          const res = await fetch(`${baseUrl}/api/v1/threads/sync`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({
+              title: messagesRef.current[0]?.text?.substring(0, 40) || "Anonymous Chat",
+              messages: messagesRef.current
+            })
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            if (data.threadId) {
+              setThreadId(data.threadId);
+              window.dispatchEvent(new Event("threads-updated"));
+            }
+          }
+        }
+        
+        // Clean up anon storage
+        localStorage.removeItem("fp_anon_count");
+        localStorage.removeItem("fp_anon_id");
+      } catch (err) {
+        console.error("Failed to sync anonymous thread", err);
+      }
+    };
+    
+    window.addEventListener("sync-anonymous-thread", handleSyncAnonymousThread);
+    
     const handleGlobalClick = () => {
       if (activeMessageId) setActiveMessageId(null);
     };
@@ -156,6 +199,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     return () => {
       window.removeEventListener("new-thread", handleNewThread);
       window.removeEventListener("load-thread", handleLoadThread);
+      window.removeEventListener("sync-anonymous-thread", handleSyncAnonymousThread);
       window.removeEventListener("click", handleGlobalClick);
     };
   }, [activeMessageId]);
@@ -780,7 +824,7 @@ const { data: { session } } = await supabase.auth.getSession();
       </div>
 
       {/* ── Input Box (Trajectory Forge copy) ── */}
-      <div className="shrink-0 px-4 md:px-8 pb-6 pt-2 bg-[#000000] relative z-10">
+      <div className="shrink-0 px-4 md:px-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2 bg-[#000000] relative z-10">
         <div 
           className="reveal-chat-item max-w-[640px] w-full mx-auto"
           style={{ animationDelay: "550ms" }}

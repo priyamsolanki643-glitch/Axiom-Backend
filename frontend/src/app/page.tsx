@@ -8,6 +8,7 @@ import { ChatView } from "@/components/chat-view";
 import { VaultModal } from "@/components/vault-modal";
 import { SplashScreen } from "@/components/splash-screen";
 import { FocusMode } from "@/components/focus-mode";
+import { AuthModal } from "@/components/auth-modal";
 import { Archive } from "lucide-react";
 
 export default function EntryPoint() {
@@ -19,7 +20,13 @@ export default function EntryPoint() {
   const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const doubleTapRef = useRef(0);
+  const isAnonymousRef = useRef(isAnonymous);
+
+  useEffect(() => {
+    isAnonymousRef.current = isAnonymous;
+  }, [isAnonymous]);
 
   useEffect(() => {
     const checkActiveMission = async () => {
@@ -60,7 +67,9 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
             setIsLocked(true);
           } else {
             setHasSession(false);
-            setIsLocked(false);
+            if (!isAnonymousRef.current) {
+              setIsLocked(false);
+            }
           }
         }
       );
@@ -165,7 +174,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
   }
 
   return (
-    <div className="h-screen w-screen flex bg-black overflow-hidden relative animate-app-in">
+    <div className="h-[100dvh] w-screen flex bg-black overflow-hidden relative animate-app-in">
       <style>{`
         @keyframes app-in {
           0% { transform: scale(1.05) translate3d(0, 30px, 0); opacity: 0; }
@@ -193,13 +202,27 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         onOpenVault={() => setIsVaultOpen(true)}
         onOpenFocusMode={() => setIsFocusModeOpen(true)}
         isAnonymous={isAnonymous}
-        onRequireAuth={() => {
-          setIsLocked(false);
-          setIsAnonymous(false);
-        }}
+        onRequireAuth={() => setIsAuthOpen(true)}
       />
       
       {isVaultOpen && <VaultModal onClose={() => setIsVaultOpen(false)} />}
+
+      {isAuthOpen && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <AuthModal 
+            onClose={() => setIsAuthOpen(false)}
+            onSuccess={() => {
+              setIsAuthOpen(false);
+              setIsAnonymous(false);
+              // Trigger sync event that chat-view will listen to
+              window.dispatchEvent(new Event("sync-anonymous-thread"));
+            }}
+            initialMode="signup"
+            titleOverride="Time to Commit."
+            messageOverride="You've sent 3 messages. Log in now to save your progress and unlock unlimited execution."
+          />
+        </div>
+      )}
       
       {/* Integrating the Gamified Focus Mode Vault */}
       <FocusMode 

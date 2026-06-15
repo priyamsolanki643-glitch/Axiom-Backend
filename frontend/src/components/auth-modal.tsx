@@ -8,9 +8,11 @@ interface AuthModalProps {
   onClose: () => void;
   onSuccess: () => void;
   initialMode?: "login" | "signup";
+  titleOverride?: string;
+  messageOverride?: string;
 }
 
-export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthModalProps) {
+export function AuthModal({ onClose, onSuccess, initialMode = "signup", titleOverride, messageOverride }: AuthModalProps) {
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [step, setStep] = useState<"email" | "otp">("email");
@@ -140,13 +142,15 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
 
         <div className="px-6 py-4 md:px-8 md:pb-8">
           <div className="mb-8 mt-2">
-            <h2 className="text-[26px] font-semibold text-white tracking-tight mb-2 font-display">
-              {step === "otp" ? "Check your email." : (mode === "signup" ? "Create an account." : "Welcome back.")}
+            <h2 className="text-[28px] md:text-[32px] font-medium tracking-tight text-white mb-2 font-display leading-tight">
+              {titleOverride ? titleOverride : (step === "otp" ? "Check your email" : (mode === "signup" ? "Initialize." : "Welcome back."))}
             </h2>
-            <p className="text-[15px] text-[#a1a1aa] leading-relaxed">
-              {step === "otp" 
-                ? `We sent a confirmation link to ${email}. Click the link to log in instantly. If you received a 6-digit code instead, enter it below.`
-                : (mode === "signup" ? "Enter your details to start executing." : "Enter your email to log in.")}
+            <p className="text-[#a1a1aa] text-[15px] max-w-[320px] mx-auto leading-relaxed">
+              {messageOverride && step !== "otp"
+                ? messageOverride
+                : (step === "otp"
+                  ? `We sent a confirmation link to ${email}. Click the link to log in instantly. If you received a 6-digit code instead, enter it below.`
+                  : (mode === "signup" ? "Enter your details to start executing." : "Enter your email to log in."))}
             </p>
           </div>
 
