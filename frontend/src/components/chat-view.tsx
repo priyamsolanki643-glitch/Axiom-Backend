@@ -5,10 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault, Square, Atom } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-
-const markdownPlugins = [remarkGfm];
-
 interface ChatViewProps {
   onOpenSidebar: () => void;
   onOpenVault: () => void;
@@ -359,8 +355,8 @@ const { data: { session } } = await supabase.auth.getSession();
             streamBuffer = lines.pop() || "";
             
             for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const dataStr = line.replace("data: ", "");
+              if (line.startsWith("data:")) {
+                const dataStr = line.replace(/^data:\s*/, "");
                 if (dataStr === "[DONE]") {
                   done = true;
                   break;
@@ -728,7 +724,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
                           <div className="font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
-                            <ReactMarkdown remarkPlugins={markdownPlugins}>
+                            <ReactMarkdown>
                               {m.text}
                             </ReactMarkdown>
                           </div>

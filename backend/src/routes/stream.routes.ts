@@ -118,7 +118,7 @@ streamRoutes.post('/message/stream', zValidator('json', messageSchema), async (c
       
       let fullResponseText = "";
       for await (const chunk of streamData) {
-        const textChunk = chunk.text();
+        const textChunk = typeof chunk.text === 'function' ? chunk.text() : chunk.text;
         fullResponseText += textChunk;
         await streamWriter.writeSSE({ data: JSON.stringify({ type: 'text', text: textChunk }) });
       }
