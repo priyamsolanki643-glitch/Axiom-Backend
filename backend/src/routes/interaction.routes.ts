@@ -859,12 +859,36 @@ Total Days: ${mission.totalDays}
 MANDATE:
 Analyze real-time market opportunities, local gaps, competitor landscape, and timing signals for the target: "${mission.missionName}" using the ${mission.lockedPath} path.
 Provide hyper-local data for Kanpur, Uttar Pradesh, India if applicable, or general metrics for remote work.
-Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport interface.
+
+You MUST return JSON in this EXACT structure:
+{
+  "skillDemandSignals": [{"skillName": "...", "demandLevel": "High/Medium/Low", "trend": "Rising/Stable/Declining"}],
+  "localMarketGaps": [{"gapDescription": "...", "opportunitySize": "Large/Medium/Small"}],
+  "timingSignals": [{"timeframe": "...", "urgency": "CRITICAL/HIGH/NORMAL"}],
+  "topInsight": "One paragraph summary in Hinglish about the most important market signal right now."
+}
+Do not use markdown. Return only the JSON object.
     `.trim();
 
     LLMService.generateGroundedIntelligenceReport(mandate)
       .then(async (groundedData) => {
-        await DbService.saveMarketReport(actualUserId, groundedData);
+        // Map backend schema to frontend schema if needed
+        const normalizedData = groundedData.skillDemandSignals 
+          ? groundedData
+          : {
+              skillDemandSignals: (groundedData.competitorLandscape || []).map((item: string, i: number) => ({
+                skillName: item,
+                demandLevel: i === 0 ? 'High' : 'Medium',
+                trend: 'Rising'
+              })),
+              localMarketGaps: (groundedData.localOpportunities || []).map((item: string) => ({
+                gapDescription: item,
+                opportunitySize: 'Medium'
+              })),
+              timingSignals: [{ timeframe: 'Next 30 days', urgency: 'HIGH' }],
+              topInsight: groundedData.marketSummary || groundedData.recommendedAction || 'Market data is being analyzed.'
+            };
+        await DbService.saveMarketReport(actualUserId, normalizedData);
         console.log('MARKET_REPORT: Generated and saved initial grounded report on lock.');
       })
       .catch((err) => {
@@ -1076,12 +1100,36 @@ Total Days: ${activeMission.totalDays}
 MANDATE:
 Analyze real-time market opportunities, local gaps, competitor landscape, and timing signals for the target: "${activeMission.missionName}" using the ${activeMission.lockedPath} path.
 Provide hyper-local data for Kanpur, Uttar Pradesh, India if applicable, or general metrics for remote work.
-Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport interface.
+
+You MUST return JSON in this EXACT structure:
+{
+  "skillDemandSignals": [{"skillName": "...", "demandLevel": "High/Medium/Low", "trend": "Rising/Stable/Declining"}],
+  "localMarketGaps": [{"gapDescription": "...", "opportunitySize": "Large/Medium/Small"}],
+  "timingSignals": [{"timeframe": "...", "urgency": "CRITICAL/HIGH/NORMAL"}],
+  "topInsight": "One paragraph summary in Hinglish about the most important market signal right now."
+}
+Do not use markdown. Return only the JSON object.
         `.trim();
 
         LLMService.generateGroundedIntelligenceReport(mandate)
           .then(async (groundedData) => {
-            await DbService.saveMarketReport(userId, groundedData);
+            // Map backend schema to frontend schema if needed
+            const normalizedData = groundedData.skillDemandSignals 
+              ? groundedData
+              : {
+                  skillDemandSignals: (groundedData.competitorLandscape || []).map((item: string, i: number) => ({
+                    skillName: item,
+                    demandLevel: i === 0 ? 'High' : 'Medium',
+                    trend: 'Rising'
+                  })),
+                  localMarketGaps: (groundedData.localOpportunities || []).map((item: string) => ({
+                    gapDescription: item,
+                    opportunitySize: 'Medium'
+                  })),
+                  timingSignals: [{ timeframe: 'Next 30 days', urgency: 'HIGH' }],
+                  topInsight: groundedData.marketSummary || groundedData.recommendedAction || 'Market data is being analyzed.'
+                };
+            await DbService.saveMarketReport(userId, normalizedData);
             console.log('MARKET_REPORT: Background report refreshed successfully.');
           })
           .catch((err) => {

@@ -125,7 +125,13 @@ export function VaultModal({ onClose }: VaultModalProps) {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
         
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        if (!token) {
+          console.error('Vault: No auth token available');
+          setLoading(false);
+          return;
+        }
+        
+        const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080').replace(/\/$/, '');
         const headers = { "Authorization": `Bearer ${token}` };
 
         const [missionRes, mirrorRes, marketRes, rivalRes] = await Promise.all([
@@ -207,7 +213,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
                   <span className="size-1.5 rounded-full bg-white animate-pulse" /> LIVE TELEMETRY
                 </div>
                 <h1 className="text-base sm:text-lg md:text-2xl font-semibold text-white tracking-tight flex items-center gap-2 font-display">
-                  THE VAULT <span className="text-[10px] bg-white/[0.05] border border-white/[0.08] text-white/80 px-2 py-0.5 rounded-full font-mono font-medium uppercase tracking-wider">Rahul M.</span>
+                  THE VAULT
                 </h1>
               </div>
             </div>
