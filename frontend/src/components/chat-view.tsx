@@ -304,15 +304,17 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       type: file.type,
     }));
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        role: "user",
-        text,
-        files: filesPayload,
-      },
-    ]);
+    if (!isRetry) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          role: "user",
+          text,
+          files: filesPayload,
+        },
+      ]);
+    }
     
     setInput("");
     setSelectedFiles([]);
@@ -320,16 +322,19 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     setIsThinking(true);
 
     try {
-      const historyPayload = messages.map((m) => ({
+      const activeMessages = overrideMessages ?? messages;
+      const historyPayload = activeMessages.map((m) => ({
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: m.text }]
       }));
-      historyPayload.push({
-        role: "user",
-        parts: [{ text }]
-      });
+      if (!isRetry) {
+        historyPayload.push({
+          role: "user",
+          parts: [{ text }]
+        });
+      }
 
-const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
 
       const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
