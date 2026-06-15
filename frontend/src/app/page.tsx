@@ -57,6 +57,9 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       if (session) {
         setHasSession(true);
         setIsLocked(true);
+      } else if (typeof window !== 'undefined' && localStorage.getItem("fp_anon_id")) {
+        setIsAnonymous(true);
+        setIsLocked(true);
       }
       
       const { data: authListener } = supabase.auth.onAuthStateChange(
