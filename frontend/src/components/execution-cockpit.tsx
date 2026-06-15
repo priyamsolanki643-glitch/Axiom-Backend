@@ -52,6 +52,7 @@ export function ExecutionCockpit() {
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Failure modal state
@@ -218,13 +219,14 @@ const { data: { session } } = await supabase.auth.getSession();
     }
   };
 
-  const handleSendChatMessage = async () => {
-    const text = chatInput.trim();
+    const handleSendChatMessage = async (overrideText?: string) => {
+    const text = (overrideText || chatInput).trim();
     if (!text || isThinking || !mission) return;
 
     setMessages(prev => [...prev, { id: String(Date.now()), role: "user", text }]);
-    setChatInput("");
+    if (!overrideText) setChatInput("");
     setIsThinking(true);
+    setIsStreaming(true);
 
     try {
       const cachedDiag = localStorage.getItem("diagnosticResult");
@@ -237,15 +239,14 @@ const { data: { session } } = await supabase.auth.getSession();
       }));
       historyPayload.push({ role: "user", parts: [{ text }] });
 
-const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
-      const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
+      const res = await fetch(`${baseUrl}/api/v1/interaction/message/stream`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-"Authorization": `Bearer ${session?.access_token}`
-
+          "Authorization": `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           message: text,
@@ -269,26 +270,55 @@ const { data: { session } } = await supabase.auth.getSession();
           }
         })
       });
-      const result = await res.json();
 
-      let reply = "Parameter logged.";
-      if (result?.data?.ai_response?.response_text) {
-        reply = result.data.ai_response.response_text;
-      }
-      setMessages(prev => [...prev, { id: String(Date.now()), role: "fp", text: reply }]);
-      
-      // If consistency score changed in background due to chat outcome, reload mission
-      if (result?.data?.engine_result?.data?.updatedRuntime) {
-        await fetchActiveMission();
+      if (!res.body) throw new Error("No stream body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+
+      const aiMsgId = String(Date.now() + 1);
+      setMessages(prev => [...prev, { id: aiMsgId, role: "fp", text: "" }]);
+      setIsThinking(false);
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunkStr = decoder.decode(value, { stream: true });
+          const lines = chunkStr.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.replace('data: ', '').trim();
+              if (!dataStr) continue;
+              try {
+                const eventData = JSON.parse(dataStr);
+                if (eventData.type === "text" || eventData.type === "disclaimer") {
+                  setMessages(prev => {
+                    const newArr = [...prev];
+                    const lastIdx = newArr.length - 1;
+                    if (lastIdx >= 0 && newArr[lastIdx].role === "fp") {
+                      newArr[lastIdx] = { ...newArr[lastIdx], text: newArr[lastIdx].text + eventData.text };
+                    }
+                    return newArr;
+                  });
+                } else if (eventData.type === "metadata" && eventData.data?.engine_result?.data?.updatedRuntime) {
+                  await fetchActiveMission();
+                }
+              } catch (e) {}
+            }
+          }
+        }
       }
     } catch (err) {
       setMessages(prev => [...prev, { id: String(Date.now()), role: "fp", text: "Connection offline. Strategy operator unavailable." }]);
     } finally {
       setIsThinking(false);
+      setIsStreaming(false);
     }
   };
 
-  const handleRecalibrate = () => {
+const handleRecalibrate = () => {
     if (confirm("Are you sure you want to end session and force full parameter recalibration? This imposes consistency debt penalties.")) {
       localStorage.removeItem("architectResult");
       localStorage.removeItem("diagnosticResult");
@@ -520,7 +550,7 @@ const { data: { session } } = await supabase.auth.getSession();
         {/* HUD Footer Controls */}
         <div className="mt-8 pt-4 border-t border-white/5 shrink-0 flex items-center justify-between">
           <button 
-            onClick={() => setMessages(prev => [...prev, { id: String(Date.now()), role: "fp", text: `Active trajectory target: ${mission.missionName}. Current metrics logged as day ${mission.dayNumber}. Continue execution.` }])}
+            onClick={() => handleSendChatMessage(`Verify ledger status for: ${mission.missionName}. Current metrics logged as day ${mission.dayNumber}.`)}
             className="font-mono text-[10px] text-[#71717a] hover:text-white transition-colors cursor-pointer"
           >
             {"// VERIFY LEDGER STATUS"}
@@ -572,7 +602,7 @@ const { data: { session } } = await supabase.auth.getSession();
                         {new Date(parseInt(m.id)).toLocaleTimeString()}
                       </span>
                     </div>
-                    <div className={`pl-4 whitespace-pre-wrap ${isUser ? "text-white" : "text-[#a1a1aa] border-l border-white/5"}`}>
+                    <div className={`pl-4 whitespace-pre-wrap ${isUser ? "text-white" : "text-[#a1a1aa] border-l border-white/5"} ${!isUser && isStreaming && m.id === messages[messages.length - 1]?.id ? "liquid-streaming-text" : ""}`}>
                       {m.text}
                     </div>
                   </div>

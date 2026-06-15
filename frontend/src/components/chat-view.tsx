@@ -2,11 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-<<<<<<< HEAD
 import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault, Square } from "lucide-react";
-=======
-import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw } from "lucide-react";
->>>>>>> a1433dd (feat: sync frontend streaming UI updates from backend branch)
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -588,11 +584,7 @@ const { data: { session } } = await supabase.auth.getSession();
         </div>
 
         {/* Header Actions */}
-<<<<<<< HEAD
         <div className="flex items-center gap-1 md:gap-2 -mr-1">
-=======
-        <div className="flex items-center gap-2 -mr-1">
->>>>>>> a1433dd (feat: sync frontend streaming UI updates from backend branch)
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
             className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(255, 255, 255,0.6)]"
