@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw } from "lucide-react";
+import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -43,6 +43,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editInput, setEditInput] = useState<string>("");
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -420,8 +421,12 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     router.push("/gate");
   };
 
-  const copyToClipboard = (txt: string) => {
+  const copyToClipboard = (txt: string, messageId: string) => {
     navigator.clipboard.writeText(txt);
+    setCopiedMessageId(messageId);
+    setTimeout(() => {
+      setCopiedMessageId(null);
+    }, 2000);
   };
 
   const handleRetry = useCallback((messageId?: string) => {
@@ -705,10 +710,10 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                               <Edit className="size-4" />
                             </button>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }} 
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text, m.id); setActiveMessageId(null); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
-                              <Copy className="size-4" />
+                              {copiedMessageId === m.id ? <Check className="size-4 text-green-400" /> : <Copy className="size-4" />}
                             </button>
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }} 
@@ -737,10 +742,10 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                               : "opacity-0 scale-95 md:scale-100 pointer-events-none"
                           }`}>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }}
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text, m.id); setActiveMessageId(null); }}
                               className="p-1 hover:text-white cursor-pointer transition-colors"
                             >
-                              <Copy className="size-4" />
+                              {copiedMessageId === m.id ? <Check className="size-4 text-green-400" /> : <Copy className="size-4" />}
                             </button>
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }}
