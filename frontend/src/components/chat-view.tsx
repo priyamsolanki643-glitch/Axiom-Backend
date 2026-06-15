@@ -766,7 +766,7 @@ const { data: { session } } = await supabase.auth.getSession();
                             </button>
                           </div>
                         </div>
-                      ) : (
+                      )) : (
                         /* Lumensky message: Bubbleless raw text */
                         <div 
                           className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
