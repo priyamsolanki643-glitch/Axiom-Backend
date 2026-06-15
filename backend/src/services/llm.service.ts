@@ -411,7 +411,11 @@ export class LLMService {
   }
 
   static async generateThreadTitle(message: string): Promise<string> {
-    const systemPrompt = `Generate a short, punchy 3-4 word title summarizing this message. Do not use quotes. Return ONLY the title.`;
+    const systemPrompt = `You are an AI that generates concise 2-5 word titles for chat threads based on the user's message.
+Focus on the main topic, entity, or intent. Capitalize appropriately (Title Case).
+Examples: 'Preparing for UPSC', 'Fixing React Bug', 'Diet Plan Discussion'.
+Never critique the user's grammar. Never return 'Unclear message'. If the message is a generic greeting, return 'General Chat'.
+Return ONLY the title string, without quotes or punctuation.`;
     try {
       const response = await executeWithRotation({
         model: 'gemini-2.5-flash',

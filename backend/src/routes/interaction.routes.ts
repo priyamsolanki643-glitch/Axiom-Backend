@@ -207,7 +207,7 @@ Reply casually in ${userLanguage} — like a smart older bro who's genuinely cur
     similarMemories = retrievedMemories;
 
     // Fire and forget: update generic thread title if substantial message received
-    if (message.length > 15 && currentThreadId) {
+    if (message.length > 3 && currentThreadId) {
       DbService.getThreadById(currentThreadId).then(thread => {
         if (thread && thread.title === 'Conversation') {
           LLMService.generateThreadTitle(message).then(title => {
