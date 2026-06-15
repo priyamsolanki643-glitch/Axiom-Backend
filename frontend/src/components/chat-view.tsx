@@ -569,6 +569,16 @@ const { data: { session } } = await supabase.auth.getSession();
           border-radius: 8px;
           animation: skeletonPulse 1.5s ease-in-out infinite;
         }
+
+        /* Audio visualizer wave */
+        @keyframes audioWave {
+          0%, 100% { height: 4px; opacity: 0.6; }
+          50% { height: 12px; opacity: 1; }
+        }
+        .animate-audio-wave-1 { animation: audioWave 0.9s ease-in-out infinite; }
+        .animate-audio-wave-2 { animation: audioWave 0.9s ease-in-out infinite 0.15s; }
+        .animate-audio-wave-3 { animation: audioWave 0.9s ease-in-out infinite 0.3s; }
+        .animate-audio-wave-4 { animation: audioWave 0.9s ease-in-out infinite 0.45s; }
       `}</style>
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
@@ -931,9 +941,14 @@ const { data: { session } } = await supabase.auth.getSession();
               )}
 
               {isRecording && (
-                <div className="flex items-center gap-2.5 px-1 py-1 text-xs text-red-400 font-mono animate-pulse">
-                  <span className="size-2 rounded-full bg-red-500" />
-                  Listening...
+                <div className="flex items-center gap-3 px-2 py-1 text-[13px] text-red-400 font-medium tracking-wide">
+                  <div className="flex items-center gap-[3px] h-3">
+                    <span className="w-[3px] bg-red-500 rounded-full animate-audio-wave-1 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                    <span className="w-[3px] bg-red-500 rounded-full animate-audio-wave-2 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                    <span className="w-[3px] bg-red-500 rounded-full animate-audio-wave-3 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                    <span className="w-[3px] bg-red-500 rounded-full animate-audio-wave-4 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                  </div>
+                  <span className="animate-pulse">Listening...</span>
                 </div>
               )}
 
