@@ -7,6 +7,7 @@ import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+const markdownPlugins = [remarkGfm];
 
 interface ChatViewProps {
   onOpenSidebar: () => void;
@@ -727,8 +728,8 @@ const { data: { session } } = await supabase.auth.getSession();
                           className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className={`font-serif prose prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] max-w-none break-words tracking-wide [&_*]:text-[#f2efe8]/90 [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_strong]:text-white ${isStreaming && m.id === messages[messages.length - 1]?.id ? "liquid-streaming-text" : ""}`}>
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          <div className="font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
+                            <ReactMarkdown remarkPlugins={markdownPlugins}>
                               {m.text}
                             </ReactMarkdown>
                           </div>
