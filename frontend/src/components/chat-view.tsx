@@ -33,6 +33,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
@@ -686,12 +687,39 @@ const { data: { session } } = await supabase.auth.getSession();
                     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
                       
                       {isUser ? (
-                        /* User message: Dark bubble with optional files */
-                        <div 
-                          className="relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto"
-                          onClick={(e) => handleMessageClick(e, m.id)}
-                        >
-                          <div className="bg-white/[0.04] /[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
+                        editingMessageId === m.id ? (
+                          /* God-level Inline Edit UI */
+                          <div className="relative flex flex-col items-end w-full max-w-[85%] animate-message-reveal">
+                            <textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              autoFocus
+                              rows={Math.max(2, editText.split('\\n').length)}
+                              className="w-full bg-[#0c0c0e]/80 backdrop-blur-3xl border border-white/20 text-white p-4 rounded-3xl resize-none outline-none focus:border-white/50 focus:shadow-[0_0_25px_rgba(255,255,255,0.15)] transition-all overflow-hidden text-[15px] leading-[1.6]"
+                            />
+                            <div className="flex justify-end gap-3 mt-4">
+                              <button 
+                                onClick={() => setEditingMessageId(null)} 
+                                className="px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 text-[#a1a1aa] hover:text-white transition-colors text-sm font-medium"
+                              >
+                                Cancel
+                              </button>
+                              <button 
+                                onClick={() => handleSend(editText)} 
+                                disabled={!editText.trim()}
+                                className="px-6 py-2.5 rounded-2xl bg-white text-black hover:scale-[1.03] active:scale-95 transition-transform text-sm font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:hover:scale-100"
+                              >
+                                Save & Submit
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* User message: Dark bubble with optional files */
+                          <div 
+                            className="relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto"
+                            onClick={(e) => handleMessageClick(e, m.id)}
+                          >
+                            <div className="bg-white/[0.04] /[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
                             {m.text && <div>{m.text}</div>}
                             {m.files && m.files.length > 0 && (
                               <div className="flex flex-wrap gap-2 pt-1">
@@ -722,7 +750,7 @@ const { data: { session } } = await supabase.auth.getSession();
                               : "hidden opacity-0"
                           }`}>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); setEditingMessageId(m.id); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
+                              onClick={(e) => { e.stopPropagation(); setEditingMessageId(m.id); setEditText(m.text); setActiveMessageId(null); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
                               <Edit className="size-4" />
