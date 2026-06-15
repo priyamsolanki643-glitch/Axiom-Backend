@@ -10,17 +10,24 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
 
   const token = authHeader.slice(7).trim();
 
-  if (!token) {
-    return c.json({ error: 'Access denied: missing authentication token.' }, 401);
+  if (!token || token === 'undefined' || token === 'null') {
+    return c.json({ error: 'Access denied: token is literal undefined or null.' }, 401);
   }
 
-
-
   try {
+    if (!DbService.supabase) {
+      return c.json({ error: 'Access denied: DbService.supabase is not initialized. Check SUPABASE_URL and KEY in backend env.' }, 500);
+    }
+
     const { data: { user }, error } = await DbService.supabase.auth.getUser(token);
 
-    if (error || !user) {
-      return c.json({ error: 'Access denied: invalid authentication token.' }, 401);
+    if (error) {
+      console.error('Supabase Auth Error:', error);
+      return c.json({ error: `Access denied: Supabase error: ${error.message}` }, 401);
+    }
+
+    if (!user) {
+      return c.json({ error: 'Access denied: user not found for this token.' }, 401);
     }
 
     c.set('userId', user.id);
@@ -30,7 +37,8 @@ export const requireAuth: MiddlewareHandler = async (c, next) => {
     c.set('userLanguage', language);
     
     await next();
-  } catch (error) {
-    return c.json({ error: 'Access denied: invalid or expired authentication token.' }, 401);
+  } catch (error: any) {
+    console.error('Auth Exception:', error);
+    return c.json({ error: `Access denied: exception: ${error?.message || String(error)}` }, 401);
   }
 };
