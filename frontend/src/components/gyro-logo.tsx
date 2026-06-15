@@ -2,61 +2,85 @@
 import React from 'react';
 
 export function GyroLogo({ className = "", size = 24 }: { className?: string; size?: number }) {
-  // We use a unique class name per size so the inline style doesn't conflict
-  // but shares the same animation logic.
-  const sizeClass = `gyro-mini-${size}`;
+  // The original splash screen container is 60px.
+  // We compute the scale factor to fit the requested size exactly.
+  const scale = size / 60;
 
   return (
-    <div className={`relative flex items-center justify-center shrink-0 ${className}`} style={{ width: size, height: size }}>
+    <div 
+      className={`relative flex items-center justify-center shrink-0 ${className}`} 
+      style={{ width: size, height: size }}
+    >
       <style>{`
-        .${sizeClass} {
+        .gyro-container-exact {
           position: relative;
-          width: ${size}px;
-          height: ${size}px;
-          perspective: 800px;
+          width: 60px;
+          height: 60px;
+          perspective: 1000px;
           transform-style: preserve-3d;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          /* Scale it down to match the requested size container perfectly */
+          transform: scale(${scale});
+          transform-origin: center center;
         }
-        .${sizeClass} .ring {
+
+        .gyro-core-exact {
           position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          border: 1px solid rgba(255, 255, 255, 0.4);
-          transform-style: preserve-3d;
-          box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.1);
-        }
-        .${sizeClass} .ring::before {
-          content: '';
-          position: absolute;
-          top: -1px; left: 50%;
-          width: 2px; height: ${Math.max(4, size * 0.15)}px;
-          background: #fff;
-          box-shadow: 0 0 10px 2px rgba(255,255,255,0.8);
-          border-radius: 4px;
-          transform: translateX(-50%);
-        }
-        .${sizeClass} .ring-1 { border-color: rgba(255,255,255,0.2); animation: miniSpin1 2s linear infinite; }
-        .${sizeClass} .ring-2 { border-color: rgba(255,255,255,0.2); animation: miniSpin2 2.5s linear infinite; }
-        .${sizeClass} .ring-3 { border-color: rgba(255,255,255,0.2); animation: miniSpin3 3s linear infinite; }
-        .${sizeClass} .core {
-          position: absolute;
-          top: 50%; left: 50%;
-          width: ${Math.max(2, size * 0.25)}px; height: ${Math.max(2, size * 0.25)}px;
-          margin-top: -${Math.max(2, size * 0.25)/2}px; margin-left: -${Math.max(2, size * 0.25)/2}px;
+          width: 3px;
+          height: 3px;
           background: #ffffff;
           border-radius: 50%;
-          box-shadow: 0 0 ${size * 0.2}px rgba(255,255,255,0.9);
-          animation: miniCorePulse 1.5s ease-in-out infinite alternate;
+          animation: corePulseExact 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
         }
-        @keyframes miniSpin1 { 0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } }
-        @keyframes miniSpin2 { 0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); } 100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } }
-        @keyframes miniSpin3 { 0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); } 100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } }
-        @keyframes miniCorePulse { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.2); opacity: 1; } }
+
+        .gyro-ring-exact {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-top: 1px solid rgba(255,255,255,0.8);
+          border-right: 1px solid rgba(255,255,255,0.3);
+          box-shadow: inset 0 0 10px rgba(255,255,255,0.02),
+                      -1px 0 3px rgba(255, 255, 255, 0.2), /* Subtle white blur */
+                      1px 0 3px rgba(255, 255, 255, 0.4);  /* Sharp white edge */
+          transform-style: preserve-3d;
+        }
+
+        .ring-exact-1 { animation: spinExact1 1.8s linear infinite; }
+        .ring-exact-2 { animation: spinExact2 2.4s linear infinite; }
+        .ring-exact-3 { animation: spinExact3 3s linear infinite; }
+
+        @keyframes spinExact1 { 
+          0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
+          100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } 
+        }
+        @keyframes spinExact2 { 
+          0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); }
+          100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } 
+        }
+        @keyframes spinExact3 { 
+          0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
+          100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } 
+        }
+        
+        @keyframes corePulseExact {
+          0% { transform: scale(0.5); opacity: 0.3; box-shadow: 0 0 2px rgba(255,255,255,0.1); }
+          100% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,1); }
+        }
       `}</style>
-      <div className={sizeClass}>
-        <div className="ring ring-1"></div>
-        <div className="ring ring-2"></div>
-        <div className="ring ring-3"></div>
-        <div className="core"></div>
+
+      {/* 
+        This is the EXACT inner structure of the splash screen gyro-container, 
+        but wrapped in our scaled container so it fits dynamically.
+      */}
+      <div className="gyro-container-exact">
+        <div className="gyro-ring-exact ring-exact-1"></div>
+        <div className="gyro-ring-exact ring-exact-2"></div>
+        <div className="gyro-ring-exact ring-exact-3"></div>
+        <div className="gyro-core-exact"></div>
       </div>
     </div>
   );
