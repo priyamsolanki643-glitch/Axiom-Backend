@@ -189,7 +189,7 @@ const { data: { session } } = await supabase.auth.getSession();
       />
 
       {/* LEFT 2/3: Interactive Terminal Area */}
-      <div className="w-full lg:w-2/3 h-full flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto no-scrollbar relative z-10">
+      <div className="w-full lg:w-2/3 h-full flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto overscroll-y-contain no-scrollbar relative z-10">
         
         {/* Terminal Header */}
         <div className="flex items-center justify-between mb-8 shrink-0">
@@ -224,7 +224,7 @@ const { data: { session } } = await supabase.auth.getSession();
                     <div className="size-5 rounded-md bg-white/[0.03] flex items-center justify-center shrink-0 mt-0.5">
                       <Terminal className="size-3 text-[#71717a]" />
                     </div>
-                    <p className="font-mono text-[13px] text-[#a1a1aa] leading-relaxed select-text">
+                    <p className="animate-decrypt font-mono text-[13px] text-[#a1a1aa] leading-relaxed select-text">
                       {item.q}
                     </p>
                   </div>
@@ -252,7 +252,7 @@ const { data: { session } } = await supabase.auth.getSession();
                   <div className="size-6 rounded-md bg-white/[0.04] flex items-center justify-center shrink-0 mt-1">
                     <Terminal className="size-3.5 text-white animate-pulse" />
                   </div>
-                  <p className="font-sans text-xl md:text-2xl font-normal text-white leading-snug tracking-tight">
+                  <p className="animate-decrypt font-sans text-xl md:text-2xl font-normal text-white leading-snug tracking-tight">
                     {currentQuestionText}
                   </p>
                 </div>

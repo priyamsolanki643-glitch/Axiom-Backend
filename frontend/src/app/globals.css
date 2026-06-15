@@ -657,3 +657,35 @@
   border-color: hsla(243, 80%, 65%, 0.35) !important;
   box-shadow: 0 0 0 3px hsla(243, 80%, 65%, 0.08), 0 0 20px hsla(243, 80%, 65%, 0.06);
 }
+
+/* ─────────────────────────────────────────────
+   MOBILE BEAST OVERRIDES
+───────────────────────────────────────────── */
+html, body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-mb {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* ─────────────────────────────────────────────
+   DECRYPTION TEXT EFFECT
+───────────────────────────────────────────── */
+@keyframes decryptText {
+  0%   { filter: blur(4px); opacity: 0; letter-spacing: 2px; }
+  40%  { filter: blur(2px); opacity: 0.7; letter-spacing: 0.5px; }
+  100% { filter: blur(0); opacity: 1; letter-spacing: normal; }
+}
+
+.animate-decrypt {
+  animation: decryptText 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

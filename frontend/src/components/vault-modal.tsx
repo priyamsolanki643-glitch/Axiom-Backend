@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import {
   Lock, X, TrendingUp, CheckCircle, Target, ArrowRight, Trophy, AlertTriangle, Radio, ChevronLeft, FileText, Download, Share2, HelpCircle
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 type TabId = "missions" | "mirror" | "debt" | "rival" | "market";
 
@@ -175,7 +176,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
   const activeTabMeta = TABS.find(t => t.id === activeTab);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-hidden">
+    <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center p-0 md:p-6 overflow-hidden">
       {/* Backdrop with click-to-close */}
       <div
         onClick={onClose}
@@ -184,8 +185,8 @@ export function VaultModal({ onClose }: VaultModalProps) {
 
       {/* Modal Container */}
       <div
-        className={`relative w-full max-w-[1100px] h-[92vh] sm:h-[88vh] flex flex-col rounded-2xl md:rounded-[24px] overflow-hidden transition-all duration-[500ms] bg-black /[0.08] ${
-          mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-12 scale-[0.96]"
+        className={`relative w-full max-w-[1100px] h-[92vh] sm:h-[88vh] flex flex-col rounded-t-[24px] md:rounded-[24px] overflow-hidden transition-all duration-[500ms] bg-black /[0.08] ${
+          mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-full md:translate-y-12 scale-100 md:scale-[0.96]"
         }`}
         style={{
           boxShadow: "0 40px 100px -20px rgba(0,0,0,1)",
@@ -219,12 +220,13 @@ export function VaultModal({ onClose }: VaultModalProps) {
             </div>
             
             <div className="flex items-center gap-3">
-              <button 
+              <motion.button 
+                whileTap={{ scale: 0.85 }}
                 onClick={onClose}
                 className="size-8 flex items-center justify-center rounded-full bg-white/[0.02] hover:bg-white/10 transition-colors text-white/60 hover:text-white"
               >
                 <X className="size-4" />
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -234,7 +236,8 @@ export function VaultModal({ onClose }: VaultModalProps) {
               {TABS.map(tab => {
                 const TabIcon = tab.icon;
                 return (
-                  <button 
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
                     key={tab.id}
                     onClick={() => switchTab(tab.id)}
                     className={`px-4 py-2 rounded-xl text-[13px] font-medium flex items-center gap-2 transition-all duration-300 whitespace-nowrap active:scale-[0.97] ${
@@ -245,7 +248,7 @@ export function VaultModal({ onClose }: VaultModalProps) {
                   >
                     <TabIcon className={`size-4 shrink-0 transition-colors ${activeTab === tab.id ? 'text-black' : 'text-[#a1a1aa]'}`} />
                     {tab.label}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>

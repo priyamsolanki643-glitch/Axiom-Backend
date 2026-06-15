@@ -494,7 +494,7 @@ const { data: { session } } = await supabase.auth.getSession();
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
       <header 
-        className="reveal-chat-item h-14 shrink-0 flex items-center justify-between px-6 bg-transparent backdrop-blur-xl z-20 sticky top-0"
+        className="hidden md:flex reveal-chat-item h-14 shrink-0 items-center justify-between px-6 bg-transparent backdrop-blur-xl z-20 sticky top-0"
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center gap-3">
@@ -519,7 +519,7 @@ const { data: { session } } = await supabase.auth.getSession();
       </header>
 
       {/* ── Message stream area ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar relative z-10">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-y-auto no-scrollbar relative z-10">
         <div className="max-w-[760px] mx-auto px-4 md:px-8 h-full flex flex-col justify-between">
           
           {isLoadingThread ? (
@@ -646,7 +646,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
+                          <div className="prose animate-decrypt overscroll-y-auto prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {m.text}
                             </ReactMarkdown>

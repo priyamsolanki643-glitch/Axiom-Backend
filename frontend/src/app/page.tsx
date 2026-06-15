@@ -5,6 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { LandingPage } from "@/components/landing-page";
 import { Sidebar } from "@/components/sidebar";
 import { ChatView } from "@/components/chat-view";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { VaultModal } from "@/components/vault-modal";
 import { SplashScreen } from "@/components/splash-screen";
 import { FocusMode } from "@/components/focus-mode";
@@ -164,6 +165,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     return <LandingPage onLock={verifyAndLock} onAnonymous={() => { setIsAnonymous(true); setIsLocked(true); }} hasSession={hasSession} />;
   }
 
+
   return (
     <div className="h-screen w-screen flex bg-black overflow-hidden relative animate-app-in">
       <style>{`
@@ -212,6 +214,15 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
           }
         }} 
         taskTitle="Deep Execution Phase" 
+      />
+
+      <MobileBottomNav 
+        onOpenVault={() => setIsVaultOpen(true)}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
+        onNewChat={() => {
+          const event = new Event("new-thread");
+          window.dispatchEvent(event);
+        }}
       />
     </div>
   );
