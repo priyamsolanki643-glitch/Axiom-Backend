@@ -150,7 +150,7 @@ const { data: { session } } = await supabase.auth.getSession();
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl border-r border-white/5 overflow-hidden ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl  overflow-hidden ${
           isOpen ? "w-[260px] translate-x-0 opacity-100" : "w-0 -translate-x-full opacity-0"
         }`}
       >
@@ -232,7 +232,7 @@ const { data: { session } } = await supabase.auth.getSession();
           {/* Search */}
           {isOpen ? (
             isSearchActive ? (
-              <div className="flex items-center gap-2 px-2 py-1.5 bg-[#18181b] border border-[#27272a] rounded-lg">
+              <div className="flex items-center gap-2 px-2 py-1.5 bg-[#18181b] border-[#27272a] rounded-lg">
                 <Search className="size-4 text-[#666666] shrink-0" />
                 <input 
                   autoFocus
@@ -329,7 +329,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           <MoreVertical className="size-3.5" />
                         </button>
                         {activeChatMenu === chat.id && (
-                          <div className="absolute right-2 top-8 z-50 w-32 bg-[#18181b] border border-[#27272a] rounded-lg shadow-xl overflow-hidden animate-message-reveal">
+                          <div className="absolute right-2 top-8 z-50 w-32 bg-[#18181b] border-[#27272a] rounded-lg shadow-xl overflow-hidden animate-message-reveal">
                             <button
                               onClick={(e) => deleteChat(chat.id, e)}
                               className="flex items-center gap-2 w-full text-left px-3 py-2 text-[12px] text-[#ff3333] hover:bg-[#ff3333]/10 transition-colors"
@@ -349,12 +349,12 @@ const { data: { session } } = await supabase.auth.getSession();
         </div>
 
         {/* ── Footer / Upgrade / Profile ── */}
-        <div className="p-3 bg-transparent shrink-0 flex flex-col gap-3 border-t border-white/5">
+        <div className="p-3 bg-transparent shrink-0 flex flex-col gap-3">
           
           {/* User profile row */}
           <div className="relative">
             {isSignOutOpen && isOpen && (
-              <div className="absolute bottom-full mb-2 left-0 w-full bg-[#000000] border border-[#18181b] rounded-xl p-1.5 shadow-2xl animate-message-reveal z-50">
+              <div className="absolute bottom-full mb-2 left-0 w-full bg-[#000000] border-[#18181b] rounded-xl p-1.5 shadow-2xl animate-message-reveal z-50">
                 {isDeletingAccount ? (
                   <div className="flex flex-col gap-2 p-1">
                     <span className="text-[12px] font-medium text-white mb-1 text-center leading-snug">Are you absolutely sure you want to delete your account?</span>
@@ -406,7 +406,7 @@ const { data: { session } } = await supabase.auth.getSession();
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 {/* Profile letter avatar */}
-                <div className="size-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                <div className="size-7 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                   <span className="text-[11px] font-bold text-white text-transform uppercase">{isAnonymous ? 'A' : userName.charAt(0)}</span>
                 </div>
                 {isOpen && (

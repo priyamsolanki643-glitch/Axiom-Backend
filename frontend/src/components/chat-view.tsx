@@ -570,7 +570,7 @@ const { data: { session } } = await supabase.auth.getSession();
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
       <header 
-        className="reveal-chat-item h-14 shrink-0 flex items-center justify-between px-6 bg-transparent backdrop-blur-xl border-b border-white/5 z-20 sticky top-0"
+        className="reveal-chat-item h-14 shrink-0 flex items-center justify-between px-6 bg-transparent backdrop-blur-xl z-20 sticky top-0"
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center gap-3">
@@ -666,16 +666,16 @@ const { data: { session } } = await supabase.auth.getSession();
                           className="relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="bg-white/[0.04] border border-white/[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
+                          <div className="bg-white/[0.04] /[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
                             {m.text && <div>{m.text}</div>}
                             {m.files && m.files.length > 0 && (
-                              <div className="flex flex-wrap gap-2 pt-1 border-t border-white/5">
+                              <div className="flex flex-wrap gap-2 pt-1">
                                 {m.files.map((file, fIdx) => (
                                   <a
                                     key={fIdx}
                                     href={file.url}
                                     download={file.name}
-                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition text-xs text-[#a1a1aa] hover:text-white max-w-full"
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-xs text-[#a1a1aa] hover:text-white max-w-full"
                                   >
                                     {file.type.startsWith("image/") ? (
                                       <img src={file.url} alt="attached file" className="max-h-[140px] rounded-lg object-cover" />
@@ -693,7 +693,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row for user */}
                           <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 right-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 border border-white/10" 
+                              ? "absolute top-full mt-2 right-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
                               : "opacity-0 md:group-hover:opacity-100 mt-1.5 scale-95 md:scale-100"
                           }`}>
                             <button 
@@ -731,7 +731,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row */}
                           <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 left-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 border border-white/10" 
+                              ? "absolute top-full mt-2 left-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
                               : "opacity-0 md:group-hover:opacity-100 pt-2 scale-95 md:scale-100"
                           }`}>
                             <button 
@@ -863,7 +863,7 @@ const { data: { session } } = await supabase.auth.getSession();
         >
           
           {/* Sleek Apple-inspired floating capsule without glow */}
-          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 border border-white/[0.08] bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px]">
+          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 /[0.08] bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px]">
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
@@ -880,7 +880,7 @@ const { data: { session } } = await supabase.auth.getSession();
 
               {/* Attachment Menu Popover */}
               {isAttachMenuOpen && (
-                <div className="absolute bottom-full left-0 mb-4 bg-[#1a1b1e] border border-white/5 rounded-[24px] p-2 flex flex-col shadow-2xl min-w-[160px] animate-scale-in origin-bottom-left z-50 overflow-hidden">
+                <div className="absolute bottom-full left-0 mb-4 bg-[#1a1b1e] rounded-[24px] p-2 flex flex-col shadow-2xl min-w-[160px] animate-scale-in origin-bottom-left z-50 overflow-hidden">
                   <div className="flex flex-col gap-1 animate-fade-in">
                     <button 
                       onClick={() => { cameraInputRef.current?.click(); setIsAttachMenuOpen(false); }}
@@ -914,7 +914,7 @@ const { data: { session } } = await supabase.auth.getSession();
               {selectedFiles.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-1 pb-1">
                   {selectedFiles.map((file, idx) => (
-                    <div key={idx} className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[12px] text-[#a1a1aa] pr-8 animate-message-reveal">
+                    <div key={idx} className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 text-[12px] text-[#a1a1aa] pr-8 animate-message-reveal">
                       {file.type.startsWith("image/") ? (
                         <img src={filePreviews[idx]} alt="preview" className="size-5 object-cover rounded" />
                       ) : (

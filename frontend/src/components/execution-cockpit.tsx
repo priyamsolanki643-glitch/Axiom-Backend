@@ -376,7 +376,7 @@ const handleRecalibrate = () => {
       <div className="w-full lg:w-[62%] h-full border-r border-[#151515] flex flex-col justify-between p-4 md:p-6 lg:p-8 overflow-y-auto no-scrollbar relative z-10">
         
         {/* Cockpit HUD Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/5 mb-6 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-6 shrink-0">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className={`font-mono text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${
@@ -395,7 +395,7 @@ const handleRecalibrate = () => {
           
           <div className="flex items-center gap-3">
             <span className="font-mono text-[10px] text-[#71717a] uppercase">RUNWAY:</span>
-            <div className="flex items-center gap-1.5 border border-white/5 bg-white/[0.02] px-3.5 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 bg-white/[0.02] px-3.5 py-1.5 rounded-full">
               <div className={`size-2 rounded-full ${mission.lockedPath === "alpha" ? "bg-amber-500" : "bg-cyan-400"}`} />
               <span className="font-mono text-[10px] text-white font-semibold">
                 {mission.daysToGoal || (mission.totalDays - mission.dayNumber)} DAYS LEFT
@@ -409,7 +409,7 @@ const handleRecalibrate = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* Consistency circular display */}
-            <div className="border border-white/5 bg-white/[0.01] rounded-2xl p-5 flex flex-col items-center justify-center backdrop-blur-md">
+            <div className="bg-white/[0.01] rounded-2xl p-5 flex flex-col items-center justify-center backdrop-blur-md">
               <span className="font-mono text-[9px] text-[#71717a] uppercase tracking-wider mb-4">Consistency Index</span>
               <div className="relative size-24">
                 <svg viewBox="0 0 100 100" className="size-full -rotate-90">
@@ -435,7 +435,7 @@ const handleRecalibrate = () => {
             </div>
 
             {/* Streaks Widget */}
-            <div className="border border-white/5 bg-white/[0.01] rounded-2xl p-5 flex flex-col justify-between backdrop-blur-md">
+            <div className="bg-white/[0.01] rounded-2xl p-5 flex flex-col justify-between backdrop-blur-md">
               <div>
                 <span className="font-mono text-[9px] text-[#71717a] uppercase tracking-wider block mb-1">Consistency Streak</span>
                 <span className="text-4xl font-bold text-white leading-none">
@@ -449,7 +449,7 @@ const handleRecalibrate = () => {
             </div>
 
             {/* Run-time Ideologies */}
-            <div className="border border-white/5 bg-white/[0.01] rounded-2xl p-5 flex flex-col justify-between backdrop-blur-md">
+            <div className="bg-white/[0.01] rounded-2xl p-5 flex flex-col justify-between backdrop-blur-md">
               <div>
                 <span className="font-mono text-[9px] text-[#71717a] uppercase tracking-wider block mb-2">Active Logic Runtimes</span>
                 <div className="space-y-2">
@@ -472,7 +472,7 @@ const handleRecalibrate = () => {
 
           {/* Daily Tasks Section */}
           <div>
-            <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+            <div className="flex items-center justify-between mb-4 pb-2">
               <span className="font-mono text-[10px] text-[#71717a] uppercase tracking-wider">
                 [02] Daily Execution Sprints
               </span>
@@ -484,7 +484,7 @@ const handleRecalibrate = () => {
                 tasks.map((task) => (
                   <div 
                     key={task.id} 
-                    className={`border border-white/5 bg-white/[0.01] rounded-2xl p-5 backdrop-blur-md transition-all duration-300 ${
+                    className={` bg-white/[0.01] rounded-2xl p-5 backdrop-blur-md transition-all duration-300 ${
                       task.isCompleted ? "opacity-45 scale-[0.99]" : ""
                     }`}
                   >
@@ -498,12 +498,12 @@ const handleRecalibrate = () => {
                         </p>
                       </div>
                       
-                      <span className="font-mono text-[9px] text-[#71717a] border border-white/5 bg-white/[0.02] px-2 py-0.5 rounded shrink-0">
+                      <span className="font-mono text-[9px] text-[#71717a] bg-white/[0.02] px-2 py-0.5 rounded shrink-0">
                         {task.timeAllocationHours}H LIMIT
                       </span>
                     </div>
 
-                    <div className="border-t border-white/[0.03] pt-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="/[0.03] pt-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="text-[11px] font-mono text-[#71717a] uppercase select-text">
                         <span className="text-[#a1a1aa]">Done Metric:</span> {task.metricBound}
                       </div>
@@ -524,7 +524,7 @@ const handleRecalibrate = () => {
                                 setFailedTaskId(task.id);
                                 setShowFailureModal(true);
                               }}
-                              className="px-4 py-1.5 rounded-full border border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                              className="px-4 py-1.5 rounded-full border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
                             >
                               <X className="size-3.5" /> Declare Failure
                             </button>
@@ -539,7 +539,7 @@ const handleRecalibrate = () => {
                   </div>
                 ))
               ) : (
-                <div className="border border-white/5 border-dashed rounded-2xl p-8 text-center text-[#71717a] font-mono text-xs">
+                <div className="border-dashed rounded-2xl p-8 text-center text-[#71717a] font-mono text-xs">
                   Sprints completed for today. Recalculating matrix logs for next day inflow...
                 </div>
               )}
@@ -548,7 +548,7 @@ const handleRecalibrate = () => {
         </div>
 
         {/* HUD Footer Controls */}
-        <div className="mt-8 pt-4 border-t border-white/5 shrink-0 flex items-center justify-between">
+        <div className="mt-8 pt-4 shrink-0 flex items-center justify-between">
           <button 
             onClick={() => handleSendChatMessage(`Verify ledger status for: ${mission.missionName}. Current metrics logged as day ${mission.dayNumber}.`)}
             className="font-mono text-[10px] text-[#71717a] hover:text-white transition-colors cursor-pointer"
@@ -602,7 +602,7 @@ const handleRecalibrate = () => {
                         {new Date(parseInt(m.id)).toLocaleTimeString()}
                       </span>
                     </div>
-                    <div className={`pl-4 whitespace-pre-wrap ${isUser ? "text-white" : "text-[#a1a1aa] border-l border-white/5"} ${!isUser && isStreaming && m.id === messages[messages.length - 1]?.id ? "liquid-streaming-text" : ""}`}>
+                    <div className={`pl-4 whitespace-pre-wrap ${isUser ? "text-white" : "text-[#a1a1aa] "} ${!isUser && isStreaming && m.id === messages[messages.length - 1]?.id ? "liquid-streaming-text" : ""}`}>
                       {m.text}
                     </div>
                   </div>
@@ -630,7 +630,7 @@ const handleRecalibrate = () => {
               e.preventDefault();
               handleSendChatMessage();
             }}
-            className="flex items-center gap-3 bg-black border border-white/5 rounded-xl px-4 py-3 focus-within:border-white/15 transition-all duration-200"
+            className="flex items-center gap-3 bg-black rounded-xl px-4 py-3 focus-within: transition-all duration-200"
           >
             <span className="font-mono text-[12px] text-[#ffffff] select-none">fp@operator:~$</span>
             <input
@@ -654,9 +654,9 @@ const handleRecalibrate = () => {
       {/* FAILURE DECLARATION DIALOG OVERLAY */}
       {showFailureModal && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4">
-          <div className="max-w-md w-full border border-white/10 bg-[#09090b] rounded-3xl p-6 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.85)] font-sans">
+          <div className="max-w-md w-full bg-[#09090b] rounded-3xl p-6 md:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.85)] font-sans">
             
-            <div className="size-10 rounded-xl border border-red-500/20 bg-red-500/5 flex items-center justify-center mb-4">
+            <div className="size-10 rounded-xl border-red-500/20 bg-red-500/5 flex items-center justify-center mb-4">
               <AlertTriangle className="size-5 text-red-400" />
             </div>
 
@@ -673,7 +673,7 @@ const handleRecalibrate = () => {
               onChange={(e) => setFailureExplanation(e.target.value)}
               placeholder="e.g. Time bottleneck, missing technical capability, distraction loop..."
               rows={3}
-              className="w-full bg-[#050505] border border-white/5 rounded-2xl px-4 py-3 text-[13px] font-mono text-white placeholder:text-[#3f3f46] outline-none focus:border-white/15 transition-colors mb-6 no-scrollbar"
+              className="w-full bg-[#050505] rounded-2xl px-4 py-3 text-[13px] font-mono text-white placeholder:text-[#3f3f46] outline-none focus: transition-colors mb-6 no-scrollbar"
             />
 
             <div className="flex gap-3">
@@ -692,7 +692,7 @@ const handleRecalibrate = () => {
                   setFailureExplanation("");
                   setFailedTaskId(null);
                 }}
-                className="px-5 py-3 rounded-full font-semibold text-[13px] border border-white/10 bg-transparent text-[#a1a1aa] hover:text-white hover:bg-white/[0.02] transition-colors cursor-pointer text-center"
+                className="px-5 py-3 rounded-full font-semibold text-[13px] bg-transparent text-[#a1a1aa] hover:text-white hover:bg-white/[0.02] transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>

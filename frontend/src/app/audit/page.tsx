@@ -96,7 +96,7 @@ export default function AuditPage() {
         
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/20 bg-red-500/10 mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border-red-500/20 bg-red-500/10 mb-6">
             <AlertTriangle className="size-3.5 text-red-400" />
             <span className="font-mono text-[10px] text-red-400 uppercase tracking-widest">Public Interrogation</span>
           </div>
@@ -113,7 +113,7 @@ export default function AuditPage() {
           <form 
             onSubmit={handleAudit}
             className={`relative flex items-center bg-[#09090b] border transition-all duration-300 rounded-[20px] p-2 ${
-              isInputFocused ? "border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.15)]" : "border-white/10"
+              isInputFocused ? "border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.15)]" : ""
             }`}
           >
             <div className="pl-4 shrink-0">
@@ -160,11 +160,11 @@ export default function AuditPage() {
             {/* Downloadable Card */}
             <div 
               ref={cardRef} 
-              className="w-full max-w-sm bg-[#050505] border border-white/10 rounded-3xl p-8 relative overflow-hidden shadow-2xl"
+              className="w-full max-w-sm bg-[#050505] rounded-3xl p-8 relative overflow-hidden shadow-2xl"
               style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(30,30,30,1) 0%, rgba(5,5,5,1) 100%)' }}
             >
               {/* Card Header */}
-              <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+              <div className="flex items-center justify-between pb-4 mb-6">
                 <div className="flex items-center gap-2">
                   <div className="size-5 bg-white rounded-full flex items-center justify-center">
                     <div className="size-2.5 bg-black rounded-full" />
@@ -180,7 +180,7 @@ export default function AuditPage() {
               </div>
               
               {/* Verdict Footer */}
-              <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between relative z-10">
+              <div className="mt-8 pt-4 flex items-center justify-between relative z-10">
                 <div>
                   <div className="text-[10px] font-mono text-[#71717a] uppercase mb-1">System Verdict</div>
                   <div className={`text-lg font-black uppercase tracking-tight ${
@@ -199,7 +199,7 @@ export default function AuditPage() {
             <div className="mt-8 flex gap-4 w-full max-w-sm">
               <button 
                 onClick={handleShare}
-                className="flex-1 h-12 rounded-xl bg-[#18181b] border border-white/10 hover:border-white/30 text-white font-medium text-sm flex items-center justify-center gap-2 transition-all group"
+                className="flex-1 h-12 rounded-xl bg-[#18181b] hover: text-white font-medium text-sm flex items-center justify-center gap-2 transition-all group"
               >
                 <Share2 className="size-4 group-hover:scale-110 transition-transform" />
                 Share To Flex
@@ -207,7 +207,7 @@ export default function AuditPage() {
             </div>
 
             {/* Waitlist Trap */}
-            <div className="mt-16 w-full max-w-md bg-[#09090b] border border-red-500/20 rounded-2xl p-6 text-center">
+            <div className="mt-16 w-full max-w-md bg-[#09090b] border-red-500/20 rounded-2xl p-6 text-center">
               <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-2">
                 Dare To EscapE The Average?
               </h3>
@@ -223,7 +223,7 @@ export default function AuditPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
-                    className="flex-1 bg-[#18181b] border border-white/5 rounded-xl px-4 text-sm text-white placeholder:text-[#52525b] outline-none focus:border-red-500/30 transition-colors"
+                    className="flex-1 bg-[#18181b] rounded-xl px-4 text-sm text-white placeholder:text-[#52525b] outline-none focus:border-red-500/30 transition-colors"
                   />
                   <button 
                     type="submit"
@@ -233,7 +233,7 @@ export default function AuditPage() {
                   </button>
                 </form>
               ) : (
-                <div className="h-12 rounded-xl border border-green-500/20 bg-green-500/10 flex items-center justify-center text-green-400 font-bold text-[11px] uppercase tracking-widest">
+                <div className="h-12 rounded-xl border-green-500/20 bg-green-500/10 flex items-center justify-center text-green-400 font-bold text-[11px] uppercase tracking-widest">
                   Position Secured. Wait For The Invite.
                 </div>
               )}
