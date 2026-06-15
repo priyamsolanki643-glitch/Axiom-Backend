@@ -625,7 +625,7 @@ const { data: { session } } = await supabase.auth.getSession();
 
       {/* ── Message stream area ── */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar relative z-10">
-        <div className="max-w-[760px] mx-auto px-4 md:px-8 h-full flex flex-col justify-between">
+        <div className="max-w-[720px] mx-auto px-4 md:px-8 h-full flex flex-col justify-between">
           
           {isLoadingThread ? (
             /* Skeleton Loading State for old thread */
@@ -903,7 +903,7 @@ const { data: { session } } = await supabase.auth.getSession();
       {/* ── Input Box (Trajectory Forge copy) ── */}
       <div className="shrink-0 px-4 md:px-8 pb-6 pt-2 bg-[#000000] relative z-10">
         <div 
-          className="reveal-chat-item max-w-[640px] w-full mx-auto"
+          className="reveal-chat-item max-w-[720px] w-full mx-auto"
           style={{ animationDelay: "550ms" }}
         >
           
