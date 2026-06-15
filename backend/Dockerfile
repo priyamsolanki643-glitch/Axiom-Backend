@@ -1,4 +1,5 @@
 FROM node:22-alpine
+# Node 22 specified for Cloud Build compatibility
 
 WORKDIR /app
 
