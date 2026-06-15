@@ -729,12 +729,6 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                             >
                               {copiedMessageId === m.id ? <Check className="size-4 text-green-400" /> : <Copy className="size-4" />}
                             </button>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }} 
-                              className="p-1 hover:text-white transition-colors" 
-                            >
-                              <RefreshCw className="size-4" />
-                            </button>
                           </div>
                         </div>
                       ) : (
