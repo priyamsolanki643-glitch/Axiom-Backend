@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check } from "lucide-react";
+import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -590,7 +590,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
       <header 
-        className="hidden md:flex reveal-chat-item h-14 shrink-0 items-center justify-between px-6 bg-transparent backdrop-blur-xl z-20 sticky top-0"
+        className="flex reveal-chat-item h-14 shrink-0 items-center justify-between px-4 md:px-6 bg-transparent backdrop-blur-xl z-20 sticky top-0"
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center gap-3">
@@ -604,12 +604,20 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-2 -mr-1">
+        <div className="flex items-center gap-1 md:gap-2 -mr-1">
+          {onOpenVault && (
+            <button 
+              onClick={onOpenVault}
+              className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer"
+            >
+              <Vault className="size-5 md:size-6" />
+            </button>
+          )}
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
             className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(255, 255, 255,0.6)]"
           >
-            <Plus className="size-6" />
+            <Plus className="size-5 md:size-6" />
           </button>
         </div>
       </header>

@@ -126,7 +126,14 @@
 ───────────────────────────────────────────── */
 @layer base {
   * { border-color: var(--border); }
-  html { color-scheme: dark; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
   body {
     background-color: var(--background);
     color: var(--foreground);
