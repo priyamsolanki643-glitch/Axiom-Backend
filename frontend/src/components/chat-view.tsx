@@ -308,7 +308,8 @@ const { data: { session } } = await supabase.auth.getSession();
       }
 
       setMessages((prev) => [...prev, { id: String(Date.now()), role: "fp", text: reply }]);
-    } catch {
+    } catch (err: any) {
+      console.error("CRITICAL FETCH ERROR:", err);
       setMessages((prev) => [
         ...prev,
         { id: String(Date.now()), role: "fp", text: "Connection error. Strategy engine offline." },
