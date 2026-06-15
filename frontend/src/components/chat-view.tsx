@@ -719,7 +719,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
+                          <div className="font-sans prose prose-invert prose-p:leading-[1.9] prose-p:text-[15.5px] prose-p:mb-5 prose-p:text-white/85 prose-p:font-[300] prose-p:tracking-[0.02em] prose-li:my-1 prose-ul:my-3 prose-headings:font-display prose-headings:font-semibold prose-headings:tracking-wide text-[16px] max-w-none break-words">
                             <ReactMarkdown>
                               {m.text}
                             </ReactMarkdown>
@@ -854,8 +854,13 @@ const { data: { session } } = await supabase.auth.getSession();
           style={{ animationDelay: "550ms" }}
         >
           
-          {/* Sleek Apple-inspired floating capsule without glow */}
-          <div className={`input-console-transition flex items-center gap-1.5 md:gap-3 bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-colors duration-300 ${isThinking ? "border-transparent" : "border-white/40"}`}>
+          {/* God-Level Ethereal Floating Capsule */}
+          <div className={`input-console-transition relative flex items-center gap-1.5 md:gap-3 bg-black/60 backdrop-blur-3xl rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px] border transition-all duration-500 overflow-visible ${isThinking ? "border-transparent" : "border-white/20 hover:border-white/40 shadow-[0_8px_32px_rgba(255,255,255,0.05)]"}`}>
+            
+            {/* Subtle inner glow when active */}
+            {!isThinking && (
+              <div className="absolute inset-0 rounded-[32px] pointer-events-none shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]" />
+            )}
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
@@ -967,12 +972,15 @@ const { data: { session } } = await supabase.auth.getSession();
               <button 
                 type="button"
                 onClick={toggleRecording}
-                className={`size-10 rounded-full grid place-items-center cursor-pointer transition-all duration-200 active:scale-90 active:bg-white/10 ${
-                  isRecording ? "bg-red-500/20 text-red-400" : "hover:bg-white/5 text-[#a1a1aa] hover:text-white"
+                className={`size-10 rounded-full grid place-items-center cursor-pointer transition-all duration-300 active:scale-90 active:bg-white/10 relative ${
+                  isRecording ? "bg-red-500/20 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)]" : "hover:bg-white/10 text-[#a1a1aa] hover:text-white"
                 }`}
                 title={isRecording ? "Stop voice input" : "Voice input"}
               >
-                <Mic className="size-[20px]" />
+                {isRecording && (
+                  <span className="absolute inset-0 rounded-full border border-red-500/50 animate-ping opacity-75" />
+                )}
+                <Mic className="size-[20px] relative z-10" />
               </button>
 
               <button
@@ -983,15 +991,19 @@ const { data: { session } } = await supabase.auth.getSession();
                     handleSend();
                   }
                 }}
-                disabled={!isThinking && (!input.trim() && selectedFiles.length === 0)}
-                className={`action-icon-btn size-10 rounded-full grid place-items-center transition-all duration-300 cursor-pointer ${
+                className={`action-icon-btn size-10 rounded-full grid place-items-center transition-all duration-500 cursor-pointer relative z-10 ${
                   isThinking 
-                    ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 active:scale-90 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+                    ? "bg-red-500/10 text-red-400 hover:bg-red-500/20 active:scale-90 shadow-[0_0_20px_rgba(239,68,68,0.15)] border border-red-500/20"
                     : (!input.trim() && selectedFiles.length === 0)
-                      ? "bg-white/10 text-white/30"
-                      : "bg-white text-black hover:scale-[1.05] active:scale-90 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                      ? "bg-white/5 text-white/30 border border-white/5"
+                      : "bg-white text-black hover:scale-[1.05] active:scale-95 shadow-[0_0_25px_rgba(255,255,255,0.3)]"
                 }`}
               >
+                {/* Active glow ring */}
+                {!isThinking && (input.trim() || selectedFiles.length > 0) && (
+                  <span className="absolute inset-0 rounded-full border border-white/50 animate-pulse pointer-events-none" />
+                )}
+                
                 {isThinking ? (
                   <Square className="size-[14px] fill-red-400 text-red-400" />
                 ) : (
