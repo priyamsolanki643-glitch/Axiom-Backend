@@ -71,12 +71,12 @@
   --border-strong: rgba(255, 255, 255, 0.20);
   --border:        rgba(255, 255, 255, 0.07);
 
-  /* Signature accent — refined indigo */
-  --accent:      hsl(243, 80%, 65%);
-  --accent-dim:  hsla(243, 80%, 65%, 0.10);
-  --accent-glow: 0 0 24px hsla(243, 80%, 65%, 0.22);
+  /* Signature accent — pure monochrome */
+  --accent:      hsl(0, 0%, 100%);
+  --accent-dim:  hsla(0, 0%, 100%, 0.10);
+  --accent-glow: 0 0 24px hsla(0, 0%, 100%, 0.15);
 
-  --gradient-halo: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%);
+  --gradient-halo: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.02) 0%, transparent 70%);
   --shadow-vault: 0 0 0 1px rgba(0,0,0,0.9), 0 8px 16px -4px rgba(0,0,0,0.6), 0 32px 80px -8px rgba(0,0,0,0.9);
   --shadow-card:  0 1px 0 rgba(255,255,255,0.04) inset, 0 -1px 0 rgba(0,0,0,0.4) inset;
   --shadow-float: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05) inset;
@@ -648,14 +648,14 @@
 .no-scrollbar { scrollbar-width: none; }
 
 /* ─────────────────────────────────────────────
-   INPUT FOCUS RING — accent glow
+   INPUT FOCUS RING
 ───────────────────────────────────────────── */
 .input-focus-ring {
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .input-focus-ring:focus-within {
-  border-color: hsla(243, 80%, 65%, 0.35) !important;
-  box-shadow: 0 0 0 3px hsla(243, 80%, 65%, 0.08), 0 0 20px hsla(243, 80%, 65%, 0.06);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05), 0 0 20px rgba(255, 255, 255, 0.02);
 }
 
 /* ─────────────────────────────────────────────
