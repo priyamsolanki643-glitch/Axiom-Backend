@@ -81,8 +81,9 @@ const { data: { session } } = await supabase.auth.getSession();
 
   const fetchThreads = async () => {
     try {
-const { data: { session } } = await supabase.auth.getSession();
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        const { data: { session } } = await supabase.auth.getSession();
+        if (isAnonymous || !session) return;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
       const res = await fetch(`${baseUrl}/api/v1/threads?t=${Date.now()}`, {
         headers: { "Authorization": `Bearer ${session?.access_token}` },
 

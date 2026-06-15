@@ -38,7 +38,7 @@ app.use('*', cors({
     if (origin.endsWith('.vercel.app')) return origin;
     return allowedOrigins[0] || origin;
   },
-  allowHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
+  allowHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Anonymous-Id'],
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
 }));

@@ -26,6 +26,7 @@ export default function EntryPoint() {
       try {
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
         const res = await fetch(`${baseUrl}/api/v1/interaction/active-mission`, {
           headers: { "Authorization": `Bearer ${session?.access_token}` }
 
