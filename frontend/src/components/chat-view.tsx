@@ -1042,7 +1042,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
           {/* Subtext info */}
           <div className="mt-3 text-center">
             <span className="font-sans text-[11px] text-[#52525b]">
-              Lumensky processes intelligence dynamically. Verify critical execution outputs.
+              Lumensky helps you execute faster, but always double-check the details.
             </span>
           </div>
 
