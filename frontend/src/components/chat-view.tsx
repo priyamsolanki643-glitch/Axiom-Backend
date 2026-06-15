@@ -41,6 +41,8 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editInput, setEditInput] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -281,7 +283,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     }
   };
 
-  const handleSend = useCallback(async (textOverride?: string) => {
+  const handleSend = useCallback(async (textOverride?: string, isRetry?: boolean, overrideMessages?: any[]) => {
     const text = (textOverride ?? input).trim();
     if (!text && selectedFiles.length === 0) return;
 
@@ -401,26 +403,49 @@ const { data: { session } } = await supabase.auth.getSession();
     navigator.clipboard.writeText(txt);
   };
 
-  const handleRetry = useCallback(() => {
+  const handleRetry = useCallback((messageId?: string) => {
     if (messages.length === 0) return;
-    // Find the last user message
+    
     let lastUserMessage = null;
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === "user") {
-        lastUserMessage = messages[i];
-        break;
+    let lastUserIndex = -1;
+    
+    if (messageId && typeof messageId === "string" && messageId.trim().length > 0) {
+      const aiIndex = messages.findIndex(m => m.id === messageId);
+      if (aiIndex > 0) {
+        lastUserIndex = aiIndex - 1;
+        lastUserMessage = messages[lastUserIndex];
+      }
+    } else {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === "user") {
+          lastUserMessage = messages[i];
+          lastUserIndex = i;
+          break;
+        }
       }
     }
+    
     if (!lastUserMessage) return;
     
-    // Remove all messages after the last user message
-    const lastUserIndex = messages.indexOf(lastUserMessage);
     const newMessages = messages.slice(0, lastUserIndex + 1);
     setMessages(newMessages);
     
-    // Trigger send with the same text
-    handleSend(lastUserMessage.text);
+    handleSend(lastUserMessage.text, true, newMessages);
   }, [messages, handleSend]);
+
+  const handleSaveEdit = (id: string) => {
+    const messageIndex = messages.findIndex(m => m.id === id);
+    if (messageIndex === -1) return;
+    
+    const newMessages = messages.slice(0, messageIndex + 1);
+    newMessages[newMessages.length - 1].text = editInput;
+    
+    setMessages(newMessages);
+    setEditingMessageId(null);
+    setEditInput("");
+    
+    handleSend(editInput, true, newMessages);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -678,7 +703,7 @@ const { data: { session } } = await supabase.auth.getSession();
                               <Copy className="size-4" />
                             </button>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }} 
+                              onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
                               <RefreshCw className="size-4" />
@@ -710,7 +735,7 @@ const { data: { session } } = await supabase.auth.getSession();
                               <Copy className="size-4" />
                             </button>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }}
+                              onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }}
                               className="p-1 hover:text-white cursor-pointer transition-colors"
                             >
                               <RefreshCw className="size-4" />
