@@ -118,7 +118,7 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
       />
 
       <div
-        className={`relative w-full max-w-[420px] bg-black /[0.08] rounded-[24px] overflow-hidden flex flex-col transition-all duration-[500ms] ${
+        className={`relative w-full max-w-[420px] max-h-[95vh] overflow-y-auto bg-black border border-white/5 rounded-[24px] flex flex-col transition-all duration-[500ms] no-scrollbar ${
           mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-[0.96]"
         }`}
         style={{
