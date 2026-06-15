@@ -696,19 +696,14 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row for user */}
                           <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 right-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
-                              : "opacity-0 md:group-hover:opacity-100 mt-1.5 scale-95 md:scale-100"
+                              ? "absolute top-full mt-2 right-0 bg-black text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50" 
+                              : "hidden opacity-0"
                           }`}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
                               <Edit className="size-4" />
-                            </button>
-                            <button 
-                              className="p-1 hover:text-white transition-colors" 
-                            >
-                              <Mic className="size-4" />
                             </button>
                             <button 
                               onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }} 
@@ -733,11 +728,14 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row */}
                           <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 left-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
-                              : "opacity-0 md:group-hover:opacity-100 pt-2 scale-95 md:scale-100"
+                              ? "absolute top-full mt-2 left-0 bg-black text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50" 
+                              : "hidden opacity-0"
                           }`}>
-                            <button className="p-1 hover:text-white cursor-pointer transition-colors">
-                              <Mic className="size-4" />
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }}
+                              className="p-1 hover:text-white cursor-pointer transition-colors"
+                            >
+                              <RefreshCw className="size-4" />
                             </button>
                             <button 
                               onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }}
@@ -745,11 +743,11 @@ const { data: { session } } = await supabase.auth.getSession();
                             >
                               <Copy className="size-4" />
                             </button>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }}
-                              className="p-1 hover:text-white cursor-pointer transition-colors"
-                            >
-                              <RefreshCw className="size-4" />
+                            <button className="p-1 hover:text-white cursor-pointer transition-colors">
+                              <ThumbsUp className="size-4" />
+                            </button>
+                            <button className="p-1 hover:text-white cursor-pointer transition-colors">
+                              <ThumbsDown className="size-4" />
                             </button>
                           </div>
                         </div>
