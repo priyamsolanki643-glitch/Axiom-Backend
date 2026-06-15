@@ -32,6 +32,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [isThinking, setIsThinking] = useState(false);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [greeting, setGreeting] = useState({ text: "Hi bro", accent: "execution kiya ?", animateAccent: true });
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false);
@@ -112,6 +113,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       setIsThinking(false);
       setIsLoadingThread(false);
       setThreadId(null);
+      setEditingMessageId(null);
     };
 
     const handleLoadThread = async (e: Event) => {
@@ -237,9 +239,11 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     }
   };
 
-  const handleSend = useCallback(async (textOverride?: string) => {
-    const text = (textOverride ?? input).trim();
-    if (!text && selectedFiles.length === 0) return;
+  const handleSend = useCallback(async (options?: string | { isRetry?: boolean }) => {
+    const isRetry = typeof options === 'object' ? options.isRetry : false;
+    const textVal = typeof options === 'string' ? options : input;
+    const text = textVal.trim();
+    if (!text && selectedFiles.length === 0 && !isRetry) return;
 
     if (isAnonymous) {
       const currentCount = parseInt(localStorage.getItem("fp_anon_count") || "0");
@@ -252,22 +256,49 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
     if (isThinking) return;
 
+    let currentMessages = [...messages];
+
+    // If editing, truncate everything from the edited message onwards
+    if (editingMessageId && !isRetry) {
+      const idx = currentMessages.findIndex(m => m.id === editingMessageId);
+      if (idx !== -1) {
+        currentMessages = currentMessages.slice(0, idx);
+      }
+      setEditingMessageId(null);
+    }
+
+    // If retry, truncate the last AI message
+    if (isRetry) {
+      let lastUserIdx = -1;
+      for (let i = currentMessages.length - 1; i >= 0; i--) {
+        if (currentMessages[i].role === "user") {
+          lastUserIdx = i;
+          break;
+        }
+      }
+      if (lastUserIdx !== -1) {
+        currentMessages = currentMessages.slice(0, lastUserIdx + 1);
+      } else {
+        return;
+      }
+    }
+
     const filesPayload = selectedFiles.map((file, idx) => ({
       name: file.name,
       url: filePreviews[idx],
       type: file.type,
     }));
 
-    setMessages((prev) => [
-      ...prev,
-      {
+    if (!isRetry) {
+      currentMessages.push({
         id: String(Date.now()),
         role: "user",
         text,
         files: filesPayload,
-      },
-    ]);
-    
+      });
+    }
+
+    setMessages(currentMessages);
     setInput("");
     setSelectedFiles([]);
     setFilePreviews([]);
@@ -280,14 +311,11 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     abortControllerRef.current = controller;
 
     try {
-      const historyPayload = messages.map((m) => ({
+      const historyPayload = currentMessages.slice(0, -1).map((m) => ({
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: m.text }]
       }));
-      historyPayload.push({
-        role: "user",
-        parts: [{ text }]
-      });
+      const payloadMessage = currentMessages[currentMessages.length - 1]?.text || "";
 
 const { data: { session } } = await supabase.auth.getSession();
       const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
@@ -301,7 +329,7 @@ const { data: { session } } = await supabase.auth.getSession();
           ...(isAnonymous ? { "X-Anonymous-Id": localStorage.getItem("fp_anon_id") || "anon" } : {})
         },
         body: JSON.stringify({
-          message: text,
+          message: payloadMessage,
           conversationHistory: historyPayload,
           thread_id: threadId
         }),
@@ -422,23 +450,7 @@ const { data: { session } } = await supabase.auth.getSession();
 
   const handleRetry = useCallback(() => {
     if (messages.length === 0) return;
-    // Find the last user message
-    let lastUserMessage = null;
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === "user") {
-        lastUserMessage = messages[i];
-        break;
-      }
-    }
-    if (!lastUserMessage) return;
-    
-    // Remove all messages after the last user message
-    const lastUserIndex = messages.indexOf(lastUserMessage);
-    const newMessages = messages.slice(0, lastUserIndex + 1);
-    setMessages(newMessages);
-    
-    // Trigger send with the same text
-    handleSend(lastUserMessage.text);
+    handleSend({ isRetry: true });
   }, [messages, handleSend]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -710,7 +722,7 @@ const { data: { session } } = await supabase.auth.getSession();
                               : "hidden opacity-0"
                           }`}>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
+                              onClick={(e) => { e.stopPropagation(); setEditingMessageId(m.id); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
                               <Edit className="size-4" />
