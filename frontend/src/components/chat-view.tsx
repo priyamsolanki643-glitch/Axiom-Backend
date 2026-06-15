@@ -933,9 +933,13 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
               )}
 
               {isRecording && (
-                <div className="flex items-center gap-2.5 px-1 py-1 text-xs text-red-400 font-mono animate-pulse">
-                  <span className="size-2 rounded-full bg-red-500" />
-                  Listening...
+                <div className="flex items-center gap-2.5 px-2 py-1 pb-1.5 text-[12px] uppercase tracking-widest text-red-500 font-semibold animate-fade-in">
+                  <div className="flex items-center gap-[3px] h-3">
+                    <span className="w-[2px] h-full bg-red-500 rounded-full animate-audio-wave" style={{ animationDelay: '0ms' }} />
+                    <span className="w-[2px] h-full bg-red-500 rounded-full animate-audio-wave" style={{ animationDelay: '200ms' }} />
+                    <span className="w-[2px] h-full bg-red-500 rounded-full animate-audio-wave" style={{ animationDelay: '400ms' }} />
+                  </div>
+                  Listening
                 </div>
               )}
               {editingMessageId && (

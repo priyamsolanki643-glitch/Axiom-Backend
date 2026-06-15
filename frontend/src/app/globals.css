@@ -608,6 +608,17 @@
 }
 
 /* ─────────────────────────────────────────────
+   AUDIO WAVE (Dictation)
+───────────────────────────────────────────── */
+@keyframes audio-wave {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.6; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+.animate-audio-wave {
+  animation: audio-wave 1.2s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────
    KBD styles
 ───────────────────────────────────────────── */
 .kbd {
