@@ -71,12 +71,12 @@
   --border-strong: rgba(255, 255, 255, 0.20);
   --border:        rgba(255, 255, 255, 0.07);
 
-  /* Signature accent — pure monochrome */
-  --accent:      hsl(0, 0%, 100%);
-  --accent-dim:  hsla(0, 0%, 100%, 0.10);
-  --accent-glow: 0 0 24px hsla(0, 0%, 100%, 0.15);
+  /* Signature accent — refined indigo */
+  --accent:      hsl(243, 80%, 65%);
+  --accent-dim:  hsla(243, 80%, 65%, 0.10);
+  --accent-glow: 0 0 24px hsla(243, 80%, 65%, 0.22);
 
-  --gradient-halo: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.02) 0%, transparent 70%);
+  --gradient-halo: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 70%);
   --shadow-vault: 0 0 0 1px rgba(0,0,0,0.9), 0 8px 16px -4px rgba(0,0,0,0.6), 0 32px 80px -8px rgba(0,0,0,0.9);
   --shadow-card:  0 1px 0 rgba(255,255,255,0.04) inset, 0 -1px 0 rgba(0,0,0,0.4) inset;
   --shadow-float: 0 4px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05) inset;
@@ -126,14 +126,7 @@
 ───────────────────────────────────────────── */
 @layer base {
   * { border-color: var(--border); }
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100dvh;
-    width: 100vw;
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
+  html { color-scheme: dark; }
   body {
     background-color: var(--background);
     color: var(--foreground);
@@ -615,17 +608,6 @@
 }
 
 /* ─────────────────────────────────────────────
-   AUDIO WAVE (Dictation)
-───────────────────────────────────────────── */
-@keyframes audio-wave {
-  0%, 100% { transform: scaleY(0.4); opacity: 0.6; }
-  50% { transform: scaleY(1); opacity: 1; }
-}
-.animate-audio-wave {
-  animation: audio-wave 1.2s ease-in-out infinite;
-}
-
-/* ─────────────────────────────────────────────
    KBD styles
 ───────────────────────────────────────────── */
 .kbd {
@@ -666,44 +648,12 @@
 .no-scrollbar { scrollbar-width: none; }
 
 /* ─────────────────────────────────────────────
-   INPUT FOCUS RING
+   INPUT FOCUS RING — accent glow
 ───────────────────────────────────────────── */
 .input-focus-ring {
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .input-focus-ring:focus-within {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05), 0 0 20px rgba(255, 255, 255, 0.02);
-}
-
-/* ─────────────────────────────────────────────
-   MOBILE BEAST OVERRIDES
-───────────────────────────────────────────── */
-html, body {
-  -webkit-tap-highlight-color: transparent;
-}
-
-.safe-area-pt {
-  padding-top: env(safe-area-inset-top);
-}
-
-.safe-area-pb {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.safe-area-mb {
-  margin-bottom: env(safe-area-inset-bottom);
-}
-
-/* ─────────────────────────────────────────────
-   DECRYPTION TEXT EFFECT
-───────────────────────────────────────────── */
-@keyframes decryptText {
-  0%   { filter: blur(4px); opacity: 0; letter-spacing: 2px; }
-  40%  { filter: blur(2px); opacity: 0.7; letter-spacing: 0.5px; }
-  100% { filter: blur(0); opacity: 1; letter-spacing: normal; }
-}
-
-.animate-decrypt {
-  animation: decryptText 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  border-color: hsla(243, 80%, 65%, 0.35) !important;
+  box-shadow: 0 0 0 3px hsla(243, 80%, 65%, 0.08), 0 0 20px hsla(243, 80%, 65%, 0.06);
 }

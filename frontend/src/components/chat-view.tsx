@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+<<<<<<< HEAD
 import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw, Check, Vault, Square } from "lucide-react";
+=======
+import { ArrowUp, Mic, Plus, Menu, Globe, Image, ThumbsUp, ThumbsDown, Share2, Copy, Target, Camera, Paperclip, X, ChevronRight, ChevronLeft, Cpu, Edit, RefreshCw } from "lucide-react";
+>>>>>>> a1433dd (feat: sync frontend streaming UI updates from backend branch)
 import { supabase } from "@/utils/supabase/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -29,8 +33,6 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const router = useRouter();
   const [simulationData, setSimulationData] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const messagesRef = useRef(messages);
-  useEffect(() => { messagesRef.current = messages; }, [messages]);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
@@ -41,9 +43,6 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0);
-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editInput, setEditInput] = useState<string>("");
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -155,47 +154,6 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
     window.addEventListener("new-thread", handleNewThread);
     window.addEventListener("load-thread", handleLoadThread);
-    
-    const handleSyncAnonymousThread = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
-
-        const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
-        
-        // Use a background call to sync messages
-        if (messagesRef.current.length > 0) {
-          const res = await fetch(`${baseUrl}/api/v1/threads/sync`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({
-              title: messagesRef.current[0]?.text?.substring(0, 40) || "Anonymous Chat",
-              messages: messagesRef.current
-            })
-          });
-          
-          if (res.ok) {
-            const data = await res.json();
-            if (data.threadId) {
-              setThreadId(data.threadId);
-              window.dispatchEvent(new Event("threads-updated"));
-            }
-          }
-        }
-        
-        // Clean up anon storage
-        localStorage.removeItem("fp_anon_count");
-        localStorage.removeItem("fp_anon_id");
-      } catch (err) {
-        console.error("Failed to sync anonymous thread", err);
-      }
-    };
-    
-    window.addEventListener("sync-anonymous-thread", handleSyncAnonymousThread);
-    
     const handleGlobalClick = () => {
       if (activeMessageId) setActiveMessageId(null);
     };
@@ -203,7 +161,6 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     return () => {
       window.removeEventListener("new-thread", handleNewThread);
       window.removeEventListener("load-thread", handleLoadThread);
-      window.removeEventListener("sync-anonymous-thread", handleSyncAnonymousThread);
       window.removeEventListener("click", handleGlobalClick);
     };
   }, [activeMessageId]);
@@ -285,7 +242,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     }
   };
 
-  const handleSend = useCallback(async (textOverride?: string, isRetry?: boolean, overrideMessages?: any[]) => {
+  const handleSend = useCallback(async (textOverride?: string) => {
     const text = (textOverride ?? input).trim();
     if (!text && selectedFiles.length === 0) return;
 
@@ -306,33 +263,15 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       type: file.type,
     }));
 
-    let baseMessages = messages;
-    let isEditMode = false;
-
-    if (editingMessageId && !isRetry) {
-      const editIndex = messages.findIndex(m => m.id === editingMessageId);
-      if (editIndex !== -1) {
-        baseMessages = messages.slice(0, editIndex);
-        isEditMode = true;
-      }
-      setEditingMessageId(null);
-      setEditInput("");
-    }
-
-    if (!isRetry) {
-      setMessages((prev) => {
-        const source = isEditMode ? baseMessages : prev;
-        return [
-          ...source,
-          {
-            id: String(Date.now()),
-            role: "user",
-            text,
-            files: filesPayload,
-          },
-        ];
-      });
-    }
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: String(Date.now()),
+        role: "user",
+        text,
+        files: filesPayload,
+      },
+    ]);
     
     setInput("");
     setSelectedFiles([]);
@@ -346,22 +285,19 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     abortControllerRef.current = controller;
 
     try {
-      const activeMessages = overrideMessages ?? baseMessages;
-      const historyPayload = activeMessages.map((m) => ({
+      const historyPayload = messages.map((m) => ({
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: m.text }]
       }));
-      if (!isRetry) {
-        historyPayload.push({
-          role: "user",
-          parts: [{ text }]
-        });
-      }
+      historyPayload.push({
+        role: "user",
+        parts: [{ text }]
+      });
 
-      const { data: { session } } = await supabase.auth.getSession();
+const { data: { session } } = await supabase.auth.getSession();
       const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
 
-      const res = await fetch(`${baseUrl}/api/v1/interaction/message`, {
+      const res = await fetch(`${baseUrl}/api/v1/interaction/message/stream`, {
         method: "POST",
         signal: controller.signal,
         headers: { 
@@ -375,41 +311,85 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
           thread_id: threadId
         }),
       });
-      const data = await res.json();
-      
-      if (data?.data?.thread_id && !threadId) {
-        setThreadId(data.data.thread_id);
-        // Let sidebar know to refresh its list
-        window.dispatchEvent(new Event('refresh-sidebar'));
+
+      if (!res.ok || !res.body) {
+        throw new Error("Network response was not ok");
       }
 
-      let reply = "Parameter logged.";
-      if (data?.error) {
-        let rawError = "";
-        try { 
-          if (typeof data.error === 'object') {
-            rawError = data.error.message || JSON.stringify(data.error);
-          } else {
-            rawError = JSON.parse(data.error)?.error?.message ?? data.error; 
+      // Check if the response is JSON (e.g. error or non-streaming fallback)
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        // handle JSON exactly as before
+        if (data?.data?.thread_id && !threadId) {
+          setThreadId(data.data.thread_id);
+          window.dispatchEvent(new Event('refresh-sidebar'));
+        }
+        let reply = "Parameter logged.";
+        if (data?.error) {
+          reply = "System Notification: A brief network anomaly occurred. Please re-transmit your parameter.";
+        } else if (data?.data?.ai_response?.response_text) {
+          reply = data.data.ai_response.response_text;
+        }
+        if (data?.data?.engine_result?.type === "onboarding_complete") {
+          setSimulationData(data.data.engine_result.data);
+        }
+        setMessages((prev) => [...prev, { id: String(Date.now()), role: "fp", text: reply }]);
+      } else {
+        // SSE STREAMING MODE
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        
+        let accumulatedReply = "";
+        let newMsgId = String(Date.now());
+        
+        // Push an empty message first
+        setMessages((prev) => [...prev, { id: newMsgId, role: "fp", text: "" }]);
+        setIsThinking(false);
+
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const dataStr = line.replace("data: ", "");
+                if (dataStr === "[DONE]") {
+                  done = true;
+                  break;
+                }
+                try {
+                  const eventData = JSON.parse(dataStr);
+                  
+                  if (eventData.type === "metadata") {
+                    if (eventData.data?.thread_id && !threadId) {
+                      setThreadId(eventData.data.thread_id);
+                      window.dispatchEvent(new Event('refresh-sidebar'));
+                    }
+                    if (eventData.data?.engine_result?.type === "onboarding_complete") {
+                      setSimulationData(eventData.data.engine_result.data);
+                    }
+                  } else if (eventData.type === "text" || eventData.type === "disclaimer") {
+                    if (eventData.text) {
+                      accumulatedReply += eventData.text;
+                      // Update the specific message
+                      setMessages((prev) => 
+                        prev.map((m) => m.id === newMsgId ? { ...m, text: accumulatedReply } : m)
+                      );
+                      scrollToBottom();
+                    }
+                  }
+                } catch (e) {
+                  // Partial JSON chunk parsing error, ignore
+                }
+              }
+            }
           }
         }
-        catch { rawError = data.error; }
-
-        const errStr = rawError.toLowerCase();
-        if (errStr.includes("quota") || errStr.includes("rate limit") || errStr.includes("429") || errStr.includes("exceeded")) {
-          reply = "Lumensky Engine is currently processing peak tactical data. Please allow a brief 30-second cooldown before transmitting the next parameter.";
-        } else {
-          reply = "System Notification: A brief network anomaly occurred. Please re-transmit your parameter.";
-        }
-      } else if (data?.data?.ai_response?.response_text) {
-        reply = data.data.ai_response.response_text;
       }
-
-      if (data?.data?.engine_result?.type === "onboarding_complete") {
-        setSimulationData(data.data.engine_result.data);
-      }
-
-      setMessages((prev) => [...prev, { id: String(Date.now()), role: "fp", text: reply }]);
     } catch (error: any) {
       if (error.name === 'AbortError') {
         console.log('Generation stopped by user');
@@ -425,7 +405,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       setIsThinking(false);
       inputRef.current?.focus();
     }
-  }, [input, isThinking, messages, selectedFiles, filePreviews, editingMessageId]);
+  }, [input, isThinking, messages, selectedFiles, filePreviews]);
 
   const proceedToSimulation = () => {
     if (!simulationData) return;
@@ -434,56 +414,29 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
     router.push("/gate");
   };
 
-  const copyToClipboard = (txt: string, messageId: string) => {
+  const copyToClipboard = (txt: string) => {
     navigator.clipboard.writeText(txt);
-    setCopiedMessageId(messageId);
-    setTimeout(() => {
-      setCopiedMessageId(null);
-    }, 2000);
   };
 
-  const handleRetry = useCallback((messageId?: string) => {
+  const handleRetry = useCallback(() => {
     if (messages.length === 0) return;
-    
+    // Find the last user message
     let lastUserMessage = null;
-    let lastUserIndex = -1;
-    
-    if (messageId && typeof messageId === "string" && messageId.trim().length > 0) {
-      const msgIndex = messages.findIndex(m => m.id === messageId);
-      if (msgIndex >= 0) {
-        if (messages[msgIndex].role === "user") {
-          lastUserIndex = msgIndex;
-          lastUserMessage = messages[lastUserIndex];
-        } else {
-          // If it's an AI message, find the preceding user message
-          for (let i = msgIndex - 1; i >= 0; i--) {
-            if (messages[i].role === "user") {
-              lastUserIndex = i;
-              lastUserMessage = messages[i];
-              break;
-            }
-          }
-        }
-      }
-    } else {
-      // Find the last user message globally
-      for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].role === "user") {
-          lastUserMessage = messages[i];
-          lastUserIndex = i;
-          break;
-        }
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "user") {
+        lastUserMessage = messages[i];
+        break;
       }
     }
-    
     if (!lastUserMessage) return;
     
-    // Slice off the user message and everything after it.
-    // handleSend will append a fresh user message with the same text.
-    const newMessages = messages.slice(0, lastUserIndex);
+    // Remove all messages after the last user message
+    const lastUserIndex = messages.indexOf(lastUserMessage);
+    const newMessages = messages.slice(0, lastUserIndex + 1);
     setMessages(newMessages);
     
-    handleSend(lastUserMessage.text, true, newMessages);
+    // Trigger send with the same text
+    handleSend(lastUserMessage.text);
   }, [messages, handleSend]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -561,11 +514,10 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
         /* Input area transitions */
         .input-console-transition {
           transition: border-color 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease;
-          border: 1px solid rgba(255, 255, 255, 0.15);
         }
         
         .input-console-transition:focus-within {
-          border-color: transparent !important;
+          border-color: rgba(255, 255, 255, 0.25) !important;
           transform: translateY(-2px);
           background-color: rgba(15, 15, 15, 0.9) !important;
         }
@@ -603,7 +555,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
       <header 
-        className="flex reveal-chat-item h-14 shrink-0 items-center justify-between px-4 md:px-6 bg-transparent backdrop-blur-xl z-20 sticky top-0"
+        className="reveal-chat-item h-14 shrink-0 flex items-center justify-between px-6 bg-transparent backdrop-blur-xl border-b border-white/5 z-20 sticky top-0"
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center gap-3">
@@ -617,18 +569,22 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
         </div>
 
         {/* Header Actions */}
+<<<<<<< HEAD
         <div className="flex items-center gap-1 md:gap-2 -mr-1">
+=======
+        <div className="flex items-center gap-2 -mr-1">
+>>>>>>> a1433dd (feat: sync frontend streaming UI updates from backend branch)
           <button 
             onClick={() => window.dispatchEvent(new Event('new-thread'))}
             className="p-2 text-[#ffffff] hover:text-[#f4f4f5] active:scale-90 transition-all cursor-pointer drop-shadow-[0_0_12px_rgba(255, 255, 255,0.6)]"
           >
-            <Plus className="size-5 md:size-6" />
+            <Plus className="size-6" />
           </button>
         </div>
       </header>
 
       {/* ── Message stream area ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-y-auto no-scrollbar relative z-10">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar relative z-10">
         <div className="max-w-[760px] mx-auto px-4 md:px-8 h-full flex flex-col justify-between">
           
           {isLoadingThread ? (
@@ -696,19 +652,19 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                       {isUser ? (
                         /* User message: Dark bubble with optional files */
                         <div 
-                          className={`relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto transition-all duration-300 ${activeMessageId === m.id ? 'mb-12' : 'mb-0'}`}
+                          className="relative flex flex-col items-end group max-w-[80%] cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="bg-white/[0.04] /[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
+                          <div className="bg-white/[0.04] border border-white/[0.06] backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-white text-[15px] font-medium leading-[1.6] px-5 py-3.5 rounded-[24px] select-text space-y-2.5 break-words max-w-full overflow-hidden">
                             {m.text && <div>{m.text}</div>}
                             {m.files && m.files.length > 0 && (
-                              <div className="flex flex-wrap gap-2 pt-1">
+                              <div className="flex flex-wrap gap-2 pt-1 border-t border-white/5">
                                 {m.files.map((file, fIdx) => (
                                   <a
                                     key={fIdx}
                                     href={file.url}
                                     download={file.name}
-                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition text-xs text-[#a1a1aa] hover:text-white max-w-full"
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition text-xs text-[#a1a1aa] hover:text-white max-w-full"
                                   >
                                     {file.type.startsWith("image/") ? (
                                       <img src={file.url} alt="attached file" className="max-h-[140px] rounded-lg object-cover" />
@@ -723,34 +679,39 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                               </div>
                             )}
                           </div>
-                          
                           {/* Actions row for user */}
-                          <div className={`flex items-center justify-end gap-3 transition-all duration-300 text-white/50 ${
+                          <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 right-0 bg-black border border-gray-600 text-white px-4 py-2 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
-                              : "opacity-0 scale-95 md:scale-100 pointer-events-none"
+                              ? "absolute top-full mt-2 right-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 border border-white/10" 
+                              : "opacity-0 md:group-hover:opacity-100 mt-1.5 scale-95 md:scale-100"
                           }`}>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); setEditingMessageId(m.id); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
-                              className="p-1 hover:text-white cursor-pointer transition-colors" 
+                              onClick={(e) => { e.stopPropagation(); setInput(m.text); inputRef.current?.focus(); setActiveMessageId(null); }} 
+                              className="p-1 hover:text-white transition-colors" 
                             >
                               <Edit className="size-4" />
                             </button>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text, m.id); setActiveMessageId(null); }} 
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }} 
                               className="p-1 hover:text-white transition-colors" 
                             >
-                              {copiedMessageId === m.id ? <Check className="size-4 text-green-400" /> : <Copy className="size-4" />}
+                              <Copy className="size-4" />
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }} 
+                              className="p-1 hover:text-white transition-colors" 
+                            >
+                              <RefreshCw className="size-4" />
                             </button>
                           </div>
                         </div>
                       ) : (
                         /* Lumensky message: Bubbleless raw text */
                         <div 
-                          className={`relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto transition-all duration-300 ${activeMessageId === m.id ? 'mb-12' : 'mb-0'}`}
+                          className="relative flex-1 space-y-4 select-text min-w-0 max-w-full group cursor-pointer md:cursor-auto"
                           onClick={(e) => handleMessageClick(e, m.id)}
                         >
-                          <div className="prose animate-decrypt overscroll-y-auto prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
+                          <div className="font-serif prose prose-invert prose-p:leading-[1.8] prose-p:mb-5 prose-li:my-1 prose-ul:my-3 prose-headings:font-sans text-[16px] text-[#f2efe8]/90 max-w-none break-words tracking-wide">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {m.text}
                             </ReactMarkdown>
@@ -759,17 +720,17 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                           {/* Actions row */}
                           <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] ${
                             activeMessageId === m.id 
-                              ? "absolute top-full mt-2 left-0 bg-black border border-gray-600 text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 " 
-                              : "opacity-0 scale-95 md:scale-100 pointer-events-none"
+                              ? "absolute top-full mt-2 left-0 bg-[#1a1a1a] text-white px-4 py-2.5 rounded-2xl shadow-xl opacity-100 scale-100 z-50 border border-white/10" 
+                              : "opacity-0 md:group-hover:opacity-100 pt-2 scale-95 md:scale-100"
                           }`}>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text, m.id); setActiveMessageId(null); }}
+                              onClick={(e) => { e.stopPropagation(); copyToClipboard(m.text); setActiveMessageId(null); }}
                               className="p-1 hover:text-white cursor-pointer transition-colors"
                             >
-                              {copiedMessageId === m.id ? <Check className="size-4 text-green-400" /> : <Copy className="size-4" />}
+                              <Copy className="size-4" />
                             </button>
                             <button 
-                              onClick={(e) => { e.stopPropagation(); handleRetry(m.id); setActiveMessageId(null); }}
+                              onClick={(e) => { e.stopPropagation(); handleRetry(); setActiveMessageId(null); }}
                               className="p-1 hover:text-white cursor-pointer transition-colors"
                             >
                               <RefreshCw className="size-4" />
@@ -807,32 +768,40 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                         position: absolute;
                         width: 4px;
                         height: 4px;
-                      .gyro-core-splash {
-                        position: absolute;
-                        width: 3px;
-                        height: 3px;
-                        background: #ffffff;
+                        background: #fff;
                         border-radius: 50%;
-                        animation: corePulseSplash 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+                        animation: corePulse 1.5s ease-in-out infinite alternate;
                       }
-                      .gyro-ring-splash {
+                      .gyro-ring {
                         position: absolute;
                         width: 100%;
                         height: 100%;
                         border-radius: 50%;
-                        border: 1px solid rgba(255,255,255,0.06);
-                        border-top: 1px solid rgba(255,255,255,0.8);
-                        border-right: 1px solid rgba(255,255,255,0.3);
-                        box-shadow: inset 0 0 10px rgba(255,255,255,0.02), -1px 0 3px rgba(255, 255, 255, 0.2), 1px 0 3px rgba(255, 255, 255, 0.4);
+                        border: 1px solid transparent;
+                        border-top: 2px solid rgba(255,255,255,1);
+                        border-right: 1.5px solid rgba(255,255,255,0.4);
+                        border-left: 1px solid rgba(255,255,255,0.1);
                       }
-                      .rs-1-splash { animation: spin1Splash 1.8s linear infinite; }
-                      .rs-2-splash { animation: spin2Splash 2.4s linear infinite; }
-                      .rs-3-splash { animation: spin3Splash 3s linear infinite; }
+                      .ring-1 { animation: spin1 1.8s linear infinite; }
+                      .ring-2 { animation: spin2 2.4s linear infinite; }
+                      .ring-3 { animation: spin3 3s linear infinite; }
 
-                      @keyframes spin1Splash { 0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } }
-                      @keyframes spin2Splash { 0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); } 100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } }
-                      @keyframes spin3Splash { 0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); } 100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } }
-                      @keyframes corePulseSplash { 0% { transform: scale(0.5); opacity: 0.3; box-shadow: 0 0 2px rgba(255,255,255,0.1); } 100% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,1); } }
+                      @keyframes spin1 { 
+                        0% { transform: rotateX(65deg) rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateX(65deg) rotateY(0deg) rotateZ(360deg); } 
+                      }
+                      @keyframes spin2 { 
+                        0% { transform: rotateX(0deg) rotateY(65deg) rotateZ(0deg); }
+                        100% { transform: rotateX(0deg) rotateY(65deg) rotateZ(360deg); } 
+                      }
+                      @keyframes spin3 { 
+                        0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
+                        100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } 
+                      }
+                      @keyframes corePulse {
+                        0% { transform: scale(0.8); opacity: 0.6; box-shadow: 0 0 2px rgba(255,255,255,0.4); }
+                        100% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 6px rgba(255,255,255,0.8); }
+                      }
                       
                       @keyframes shimmerText {
                         0% { background-position: -200% center; }
@@ -852,11 +821,11 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                         animation: shimmerText 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
                       }
                     `}</style>
-                    <div className="gyro-container" style={{ width: '24px', height: '24px', transform: 'scale(1)', perspective: '120px' }}>
-                      <div className="gyro-ring-splash rs-1-splash"></div>
-                      <div className="gyro-ring-splash rs-2-splash"></div>
-                      <div className="gyro-ring-splash rs-3-splash"></div>
-                      <div className="gyro-core-splash"></div>
+                    <div className="gyro-container">
+                      <div className="gyro-ring ring-1"></div>
+                      <div className="gyro-ring ring-2"></div>
+                      <div className="gyro-ring ring-3"></div>
+                      <div className="gyro-core"></div>
                     </div>
                     {/* Rotating status text */}
                     <span 
@@ -876,14 +845,14 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
       </div>
 
       {/* ── Input Box (Trajectory Forge copy) ── */}
-      <div className="shrink-0 px-4 md:px-8 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2 bg-[#000000] relative z-10">
+      <div className="shrink-0 px-4 md:px-8 pb-6 pt-2 bg-[#000000] relative z-10">
         <div 
           className="reveal-chat-item max-w-[640px] w-full mx-auto"
           style={{ animationDelay: "550ms" }}
         >
           
           {/* Sleek Apple-inspired floating capsule without glow */}
-          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 /[0.08] bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px]">
+          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 border border-white/[0.08] bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px]">
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
@@ -900,7 +869,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
 
               {/* Attachment Menu Popover */}
               {isAttachMenuOpen && (
-                <div className="absolute bottom-full left-0 mb-4 bg-[#1a1b1e] rounded-[24px] p-2 flex flex-col shadow-2xl min-w-[160px] animate-scale-in origin-bottom-left z-50 overflow-hidden">
+                <div className="absolute bottom-full left-0 mb-4 bg-[#1a1b1e] border border-white/5 rounded-[24px] p-2 flex flex-col shadow-2xl min-w-[160px] animate-scale-in origin-bottom-left z-50 overflow-hidden">
                   <div className="flex flex-col gap-1 animate-fade-in">
                     <button 
                       onClick={() => { cameraInputRef.current?.click(); setIsAttachMenuOpen(false); }}
@@ -934,7 +903,7 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
               {selectedFiles.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-1 pb-1">
                   {selectedFiles.map((file, idx) => (
-                    <div key={idx} className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 text-[12px] text-[#a1a1aa] pr-8 animate-message-reveal">
+                    <div key={idx} className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[12px] text-[#a1a1aa] pr-8 animate-message-reveal">
                       {file.type.startsWith("image/") ? (
                         <img src={filePreviews[idx]} alt="preview" className="size-5 object-cover rounded" />
                       ) : (
@@ -954,19 +923,9 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
               )}
 
               {isRecording && (
-                <div className="flex items-center gap-2.5 px-2 py-1 pb-1.5 text-[12px] uppercase tracking-widest text-red-500 font-semibold animate-fade-in">
-                  <div className="flex items-center gap-[3px] h-3">
-                    <span className="w-[2px] h-full bg-red-500 rounded-full animate-audio-wave" style={{ animationDelay: '0ms' }} />
-                    <span className="w-[2px] h-full bg-red-500 rounded-full animate-audio-wave" style={{ animationDelay: '200ms' }} />
-                    <span className="w-[2px] h-full bg-red-500 rounded-full animate-audio-wave" style={{ animationDelay: '400ms' }} />
-                  </div>
-                  Listening
-                </div>
-              )}
-              {editingMessageId && (
-                <div className="flex items-center justify-between px-1 py-1 pb-2 text-[11px] uppercase tracking-wider text-[#a1a1aa] font-medium animate-fade-in">
-                  <span className="flex items-center gap-1.5"><Edit className="size-3" /> Editing</span>
-                  <button onClick={() => { setEditingMessageId(null); setInput(''); }} className="hover:text-white transition-colors cursor-pointer bg-white/5 px-2 py-0.5 rounded-full">Cancel</button>
+                <div className="flex items-center gap-2.5 px-1 py-1 text-xs text-red-400 font-mono animate-pulse">
+                  <span className="size-2 rounded-full bg-red-500" />
+                  Listening...
                 </div>
               )}
 
