@@ -749,7 +749,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row for user */}
                           <div className={`flex items-center gap-3 transition-all duration-300 text-[#a1a1aa] origin-top-right ${
                             activeMessageId === m.id 
-                              ? "mt-2 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100" 
+                              ? "mt-2 bg-black text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/30 opacity-100 scale-100" 
                               : "hidden opacity-0 scale-95"
                           }`}>
                             <button 
@@ -781,7 +781,7 @@ const { data: { session } } = await supabase.auth.getSession();
                           {/* Actions row */}
                           <div className={`flex items-center gap-4 transition-all duration-300 text-[#a1a1aa] origin-top-left ${
                             activeMessageId === m.id 
-                              ? "mt-2 bg-[#0c0c0e] text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/20 opacity-100 scale-100 w-max" 
+                              ? "mt-2 bg-black text-white px-4 py-2.5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-white/30 opacity-100 scale-100 w-max" 
                               : "hidden opacity-0 scale-95"
                           }`}>
                             <button 
