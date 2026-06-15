@@ -1022,16 +1022,16 @@ export function ChatView({ onOpenSidebar, onOpenVault, onOpenFocusMode, isAnonym
                   }
                 }}
                 disabled={!isThinking && (!input.trim() && selectedFiles.length === 0)}
-                className={`action-icon-btn size-10 rounded-full grid place-items-center transition-all cursor-pointer ${
+                className={`action-icon-btn size-10 rounded-full grid place-items-center transition-all duration-300 cursor-pointer ${
                   isThinking 
-                    ? "bg-[#2a2a2a] text-white hover:bg-white/20 active:scale-90"
+                    ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 active:scale-90 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
                     : (!input.trim() && selectedFiles.length === 0)
                       ? "bg-white/10 text-white/30"
                       : "bg-white text-black hover:scale-[1.05] active:scale-90 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
                 }`}
               >
                 {isThinking ? (
-                  <Square className="size-[14px] fill-white" />
+                  <Square className="size-[14px] fill-red-400 text-red-400" />
                 ) : (
                   <ArrowUp className="size-[20px] stroke-[2.5]" />
                 )}
