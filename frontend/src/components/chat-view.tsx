@@ -868,7 +868,7 @@ const { data: { session } } = await supabase.auth.getSession();
         >
           
           {/* Sleek Apple-inspired floating capsule without glow */}
-          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 /[0.08] bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px]">
+          <div className="input-console-transition flex items-center gap-1.5 md:gap-3 bg-black rounded-[32px] px-3 py-2 md:py-2.5 min-h-[64px]">
             
             {/* Left Action - Attach */}
             <div className="relative shrink-0 flex items-center justify-center">
