@@ -206,6 +206,17 @@ Reply casually in ${userLanguage} — like a smart older bro who's genuinely cur
     activeMission = retrievedMission;
     similarMemories = retrievedMemories;
 
+    // Fire and forget: update generic thread title if substantial message received
+    if (message.length > 15 && currentThreadId) {
+      DbService.getThreadById(currentThreadId).then(thread => {
+        if (thread && thread.title === 'Conversation') {
+          LLMService.generateThreadTitle(message).then(title => {
+            DbService.updateThreadTitle(currentThreadId, title).catch(console.error);
+          }).catch(console.error);
+        }
+      }).catch(console.error);
+    }
+
     let result: any;
     let systemPrompt = '';
     let isTransitioningToExecution = false;

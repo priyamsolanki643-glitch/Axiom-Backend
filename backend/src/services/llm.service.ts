@@ -410,6 +410,20 @@ export class LLMService {
     return 'none';
   }
 
+  static async generateThreadTitle(message: string): Promise<string> {
+    const systemPrompt = `Generate a short, punchy 3-4 word title summarizing this message. Do not use quotes. Return ONLY the title.`;
+    try {
+      const response = await executeWithRotation({
+        model: 'gemini-2.5-flash',
+        contents: [{ role: 'user', parts: [{ text: `Message: "${message}"` }] }] as any,
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      });
+      return response.text ? response.text.trim().replace(/^"|"$/g, '') : "Conversation";
+    } catch (e) {
+      return "Conversation";
+    }
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
   // DYNAMIC TASK SPRINT GENERATOR
   // ──────────────────────────────────────────────────────────────────────────

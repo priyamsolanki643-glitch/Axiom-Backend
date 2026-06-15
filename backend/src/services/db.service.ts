@@ -439,6 +439,29 @@ export class DbService {
       .eq('id', threadId);
   }
 
+  static async getThreadById(threadId: string): Promise<any> {
+    if (useLocalMockDB) {
+      const data = readLocalDb();
+      return data.threads.find((t: any) => t.id === threadId) || null;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('chat_threads')
+        .select('*')
+        .eq('id', threadId)
+        .single();
+      if (error) {
+        if (error.code === 'PGRST116') return null; // not found
+        console.error('getThreadById DB error:', error);
+        return null;
+      }
+      return data;
+    } catch (err) {
+      console.error('getThreadById Exception:', err);
+      return null;
+    }
+  }
+
   static async getChatThreads(userId: string): Promise<any[]> {
     if (userId.startsWith('anon_')) return [];
 
