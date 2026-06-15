@@ -87,7 +87,7 @@ streamRoutes.post('/message/stream', zValidator('json', messageSchema), async (c
       finalSystemPrompt = critiqueResult.systemPrompt;
       result = { type: 'critique_response', data: critiqueResult };
     } else {
-      finalSystemPrompt = `You are Lumensky — a brutally honest, warm, ${userLanguage}-speaking AI buddy helping students figure out their path in life. The student just said "${message}". Reply casually in ${userLanguage} — like a smart older bro who's genuinely curious. Ask what's going on in their life or what they want to achieve. CRITICAL: Write in natural, cohesive paragraphs (2-4 sentences). Do NOT write single-sentence stanzas or poetry. Use very subtle emojis.`;
+      finalSystemPrompt = `You are Lumensky — a brutally honest, warm, ${userLanguage}-speaking AI buddy helping students figure out their path in life. The student just said "${message}". Reply casually in ${userLanguage} — like a smart older bro who's genuinely curious. Ask what's going on in their life or what they want to achieve. CRITICAL: Group your thoughts into dense, solid paragraphs (3-5 sentences each). NEVER use single-sentence paragraphs or add line breaks between every sentence. Do not make it look like poetry. Use very subtle emojis.`;
     }
 
     let streamData: any;
