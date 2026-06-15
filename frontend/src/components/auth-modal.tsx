@@ -41,14 +41,18 @@ export function AuthModal({ onClose, onSuccess, initialMode = "signup" }: AuthMo
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { 
-          shouldCreateUser: true,
+          shouldCreateUser: mode === "signup",
           data: mode === "signup" ? { full_name: name.trim(), preferred_language: preferredLanguage } : undefined
         },
       });
       if (error) throw error;
       setStep("otp");
     } catch (err: any) {
-      setError(err.message || "Failed to send code.");
+      if (err.message && err.message.toLowerCase().includes("signups not allowed")) {
+        setError("Account not found. Please sign up first.");
+      } else {
+        setError(err.message || "Failed to send code.");
+      }
     } finally {
       setIsLoading(false);
     }
