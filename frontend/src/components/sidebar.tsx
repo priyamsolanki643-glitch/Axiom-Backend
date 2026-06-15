@@ -152,8 +152,8 @@ const { data: { session } } = await supabase.auth.getSession();
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`fixed md:relative inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-[#09090b] overflow-hidden ${
-          isOpen ? "w-[260px] opacity-100 border-r border-white/10" : "w-0 opacity-0 border-none"
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl  overflow-hidden ${
+          isOpen ? "w-[260px] translate-x-0 opacity-100" : "w-0 -translate-x-full opacity-0"
         }`}
       >
         <style>{`
