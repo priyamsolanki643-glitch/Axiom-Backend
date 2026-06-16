@@ -80,8 +80,13 @@ import { requireAuth } from '../middleware/auth.middleware';
 
 export const interactionRoutes = new Hono<{ Variables: { userId: string, userLanguage: string } }>();
 
-// Enforce Zero-Trust auth globally on all interaction endpoints
-interactionRoutes.use('*', requireAuth);
+// Enforce Zero-Trust auth globally on all interaction endpoints EXCEPT the public viral roast endpoint
+interactionRoutes.use('*', async (c, next) => {
+  if (c.req.path.endsWith('/roast')) {
+    return next();
+  }
+  return requireAuth(c, next);
+});
 
 const messageSchema = z.object({
   user_id: z.string().optional(),
