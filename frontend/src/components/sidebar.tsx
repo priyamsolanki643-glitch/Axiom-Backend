@@ -254,18 +254,7 @@ const { data: { session } } = await supabase.auth.getSession();
             {isOpen && <span className={`text-[10px] font-mono ${activeItem === "vault" ? "text-[#ffffff]/70" : "text-[#52525b]"}`}>2x tap</span>}
           </button>
 
-          {/* Brutal Audit */}
-          <button
-            onClick={() => {
-              window.location.href = '/audit';
-            }}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer text-[13px] transition-colors text-[#a1a1aa] hover:bg-[#ff3333]/10 hover:text-[#ff3333] ${!isOpen ? "justify-center" : ""}`}
-          >
-            <div className="flex items-center gap-3">
-              <Target className="size-4 shrink-0" />
-              {isOpen && <span className="font-medium">Viral Audit</span>}
-            </div>
-          </button>
+
         </div>
 
         {/* ── Scrollable History List ── */}
