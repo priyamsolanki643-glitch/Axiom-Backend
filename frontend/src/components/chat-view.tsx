@@ -553,7 +553,7 @@ const { data: { session } } = await supabase.auth.getSession();
         .input-console-transition:focus-within {
           border-color: rgba(255, 255, 255, 0.25) !important;
           transform: translateY(-2px);
-          background-color: rgba(15, 15, 15, 0.9) !important;
+          background-color: rgba(8, 8, 8, 0.95) !important;
         }
 
         /* Action triggers hover dynamics */
