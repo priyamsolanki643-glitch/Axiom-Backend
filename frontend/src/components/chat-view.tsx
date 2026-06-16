@@ -599,7 +599,7 @@ const { data: { session } } = await supabase.auth.getSession();
 
       {/* ── Top Bar Header (Trajectory Forge style) ── */}
       <header 
-        className="reveal-chat-item absolute top-0 inset-x-0 h-14 flex items-center justify-between px-6 bg-transparent z-50 pointer-events-none"
+        className="reveal-chat-item absolute top-0 inset-x-0 h-14 flex items-center justify-between px-6 bg-transparent z-30 pointer-events-none"
         style={{ animationDelay: "0ms" }}
       >
         <div className="flex items-center gap-3 pointer-events-auto">

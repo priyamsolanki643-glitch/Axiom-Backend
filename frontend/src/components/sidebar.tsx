@@ -144,7 +144,7 @@ const { data: { session } } = await supabase.auth.getSession();
             e.stopPropagation();
             setIsOpen(false);
           }}
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden animate-fade-in-up"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden animate-fade-in-up"
           style={{ animationDuration: '200ms' }}
         />
       )}
@@ -152,7 +152,7 @@ const { data: { session } } = await supabase.auth.getSession();
       <aside
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl overflow-y-auto no-scrollbar ${
+        className={`fixed md:relative inset-y-0 left-0 z-50 flex flex-col shrink-0 h-screen transition-all duration-300 bg-black/40 backdrop-blur-2xl md:bg-transparent md:backdrop-blur-none overflow-y-auto no-scrollbar ${
           isOpen ? "w-[260px] translate-x-0 opacity-100" : "w-0 -translate-x-full opacity-0"
         }`}
       >
