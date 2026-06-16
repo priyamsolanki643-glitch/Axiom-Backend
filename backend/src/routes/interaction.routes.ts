@@ -68,7 +68,7 @@ function toUserSafeAIText(err: any): string {
   }
 
   if (isRetryableAIError(message)) {
-    return 'Bhai thoda temporary network issue aa raha hai backend pe. 10 second ruk ke dobara message bhej.';
+    return 'Bhai thoda temporary network issue aa raha hai backend pe. 10 second ruk ke dobara message bhej. DEBUG_INFO: ' + rawMessage;
   }
 
   // TEMPORARY DEBUG: Return actual error so we can see what's failing

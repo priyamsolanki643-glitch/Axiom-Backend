@@ -25,7 +25,7 @@ function isQuotaStyleError(message: string): boolean {
 function toUserSafeAIText(err: any): string {
   const rawMessage = getAIErrorMessage(err);
   if (isQuotaStyleError(rawMessage)) return 'Bhai teri consistency check karne mein mera engine thoda overload ho gaya hai. Ek minute ruk.';
-  return 'Bhai thoda temporary network issue aa raha hai backend pe. 10 second ruk ke dobara message bhej.';
+  return 'Bhai thoda temporary network issue aa raha hai backend pe. 10 second ruk ke dobara message bhej. DEBUG_INFO: ' + rawMessage;
 }
 
 export const streamRoutes = new Hono<{ Variables: { userId: string, userLanguage: string } }>();
