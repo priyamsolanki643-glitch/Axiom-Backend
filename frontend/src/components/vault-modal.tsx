@@ -166,6 +166,43 @@ export function VaultModal({ onClose }: VaultModalProps) {
     fetchVaultData();
   }, []);
 
+  // Supabase Realtime Subscription for Real-time Vault Updates
+  useEffect(() => {
+    let channel: any;
+    let supabaseClient: any;
+    
+    const setupRealtime = async () => {
+      try {
+        const { supabase } = await import('@/utils/supabase/client');
+        supabaseClient = supabase;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) return;
+        
+        channel = supabase.channel('vault-realtime-updates')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'missions', filter: `user_id=eq.${session.user.id}` },
+            (payload) => {
+              console.log('Realtime Vault Update received:', payload);
+              if (payload.new) {
+                setVaultData(prev => prev ? { ...prev, mission: payload.new as MissionData } : null);
+              }
+            }
+          )
+          .subscribe();
+      } catch (err) {
+        console.error('Failed to setup realtime subscription:', err);
+      }
+    };
+    setupRealtime();
+    
+    return () => {
+      if (channel && supabaseClient) {
+        supabaseClient.removeChannel(channel);
+      }
+    };
+  }, []);
+
   const switchTab = (id: TabId) => {
     if (id === activeTab) return;
     setTabTransition(true);

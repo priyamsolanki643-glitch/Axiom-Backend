@@ -65,6 +65,41 @@ export function ExecutionCockpit() {
     fetchActiveMission();
   }, []);
 
+  // Supabase Realtime Subscription
+  useEffect(() => {
+    let channel: any;
+    let supabaseClient: any;
+    const setupRealtime = async () => {
+      try {
+        const { supabase } = await import('@/utils/supabase/client');
+        supabaseClient = supabase;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) return;
+        
+        channel = supabase.channel('cockpit-realtime-updates')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'missions', filter: `user_id=eq.${session.user.id}` },
+            (payload) => {
+              console.log('Realtime Cockpit Update received:', payload);
+              if (payload.new) {
+                setMission(payload.new as ActiveMission);
+              }
+            }
+          )
+          .subscribe();
+      } catch (err) {
+        console.error('Failed to setup realtime subscription:', err);
+      }
+    };
+    setupRealtime();
+    return () => {
+      if (channel && supabaseClient) {
+        supabaseClient.removeChannel(channel);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
