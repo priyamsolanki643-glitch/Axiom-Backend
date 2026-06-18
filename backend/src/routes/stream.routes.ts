@@ -105,13 +105,8 @@ streamRoutes.post('/message/stream', zValidator('json', messageSchema), async (c
       if (extraction.isComplete) {
         // Onboarding parameters are complete!
         // Check if user is choosing Alpha or Beta
-        const msgClean = message.toLowerCase().trim();
-        const isAlphaChoice = /\b(alpha|path\s*1|option\s*a|1|a)\b/i.test(msgClean);
-        const isBetaChoice = /\b(beta|path\s*2|option\s*b|2|b)\b/i.test(msgClean);
-        
-        if (isAlphaChoice || isBetaChoice) {
-          const chosenPath = isAlphaChoice ? 'alpha' : 'beta';
-          console.log(`MESSAGE: User selected path '${chosenPath}'. Locking trajectory in chat.`);
+        const chosenPath = 'alpha';
+          console.log(`MESSAGE: Auto-locking trajectory in chat.`);
           
           const geoLower = (extraction.region || '').toLowerCase();
           let geographyTier: 'tier1_metro' | 'tier2_city' | 'tier3_semi_urban' | 'rural' = 'tier2_city';
@@ -207,59 +202,8 @@ Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport inter
           }).catch(err => console.error('MARKET_REPORT: Initial generation failed on chat lock:', err));
 
           finalSystemPrompt = buildFullSystemPrompt('execution', executionResult.updatedRuntime, userLanguage);
-          result = { type: 'trajectory_locked', data: executionResult };
-        } else {
-          // Onboarding complete, but user hasn't made a choice yet. Present simulated paths.
-          const geoLower = (extraction.region || '').toLowerCase();
-          let geographyTier: 'tier1_metro' | 'tier2_city' | 'tier3_semi_urban' | 'rural' = 'tier2_city';
-          if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_metro';
-          else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) geographyTier = 'tier2_city';
-          else geographyTier = 'tier3_semi_urban';
-
-          const onboardingInput = {
-            userId: actualUserId,
-            age: 22,
-            geographyTier: geographyTier as any,
-            country: geoLower.includes("india") ? "India" : "United States",
-            region: extraction.region || 'Unknown',
-            liquidCapital: extraction.liquidCapital || 5000,
-            monthlyBurnRate: extraction.monthlyBurnRate ?? 5000,
-            hasDebt: false,
-            debtMonthlyObligation: 0,
-            familyDependencyScore: 1.0,
-            rawSkillStrings: extraction.rawSkillStrings && extraction.rawSkillStrings.length > 0 ? extraction.rawSkillStrings : ["general"],
-            hasVerifiableOutputMap: {} as Record<string, boolean>,
-            positiveCommSignals: ["clear"] as string[],
-            negativeCommSignals: [] as string[],
-            dailyUninterruptedHours: extraction.dailyUninterruptedHours || 4,
-            deviceTier: "mid_range" as const,
-            internetStability: "4g_stable" as const,
-            workEnvironment: "dedicated_quiet" as const,
-            canWorkAtNight: true,
-            hasDedicatedWorkspace: true,
-            procrastinationSignals: {
-              tookLongBetweenAnswers: false, setOptimisticDeadlines: false, gavelVagueGoalsNotSpecific: false, mentionedPastFailedAttempts: false, usedPassiveLanguage: false, conflatedPlanningWithExecution: false
-            },
-            cognitiveEnduranceMinutes: 120,
-            emotionalResilience: 0.8,
-            baselineDiscipline: 0.7,
-            preferredWorkStyle: "deep_work_clusters" as const,
-            riskTolerance: 0.6,
-            declaredGoal: extraction.declaredGoal,
-            targetAmount: (extraction.liquidCapital || 5000) * 2,
-            currency: "INR" as const,
-            timelineMonths: 3,
-            sacrificesToleratedList: ["sleep"] as string[],
-            nonNegotiables: [] as string[],
-            pathPreference: extraction.pathPreference,
-            onboardingText: `Goal: ${extraction.declaredGoal}. Capital: ${extraction.liquidCapital}. Hours: ${extraction.dailyUninterruptedHours}. Geo: ${extraction.region}`,
-            detectedFrictionSignalIds: [] as string[]
-          };
-
-          const simulationData = await processOnboarding(onboardingInput, userLanguage);
-          finalSystemPrompt = buildFullSystemPrompt('simulation', simulationData.userRuntime, userLanguage);
           result = { type: 'onboarding_complete', data: simulationData };
-        }
+        
       } else {
         // Onboarding is incomplete. Normal onboarding chat prompt.
         finalSystemPrompt = buildFullSystemPrompt('onboarding', {}, userLanguage);
