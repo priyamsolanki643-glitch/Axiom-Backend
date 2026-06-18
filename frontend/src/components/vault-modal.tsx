@@ -176,16 +176,23 @@ export function VaultModal({ onClose }: VaultModalProps) {
         const { supabase } = await import('@/utils/supabase/client');
         supabaseClient = supabase;
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user?.id) return;
+        
+        let userId = session?.user?.id;
+        if (!userId) {
+          const anonId = localStorage.getItem('fp_anon_id');
+          if (anonId) userId = `anon_${anonId}`;
+        }
+        
+        if (!userId) return;
         
         channel = supabase.channel('vault-realtime-updates')
           .on(
             'postgres_changes',
-            { event: '*', schema: 'public', table: 'missions', filter: `user_id=eq.${session.user.id}` },
+            { event: '*', schema: 'public', table: 'missions', filter: `user_id=eq.${userId}` },
             (payload) => {
               console.log('Realtime Vault Update received:', payload);
               if (payload.new) {
-                setVaultData(prev => prev ? { ...prev, mission: payload.new as MissionData } : null);
+                setVaultData((prev: any) => prev ? { ...prev, mission: payload.new as MissionData } : { mission: payload.new as MissionData, mirror: null, market: null, rival: null });
               }
             }
           )
@@ -383,6 +390,15 @@ function TabMissions({ missionData }: { missionData?: MissionData }) {
       consistency: missionData.consistencyScore || 0
     }
   ] : [];
+
+  const [activeMission, setActiveMission] = useState<any | null>(null);
+
+  useEffect(() => {
+    // Auto-open strategy if it exists
+    if (missions.length > 0 && !activeMission) {
+      setActiveMission(missions[0]);
+    }
+  }, [missions, activeMission]);
 
   if (activeMission) {
     return (

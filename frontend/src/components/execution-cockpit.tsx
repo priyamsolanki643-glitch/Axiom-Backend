@@ -74,12 +74,19 @@ export function ExecutionCockpit() {
         const { supabase } = await import('@/utils/supabase/client');
         supabaseClient = supabase;
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user?.id) return;
+        
+        let userId = session?.user?.id;
+        if (!userId) {
+          const anonId = localStorage.getItem('fp_anon_id');
+          if (anonId) userId = `anon_${anonId}`;
+        }
+        
+        if (!userId) return;
         
         channel = supabase.channel('cockpit-realtime-updates')
           .on(
             'postgres_changes',
-            { event: '*', schema: 'public', table: 'missions', filter: `user_id=eq.${session.user.id}` },
+            { event: '*', schema: 'public', table: 'missions', filter: `user_id=eq.${userId}` },
             (payload) => {
               console.log('Realtime Cockpit Update received:', payload);
               if (payload.new) {
