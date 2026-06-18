@@ -8,7 +8,7 @@ import { VectorService } from '../services/vector.service';
 import { requireAuth } from '../middleware/auth.middleware';
 import { updateConsistencyScore } from '../engine/layer10_statelock';
 import { runLegalAudit } from '../engine/layer13_legalaudit';
-import { processCritiqueMessage, buildFullSystemPrompt } from '../engine/index';
+import { processCritiqueMessage, buildFullSystemPrompt, processOnboarding, transitionToExecution } from '../engine/index';
 import { runOmniPipeline } from '../engine/OmniPipeline';
 import { analyticsWorker } from '../workers/analytics.worker';
 
@@ -74,6 +74,7 @@ streamRoutes.post('/message/stream', zValidator('json', messageSchema), async (c
 
     let finalSystemPrompt = '';
     let result: any = null;
+    let isTransitioningToExecution = false;
 
     if (activeMission) {
       const critiqueResult = processCritiqueMessage({
@@ -87,17 +88,183 @@ streamRoutes.post('/message/stream', zValidator('json', messageSchema), async (c
       finalSystemPrompt = critiqueResult.systemPrompt;
       result = { type: 'critique_response', data: critiqueResult };
     } else {
-      finalSystemPrompt = `You are Lumensky - a brutally honest, warm AI buddy helping students figure out their path in life.
+      // User has no active mission. Let's see if onboarding is complete!
+      const currentHistory = [...conversationHistory, { role: 'user', parts: [{ text: message }] }] as any;
+      let extraction;
+      try {
+        extraction = await LLMService.extractOnboardingData(currentHistory);
+      } catch (err: any) {
+        console.error('ONBOARDING_EXTRACTION_ERROR:', getAIErrorMessage(err));
+        const safeText = toUserSafeAIText(err);
+        return streamSSE(c, async (streamWriter) => {
+          await streamWriter.writeSSE({ data: JSON.stringify({ type: 'metadata', data: { thread_id: currentThreadId } }) });
+          await streamWriter.writeSSE({ data: JSON.stringify({ type: 'text', text: safeText }) });
+        });
+      }
+      
+      if (extraction.isComplete) {
+        // Onboarding parameters are complete!
+        // Check if user is choosing Alpha or Beta
+        const msgClean = message.toLowerCase().trim();
+        const isAlphaChoice = /\b(alpha|path\s*1|option\s*a|1|a)\b/i.test(msgClean);
+        const isBetaChoice = /\b(beta|path\s*2|option\s*b|2|b)\b/i.test(msgClean);
+        
+        if (isAlphaChoice || isBetaChoice) {
+          const chosenPath = isAlphaChoice ? 'alpha' : 'beta';
+          console.log(`MESSAGE: User selected path '${chosenPath}'. Locking trajectory in chat.`);
+          
+          const geoLower = (extraction.region || '').toLowerCase();
+          let geographyTier: 'tier1_metro' | 'tier2_city' | 'tier3_semi_urban' | 'rural' = 'tier2_city';
+          if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_metro';
+          else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) geographyTier = 'tier2_city';
+          else geographyTier = 'tier3_semi_urban';
 
-CRITICAL LANGUAGE DIRECTIVE: 
-You MUST analyze the language the user used in their last message ("${message}").
-If they spoke in Hinglish, you MUST reply entirely in Hinglish.
-If they spoke in German, you MUST reply entirely in German.
-If they explicitly ask you to speak in a specific language, you MUST switch to that language immediately.
-If you cannot determine the language, default to: ${userLanguage}.
-Failure to match their exact language and tone is unacceptable. Do not use English unless they use English.
+          const onboardingInput = {
+            userId: actualUserId,
+            age: 22,
+            geographyTier: geographyTier as any,
+            country: geoLower.includes("india") ? "India" : "United States",
+            region: extraction.region || 'Unknown',
+            liquidCapital: extraction.liquidCapital || 5000,
+            monthlyBurnRate: extraction.monthlyBurnRate ?? 5000,
+            hasDebt: false,
+            debtMonthlyObligation: 0,
+            familyDependencyScore: 1.0,
+            rawSkillStrings: extraction.rawSkillStrings && extraction.rawSkillStrings.length > 0 ? extraction.rawSkillStrings : ["general"],
+            hasVerifiableOutputMap: {} as Record<string, boolean>,
+            positiveCommSignals: ["clear"] as string[],
+            negativeCommSignals: [] as string[],
+            dailyUninterruptedHours: extraction.dailyUninterruptedHours || 4,
+            deviceTier: "mid_range" as const,
+            internetStability: "4g_stable" as const,
+            workEnvironment: "dedicated_quiet" as const,
+            canWorkAtNight: true,
+            hasDedicatedWorkspace: true,
+            procrastinationSignals: {
+              tookLongBetweenAnswers: false, setOptimisticDeadlines: false, gavelVagueGoalsNotSpecific: false, mentionedPastFailedAttempts: false, usedPassiveLanguage: false, conflatedPlanningWithExecution: false
+            },
+            cognitiveEnduranceMinutes: 120,
+            emotionalResilience: 0.8,
+            baselineDiscipline: 0.7,
+            preferredWorkStyle: "deep_work_clusters" as const,
+            riskTolerance: 0.6,
+            declaredGoal: extraction.declaredGoal,
+            targetAmount: (extraction.liquidCapital || 5000) * 2,
+            currency: "INR" as const,
+            timelineMonths: 3,
+            sacrificesToleratedList: ["sleep"] as string[],
+            nonNegotiables: [] as string[],
+            pathPreference: chosenPath === 'alpha' ? 'high_risk_upside' as const : 'safe_compounding' as const,
+            onboardingText: `Goal: ${extraction.declaredGoal}. Capital: ${extraction.liquidCapital}. Hours: ${extraction.dailyUninterruptedHours}. Geo: ${extraction.region}`,
+            detectedFrictionSignalIds: [] as string[]
+          };
 
-Act like a smart older bro who's genuinely curious. Ask what's going on in their life or what they want to achieve. CRITICAL: Use very short paragraphs, hard line breaks (1-2 sentences max before a new line), and slight emojis to make it highly readable and engaging. Never write walls of text.`;
+          const simulationData = await processOnboarding(onboardingInput, userLanguage);
+          const executionResult = await transitionToExecution(simulationData.userRuntime, chosenPath, userLanguage);
+          
+          const targetPath = chosenPath === 'alpha' ? simulationData.pathPresentation.pathAlpha : simulationData.pathPresentation.pathBeta;
+          const missionPayload = {
+            user_id: actualUserId,
+            missionName: targetPath?.opportunityUsed || (chosenPath === 'alpha' ? "Asymmetric Upside Strategy" : "Compounding Strategy"),
+            lockedPath: chosenPath,
+            probabilityLow: targetPath?.probabilityRangeLow || (chosenPath === 'alpha' ? 18.4 : 74.2),
+            probabilityHigh: targetPath?.probabilityRangeHigh || (chosenPath === 'alpha' ? 24.0 : 82.5),
+            dayNumber: 1,
+            totalDays: (targetPath?.timelineMonths || 3) * 30,
+            consistencyScore: -1,
+            streakDays: 0,
+            mindsetBrief: targetPath?.firstStepToday || "Start executing immediate discovery steps.",
+            strategyContent: targetPath?.description || "Compounding action vector.",
+            chatThreadId: currentThreadId
+          };
+
+          await DbService.saveMission(missionPayload);
+          await DbService.addConsistencyLog(actualUserId, -1);
+          
+          activeMission = await DbService.getActiveMission(actualUserId);
+          isTransitioningToExecution = true;
+
+          // Asynchronously generate initial market report on locking
+          const mandate = `
+═══════════════════════════════════════════════════════════════
+FP-OS INTELLIGENCE RESEARCH MANDATE
+User Profile: ${actualUserId}
+Generated: ${new Date().toISOString()}
+═══════════════════════════════════════════════════════════════
+CONTEXT:
+Active Mission: ${activeMission.missionName}
+Locked Path: ${activeMission.lockedPath}
+Total Days: ${activeMission.totalDays}
+
+MANDATE:
+Analyze real-time market opportunities, local gaps, competitor landscape, and timing signals for the target: "${activeMission.missionName}" using the ${activeMission.lockedPath} path.
+Provide hyper-local data for Kanpur, Uttar Pradesh, India if applicable, or general metrics for remote work.
+Ensure the returned JSON perfectly adheres to the MarketIntelligenceReport interface.
+          `.trim();
+          
+          LLMService.generateGroundedIntelligenceReport(mandate).then(async (groundedData) => {
+            await DbService.saveMarketReport(actualUserId, groundedData);
+          }).catch(err => console.error('MARKET_REPORT: Initial generation failed on chat lock:', err));
+
+          finalSystemPrompt = buildFullSystemPrompt('execution', executionResult.updatedRuntime, userLanguage);
+          result = { type: 'trajectory_locked', data: executionResult };
+        } else {
+          // Onboarding complete, but user hasn't made a choice yet. Present simulated paths.
+          const geoLower = (extraction.region || '').toLowerCase();
+          let geographyTier: 'tier1_metro' | 'tier2_city' | 'tier3_semi_urban' | 'rural' = 'tier2_city';
+          if (geoLower.match(/delhi|mumbai|bangalore|bengaluru|kolkata|chennai|hyderabad|pune/)) geographyTier = 'tier1_metro';
+          else if (geoLower.match(/kanpur|lucknow|jaipur|patna|indore|bhopal|nagpur|agra/)) geographyTier = 'tier2_city';
+          else geographyTier = 'tier3_semi_urban';
+
+          const onboardingInput = {
+            userId: actualUserId,
+            age: 22,
+            geographyTier: geographyTier as any,
+            country: geoLower.includes("india") ? "India" : "United States",
+            region: extraction.region || 'Unknown',
+            liquidCapital: extraction.liquidCapital || 5000,
+            monthlyBurnRate: extraction.monthlyBurnRate ?? 5000,
+            hasDebt: false,
+            debtMonthlyObligation: 0,
+            familyDependencyScore: 1.0,
+            rawSkillStrings: extraction.rawSkillStrings && extraction.rawSkillStrings.length > 0 ? extraction.rawSkillStrings : ["general"],
+            hasVerifiableOutputMap: {} as Record<string, boolean>,
+            positiveCommSignals: ["clear"] as string[],
+            negativeCommSignals: [] as string[],
+            dailyUninterruptedHours: extraction.dailyUninterruptedHours || 4,
+            deviceTier: "mid_range" as const,
+            internetStability: "4g_stable" as const,
+            workEnvironment: "dedicated_quiet" as const,
+            canWorkAtNight: true,
+            hasDedicatedWorkspace: true,
+            procrastinationSignals: {
+              tookLongBetweenAnswers: false, setOptimisticDeadlines: false, gavelVagueGoalsNotSpecific: false, mentionedPastFailedAttempts: false, usedPassiveLanguage: false, conflatedPlanningWithExecution: false
+            },
+            cognitiveEnduranceMinutes: 120,
+            emotionalResilience: 0.8,
+            baselineDiscipline: 0.7,
+            preferredWorkStyle: "deep_work_clusters" as const,
+            riskTolerance: 0.6,
+            declaredGoal: extraction.declaredGoal,
+            targetAmount: (extraction.liquidCapital || 5000) * 2,
+            currency: "INR" as const,
+            timelineMonths: 3,
+            sacrificesToleratedList: ["sleep"] as string[],
+            nonNegotiables: [] as string[],
+            pathPreference: extraction.pathPreference,
+            onboardingText: `Goal: ${extraction.declaredGoal}. Capital: ${extraction.liquidCapital}. Hours: ${extraction.dailyUninterruptedHours}. Geo: ${extraction.region}`,
+            detectedFrictionSignalIds: [] as string[]
+          };
+
+          const simulationData = await processOnboarding(onboardingInput, userLanguage);
+          finalSystemPrompt = buildFullSystemPrompt('simulation', simulationData.userRuntime, userLanguage);
+          result = { type: 'onboarding_complete', data: simulationData };
+        }
+      } else {
+        // Onboarding is incomplete. Normal onboarding chat prompt.
+        finalSystemPrompt = buildFullSystemPrompt('onboarding', {}, userLanguage);
+        result = { type: 'chat_response', data: {} };
+      }
     }
 
     let streamData: any;
